@@ -3,9 +3,7 @@
 //
 
 #include "logging.h"
-
 #include <iostream>
-// #include <ostream>
 
 const auto &LOGGING_OSTREAM = std::cout;
 

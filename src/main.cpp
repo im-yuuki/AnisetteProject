@@ -1,7 +1,7 @@
 //
 // Created by Yuuki on 19/02/2025.
 //
-#include "utils/logging.h"
+#include <logging.h>
 using namespace game;
 
 int main(int argc, char *argv[]) {

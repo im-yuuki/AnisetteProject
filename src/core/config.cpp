@@ -3,7 +3,7 @@
 //
 
 #include "config.h"
-#include "logging.h"
+#include <logging>
 #include <fstream>
 #include <sstream>
 
