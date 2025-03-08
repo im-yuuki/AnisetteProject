@@ -1,0 +1,33 @@
+name: Build x64 Release for Windows
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure CMake
+        run: cmake -S . -B build/x64-release --preset x64-release
+
+      - name: Build
+        run: cmake --build build/x64-release --config Release
+
+      - name: Run tests
+        run: ctest --test-dir build/x64-release --output-on-failure
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: build/x64-release

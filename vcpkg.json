@@ -3,6 +3,10 @@
     "version": "1.0.0",
     "dependencies": [
         {
+            "name": "fmt",
+            "version>=": "11.0.2"
+        },
+        {
             "name": "sdl2",
             "version>=": "2.30.12"
         },
