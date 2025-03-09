@@ -1,59 +1,50 @@
 //
 // Created by Yuuki on 19/02/2025.
 //
-
 #include "logging.h"
-#include <iostream>
+#include <string>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
+using namespace anisette::logging;
 
-const auto &LOGGING_OSTREAM = std::cout;
+static spdlog::level::level_enum default_level = spdlog::level::info;
+static bool initialized = false;
 
-namespace anisette::logging {
-    void debug(const std::string &message) {
-        return default_logger->debug(message);
-    }
+static std::string generate_filename() {
+    using namespace std::chrono;
+    const auto now = system_clock::to_time_t(system_clock::now());
+    return "log/anisette-run-" + std::to_string(now) + ".log";
+}
 
-    void info(const std::string &message) {
-        return default_logger->info(message);
+static spdlog::level::level_enum convert(const uint8_t level) {
+    switch (level) {
+        case LEVEL_DEBUG:
+            return spdlog::level::debug;
+        case LEVEL_INFO:
+            return spdlog::level::info;
+        case LEVEL_WARN:
+            return spdlog::level::warn;
+        case LEVEL_ERROR:
+            return spdlog::level::err;
+        default:
+            return default_level;
     }
+}
 
-    void warning(const std::string &message) {
-        return default_logger->warning(message);
-    }
+const static auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+const static auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(generate_filename(), true);
 
-    void error(const std::string &message) {
-        return default_logger->error(message);
-    }
+void init(const uint8_t level = LEVEL_INFO) {
+    spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] %v");
+    default_level = convert(level);
+    spdlog::set_level(default_level);
+    spdlog::set_pattern("[%d-%m-%Y %H:%M:%S] %n [%^%l%$] %v");
+    spdlog::set_default_logger(get("default", level));
+    initialized = true; 
+}
 
-    void set_default_level(const LogLevel level) {
-        default_logger->set_level(level);
-    }
-
-    Logger* Logger::get(const std::string &name) {
-        const auto find = pool.find(name);
-        if (find == pool.end()) {
-            const auto logger = new Logger(name);
-            pool[name] = logger;
-            if (name == "default") return logger;
-            return logger->set_level(default_logger->level);
-        }
-        return find->second;
-    }
-
-    Logger *Logger::set_level(LogLevel level) {
-        return this;
-    }
-
-    void Logger::debug(const std::string &message) const {
-        std::cout << name << " [DEBUG] " << message << std::endl;
-    }
-    void Logger::info(const std::string &message) const {
-        std::cout << name << " [INFO] " << message << std::endl;
-    }
-    void Logger::warning(const std::string &message) const {
-        std::cerr << name << " [WARNING] " << message << std::endl;
-    }
-    void Logger::error(const std::string &message) const {
-        std::cerr << name << " [ERROR] " << message << std::endl;
-    }
-
+std::shared_ptr<spdlog::logger> get(const std::string &name, const uint8_t level = 255) {
+    const auto logger = std::make_shared<spdlog::logger>(spdlog::logger(name, { console_sink, file_sink }));
+    if (level != 255) logger->set_level(convert(level));
+    return logger;
 }
