@@ -11,6 +11,7 @@ find_package(SDL2 CONFIG REQUIRED)
 find_package(SDL2_image CONFIG REQUIRED)
 find_package(SDL2_mixer CONFIG REQUIRED)
 
+configure_file(${CMAKE_SOURCE_DIR}/src/version.h.in ${CMAKE_SOURCE_DIR}/src/version.h @ONLY)
 add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)
 
 install(DIRECTORY assets DESTINATION ${CMAKE_INSTALL_PREFIX})

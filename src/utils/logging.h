@@ -20,15 +20,8 @@ namespace anisette::logging {
     /**
      * @brief Get the logger instance by name
      * @param name Logger name
-     * @return Logger instance
-     */
-    std::shared_ptr<spdlog::logger> get(const std::string &name);
-
-    /**
-     * @brief Get the logger instance by name and set the custom log level
-     * @param name Logger name
-     * @param level Log level
+     * @param level Custom log level, if not provided, the default level will be used
      * @return Logger instance
      */ 
-    std::shared_ptr<spdlog::logger> get(const std::string &name, const uint8_t level);
+    std::shared_ptr<spdlog::logger> get(const std::string &name, const uint8_t level = 255);
 }
