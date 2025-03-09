@@ -2,11 +2,14 @@
 // Created by Yuuki on 19/02/2025.
 //
 #pragma once
+#include <SDL2/SDL.h>
+#include <memory>
 
 namespace anisette::core {
-    int init();
+    int start(int argc, char *argv[]);
 
     namespace renderer {
-        int init(); 
+        bool init_window();
+        std::shared_ptr<SDL_Window> get_window();
     }
 }
