@@ -1,9 +1,10 @@
 add_library(${PROJECT_NAME}_Core SHARED
+    loader.cpp
     renderer.cpp
 )
 target_link_libraries(${PROJECT_NAME}_Core PRIVATE ${PROJECT_NAME}_Logging)
 target_link_libraries(${PROJECT_NAME}_Core
-    PRIVATE
+    PUBLIC
     $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
     $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
 )
@@ -13,4 +14,4 @@ target_link_libraries(${PROJECT_NAME}_Core
 )
 
 target_include_directories(${PROJECT_NAME}_Core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS ${PROJECT_NAME}_Core DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS ${PROJECT_NAME}_Core DESTINATION ${CMAKE_SOURCE_DIR}/out)
