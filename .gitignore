@@ -1,4 +1,5 @@
 build/
+install/
 cmake-build-*/
 
 .idea/

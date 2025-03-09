@@ -3,15 +3,15 @@
 //
 
 #include "config.h"
-#include <logging>
+#include <logging.h>
 #include <fstream>
 #include <sstream>
 
 #define DEFAULT_RENDER_CONFIG_FILE_PATH "render.cfg"
 
-const auto logger = game::logging::Logger::get(__FILE__);
+const auto logger = anisette::logging::Logger::get(__FILE__);
 
-using namespace game::core;
+using namespace anisette::core;
 
 RenderConfigLoader::RenderConfigLoader() {
     if (!read(DEFAULT_RENDER_CONFIG_FILE_PATH)) {

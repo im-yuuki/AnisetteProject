@@ -3,8 +3,9 @@
 //
 #include "core.h"
 #include <logging.h>
-using namespace anisette::core::renderer;
+#include <SDL2/SDL.h>
+using namespace anisette::core;
 
-int init() {
+bool init() {
     return true;
 }

@@ -7,7 +7,7 @@
 
 const auto &LOGGING_OSTREAM = std::cout;
 
-namespace game::logging {
+namespace anisette::logging {
     void debug(const std::string &message) {
         return default_logger->debug(message);
     }

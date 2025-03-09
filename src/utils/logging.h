@@ -3,53 +3,32 @@
 //
 
 #pragma once
+#include <spdlog/spdlog.h>
 
-#include <string>
-#include <utility>
-#include <vector>
-#include <unordered_map>
+namespace anisette::logging {
+    constexpr uint8_t LEVEL_DEBUG = 0;
+    constexpr uint8_t LEVEL_INFO = 1;
+    constexpr uint8_t LEVEL_WARN = 2;   
+    constexpr uint8_t LEVEL_ERROR = 3;
 
-#define LOGGING_HISTORY_SIZE 1000
-#define LOGGING_DEFAULT_LEVEL INFO
+    /**
+     * @brief Initialize the logging system
+     * @param level Default log level   
+     */
+    void init(const uint8_t level = LEVEL_INFO);
 
-namespace game::logging {
-    // Log levels
-    enum LogLevel {
-        DEBUG = 0,
-        INFO = 1,
-        WARNING = 2,
-        ERROR = 3
-    };
+    /**
+     * @brief Get the logger instance by name
+     * @param name Logger name
+     * @return Logger instance
+     */
+    std::shared_ptr<spdlog::logger> get(const std::string &name);
 
-    // Record of a log message
-    struct LogRecord {
-        const LogLevel level;
-        std::string message;
-    };
-
-    class Logger final {
-    public:
-        static Logger* get(const std::string &name);
-        void debug(const std::string &message) const;
-        void info(const std::string &message) const;
-        void warning(const std::string &message) const;
-        void error(const std::string &message) const;
-        Logger* set_level(LogLevel level);
-    private:
-        explicit Logger(std::string name) : name(std::move(name)) {};
-        inline static std::unordered_map<std::string, Logger*> pool;
-        std::vector<int> subscribers;
-        const LogLevel level = LOGGING_DEFAULT_LEVEL;
-        const std::string name;
-    };
-
-    extern void debug(const std::string &message);
-    extern void info(const std::string &message);
-    extern void warning(const std::string &message);
-    extern void error(const std::string &message);
-
-    extern void set_default_level(LogLevel level);
-
-    // Default logger, to handle global logging functions
-    inline const auto default_logger = Logger::get("default");
+    /**
+     * @brief Get the logger instance by name and set the custom log level
+     * @param name Logger name
+     * @param level Log level
+     * @return Logger instance
+     */ 
+    std::shared_ptr<spdlog::logger> get(const std::string &name, const uint8_t level);
 }
