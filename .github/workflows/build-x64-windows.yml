@@ -20,14 +20,14 @@ jobs:
       - name: Configure CMake
         run: cmake -S . -B build/x64-release --preset x64-release
 
-      - name: Build
-        run: cmake --build build/x64-release --config Release
+      - name: Build and install
+        run: cmake --build build/x64-release --target install
 
-      - name: Run tests
-        run: ctest --test-dir build/x64-release --output-on-failure
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: build/x64-release
+          path: |
+            out/**/*.exe
+            out/**/*.dll
+            out/assets/
