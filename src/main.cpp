@@ -8,7 +8,7 @@ using namespace anisette;
 
 int main(const int argc, char *argv[]) {
     logging::init();
-    logging::get("default")->info("Starting Anisette version {}", VERSION);
+    logging::get("default")->info("Anisette version {}", VERSION);
     // pass control to game core
     return core::run(argc, argv);
 }
