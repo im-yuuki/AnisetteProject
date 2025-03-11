@@ -9,11 +9,13 @@ constexpr uint32_t INIT_SUBSYSTEMS = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_
 
 namespace anisette::core {
     int run(int argc, char *argv[]) {
+        logger->info("Starting core...");
         if (SDL_InitSubSystem(INIT_SUBSYSTEMS) != 0) {
             logger->error("Initialize SDL failed: {}", SDL_GetError());
             return 1;
         }
         if (!video::init_window()) return 1;
+        if (!audio::init()) return 1;
 
         // SDL_Delay(30000);
         logger->info("Start cleanup task");
