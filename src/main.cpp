@@ -7,8 +7,9 @@
 using namespace anisette;
 
 int main(const int argc, char *argv[]) {
-    logging::init();
-    logging::get("default")->info("Anisette version {}", VERSION);
+    if (strcmp(CMAKE_BUILD_TYPE, "Release") != 0) init(logging::DEBUG);
+    else init(logging::INFO);
+    logging::get("default")->info("Anisette version {}-{}", VERSION, CMAKE_BUILD_TYPE);
     // pass control to game core
-    return core::run(argc, argv);
+    return core::run();
 }

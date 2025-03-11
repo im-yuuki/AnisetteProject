@@ -1,1 +1,3 @@
+#pragma once
 #define VERSION "@PROJECT_VERSION@"
+#define CMAKE_BUILD_TYPE "@CMAKE_BUILD_TYPE@"

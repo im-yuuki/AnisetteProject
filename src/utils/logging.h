@@ -6,10 +6,13 @@
 #include <spdlog/spdlog.h>
 
 namespace anisette::logging {
-    constexpr uint8_t LEVEL_DEBUG = 0;
-    constexpr uint8_t LEVEL_INFO = 1;
-    constexpr uint8_t LEVEL_WARN = 2;
-    constexpr uint8_t LEVEL_ERROR = 3;
+    enum Level {
+        DEFAULT,
+        DEBUG,
+        INFO,
+        WARNING,
+        ERROR,
+    };
 
     /**
      * @brief Initialize the logging system
@@ -19,7 +22,7 @@ namespace anisette::logging {
      *
      * @param level Default log level
      */
-    void init(uint8_t level = LEVEL_INFO);
+    void init(Level level = DEFAULT);
 
     /**
      * @brief Get the logger instance by name
@@ -32,5 +35,5 @@ namespace anisette::logging {
      * @return Logger instance
      */
     [[nodiscard]]
-    std::shared_ptr<spdlog::logger> get(const std::string &name, uint8_t level = 255);
+    std::shared_ptr<spdlog::logger> get(const std::string &name, Level level = DEFAULT);
 }
