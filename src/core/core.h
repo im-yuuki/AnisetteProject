@@ -3,7 +3,6 @@
 //
 #pragma once
 #include <SDL2/SDL.h>
-#include <memory>
 
 namespace anisette::core {
     /**
@@ -16,37 +15,32 @@ namespace anisette::core {
      * @param argv Array of command-line arguments
      * @return Exit code, 0 for success, otherwise errors
      */
-    int run(int argc, char *argv[]);
+    int run();
 
-    namespace video {
-        /**
-         * @brief Initialize the video subsystem and create the main window
-         *
-         * This function initializes the SDL video subsystem and creates the main
-         * application window. It should be called before any rendering operations.
-         *
-         * @return True if the window was successfully created, false otherwise
-         */
-        bool init_window();
+    class Module {
+    public:
+        virtual bool init() = 0;
+        virtual void cleanup() = 0;
+    };
 
-        /**
-         * @brief Get the main application window
-         *
-         * This function returns a shared pointer to the main SDL window created
-         * by the `init_window` function. It can be used to perform rendering
-         * operations or to query window properties.
-         *
-         * @return Shared pointer to the main SDL window
-         */
+    class VideoModule : public Module {
+    public:
+        bool init() override;
+        void cleanup() override;
+
         [[nodiscard]]
-        std::shared_ptr<SDL_Window> get_window();
-    }
+        SDL_Window *get_window() const;
+    private:
+        SDL_Window *window = nullptr;
+    };
 
-    namespace audio {
-        bool init();
-    }
+    class AudioModule : public Module {
+        bool init() override;
+        void cleanup() override;
+    };
 
-    namespace event {
-
-    }
+    class EventModule : public Module {
+        bool init() override;
+        void cleanup() override;
+    };
 }

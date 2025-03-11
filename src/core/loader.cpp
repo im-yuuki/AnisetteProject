@@ -3,25 +3,48 @@
 //
 #include "core.h"
 #include <logging.h>
+#include <valarray>
+#define logdebug logger->debug
+#define loginfo logger->info
+#define logwarn logger->warn
+#define logerror logger->error
 
 const auto logger = anisette::logging::get("loader");
 constexpr uint32_t INIT_SUBSYSTEMS = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_EVENTS;
 
 namespace anisette::core {
-    int run(int argc, char *argv[]) {
-        logger->info("Starting core...");
+    VideoModule *video_module = nullptr;
+    EventModule *event_module = nullptr;
+    AudioModule *audio_module = nullptr;
+
+    int run() {
+        int status = 0;
+        loginfo("Starting core");
+        logdebug("Initializing SDL");
         if (SDL_InitSubSystem(INIT_SUBSYSTEMS) != 0) {
-            logger->error("Initialize SDL failed: {}", SDL_GetError());
+            logerror("Initialize SDL failed: {}", SDL_GetError());
             return 1;
         }
-        if (!video::init_window()) return 1;
-        if (!audio::init()) return 1;
-
-        // SDL_Delay(30000);
-        logger->info("Start cleanup task");
-        SDL_DestroyWindow(video::get_window().get());
+        logdebug("Initializing modules");
+        video_module = new VideoModule();
+        event_module = new EventModule();
+        audio_module = new AudioModule();
+        const auto module_list = std::initializer_list<Module*>{video_module, audio_module, event_module};
+        for (auto &m : module_list) {
+            if (m->init()) continue;
+            status = 2;
+            goto cleanup;
+        }
+        SDL_Delay(5000);
+        cleanup:
+        loginfo("Shutting down");
+        for (auto &m : module_list) {
+            m->cleanup();
+            delete m;
+        }
+        logdebug("Shutting down SDL");
         SDL_QuitSubSystem(INIT_SUBSYSTEMS);
         SDL_Quit();
-        return 0;
+        return status;
     }
 }

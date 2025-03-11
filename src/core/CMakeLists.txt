@@ -11,7 +11,7 @@ target_link_libraries(${PROJECT_NAME}_Core
     $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
 )
 target_link_libraries(${PROJECT_NAME}_Core
-    PRIVATE 
+    PUBLIC
     $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>
 )
 

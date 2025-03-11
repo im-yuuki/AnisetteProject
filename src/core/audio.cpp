@@ -3,8 +3,12 @@
 //
 #include "core.h"
 
-namespace anisette::core::audio {
-    bool init() {
+namespace anisette::core {
+    bool AudioModule::init() {
         return true;
+    }
+
+    void AudioModule::cleanup() {
+
     }
 }
