@@ -3,7 +3,7 @@ add_library(${PROJECT_NAME}_Core SHARED
         video.cpp
         audio.cpp
 )
-target_link_libraries(${PROJECT_NAME}_Core PRIVATE ${PROJECT_NAME}_Logging)
+target_link_libraries(${PROJECT_NAME}_Core PRIVATE ${PROJECT_NAME}_Utils)
 target_link_libraries(${PROJECT_NAME}_Core
     PUBLIC
     $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>

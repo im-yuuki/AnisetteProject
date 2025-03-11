@@ -5,6 +5,6 @@
 
 namespace anisette::core::audio {
     bool init() {
-
+        return true;
     }
 }
