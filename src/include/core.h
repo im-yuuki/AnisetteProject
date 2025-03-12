@@ -19,28 +19,30 @@ namespace anisette::core {
 
     class Module {
     public:
-        virtual bool init() = 0;
         virtual void cleanup() = 0;
     };
 
     class VideoModule : public Module {
     public:
-        bool init() override;
+        VideoModule();
         void cleanup() override;
 
         [[nodiscard]]
         SDL_Window *get_window() const;
     private:
-        SDL_Window *window = nullptr;
+        SDL_Window *window;
+        SDL_Renderer *renderer;
     };
 
     class AudioModule : public Module {
-        bool init() override;
+        AudioModule();
+
         void cleanup() override;
     };
 
     class EventModule : public Module {
-        bool init() override;
+        EventModule();
+
         void cleanup() override;
     };
 }

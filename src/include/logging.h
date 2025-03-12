@@ -4,14 +4,15 @@
 
 #pragma once
 #include <spdlog/spdlog.h>
+#include <memory>
 
 namespace anisette::logging {
-    enum Level {
-        DEFAULT,
-        DEBUG,
-        INFO,
-        WARNING,
-        ERROR
+    enum Level : uint8_t {
+        DEFAULT = 255,
+        DEBUG = 0,
+        INFO = 1,
+        WARNING = 2,
+        ERROR = 3
     };
 
     /**

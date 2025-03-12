@@ -10,24 +10,27 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-x64-windows:
     runs-on: windows-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Configure CMake
-        run: cmake -S . -B build/x64-release --preset x64-release
+      - name: Use Visual Studio Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Build and install
-        run: cmake --build build/x64-release --target install
+      - name: Configure CMake
+        run: cmake -S . --preset x64-windows-rel
+
+      - name: Build
+        run: cmake --build build/x64-windows-rel --target all
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
-            out/**/*.exe
-            out/**/*.dll
-            out/assets/
+            out/Release/**/*.exe
+            out/Release/**/*.dll
+            assets/

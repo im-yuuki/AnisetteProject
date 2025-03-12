@@ -10,7 +10,9 @@
         {
             "name": "base",
             "hidden": true,
+            "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
+            "installDir": "${sourceDir}/install/${presetName}",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": {
                     "type": "FILEPATH",
