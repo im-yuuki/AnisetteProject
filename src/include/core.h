@@ -35,12 +35,14 @@ namespace anisette::core {
     };
 
     class AudioModule : public Module {
+    public:
         AudioModule();
 
         void cleanup() override;
     };
 
     class EventModule : public Module {
+    public:
         EventModule();
 
         void cleanup() override;
