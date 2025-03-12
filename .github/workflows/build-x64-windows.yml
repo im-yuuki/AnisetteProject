@@ -27,7 +27,7 @@ jobs:
         run: cmake -S . --preset x64-windows-rel
 
       - name: Build
-        run: cmake --build build/x64-windows-rel --target all
+        run: cmake --build build\x64-windows-rel --target ALL_BUILD --config Release
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
