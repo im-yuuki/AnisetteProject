@@ -11,7 +11,7 @@ namespace anisette::logging {
         DEBUG,
         INFO,
         WARNING,
-        ERROR,
+        ERROR
     };
 
     /**

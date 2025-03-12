@@ -6,19 +6,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /UTF-8")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -finput-charset=UTF-8")
 endif()
 
 # Dependencies
 find_package(spdlog CONFIG REQUIRED)
-find_package(SDL2 CONFIG REQUIRED)
-find_package(SDL2_image CONFIG REQUIRED)
-find_package(SDL2_mixer CONFIG REQUIRED)
-find_package(SDL2_ttf CONFIG REQUIRED)
+find_package(SDL3 CONFIG REQUIRED)
+find_package(SDL3_image CONFIG REQUIRED)
 
-configure_file(${CMAKE_SOURCE_DIR}/src/version.h.in ${CMAKE_SOURCE_DIR}/src/version.h @ONLY)
+find_package(SDL3_ttf CONFIG REQUIRED)
+
+configure_file(${CMAKE_SOURCE_DIR}/version.h.in ${CMAKE_SOURCE_DIR}/src/include/version.h @ONLY)
 add_subdirectory(src ${CMAKE_SOURCE_DIR}/out)
-
-install(DIRECTORY assets DESTINATION ${CMAKE_SOURCE_DIR}/out)

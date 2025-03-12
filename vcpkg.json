@@ -1,26 +1,17 @@
 {
-    "name": "sdl2-game",
-    "dependencies": [
-        {
-            "name": "spdlog",
-            "version>=": "1.15.1"
-        },
-        {
-            "name": "sdl2",
-            "version>=": "2.30.12"
-        },
-        {
-            "name": "sdl2-image",
-            "version>=": "2.8.4"
-        },
-        {
-            "name": "sdl2-mixer",
-            "version>=": "2.8.1"
-        },
-        {
-            "name": "sdl2-ttf",
-            "version>=": "2.24.0"
-        }
-    ],
-    "version": "1"
+  "name" : "anisette",
+  "dependencies" : [ {
+    "name" : "spdlog",
+    "version>=" : "1.15.1"
+  }, {
+    "name" : "sdl3",
+    "version>=" : "3.2.8"
+  }, {
+    "name" : "sdl3-image",
+    "version>=" : "3.2.4"
+  }, {
+    "name" : "sdl3-ttf",
+    "version>=" : "3.1.0"
+  } ],
+  "version" : "1"
 }

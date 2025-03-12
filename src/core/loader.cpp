@@ -1,7 +1,7 @@
 //
 // Created by Yuuki on 09/03/2025.
 //
-#include "core.h"
+#include <core.h>
 #include <logging.h>
 #include <valarray>
 #define logdebug logger->debug
@@ -10,7 +10,7 @@
 #define logerror logger->error
 
 const auto logger = anisette::logging::get("loader");
-constexpr uint32_t INIT_SUBSYSTEMS = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_EVENTS;
+constexpr uint32_t INIT_SUBSYSTEMS = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS;
 
 namespace anisette::core {
     VideoModule *video_module = nullptr;
