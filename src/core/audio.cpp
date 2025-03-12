@@ -4,8 +4,7 @@
 #include <core.h>
 
 namespace anisette::core {
-    bool AudioModule::init() {
-        return true;
+    AudioModule::AudioModule() {
     }
 
     void AudioModule::cleanup() {

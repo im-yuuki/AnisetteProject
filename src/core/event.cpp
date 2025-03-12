@@ -4,8 +4,7 @@
 #include <core.h>
 
 namespace anisette::core {
-    bool EventModule::init() {
-        return true;
+    EventModule::EventModule() {
     }
 
     void EventModule::cleanup() {
