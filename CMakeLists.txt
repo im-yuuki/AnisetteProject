@@ -19,4 +19,4 @@ find_package(SDL3_image CONFIG REQUIRED)
 find_package(SDL3_ttf CONFIG REQUIRED)
 
 configure_file(${CMAKE_SOURCE_DIR}/version.h.in ${CMAKE_SOURCE_DIR}/src/include/version.h @ONLY)
-add_subdirectory(src ${CMAKE_SOURCE_DIR}/out)
+add_subdirectory(src)

@@ -21,9 +21,29 @@
             }
         },
         {
+            "name": "x64-linux-dbg",
+            "inherits": "base",
+            "displayName": "Linux x64 (Debug)",
+            "architecture": {
+                "value": "x86_64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "x64-linux-rel",
+            "inherits": "x64-linux-dbg",
+            "displayName": "Linux x64 (Release)",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
             "name": "x64-windows-dbg",
             "inherits": "base",
-            "description": "Windows x64 (Debug)",
+            "displayName": "Windows x64 (Debug)",
             "generator": "Visual Studio 17 2022",
             "architecture": {
                 "value": "x64",
@@ -36,7 +56,7 @@
         {
             "name": "x64-windows-rel",
             "inherits": "x64-windows-dbg",
-            "description": "Windows x64 (Release)",
+            "displayName": "Windows x64 (Release)",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
