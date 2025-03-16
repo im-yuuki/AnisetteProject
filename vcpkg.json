@@ -1,5 +1,6 @@
 {
   "name" : "anisette",
+  "version": "1.0.0",
   "dependencies" : [ {
     "name" : "spdlog",
     "version>=" : "1.15.1"
@@ -12,6 +13,11 @@
   }, {
     "name" : "sdl3-ttf",
     "version>=" : "3.1.0"
-  } ],
-  "version" : "1"
+  }, {
+    "name": "discord-game-sdk",
+    "version>=": "3.2.1"
+  }, {
+    "name": "asio",
+    "version>=": "1.32.0"
+  } ]
 }

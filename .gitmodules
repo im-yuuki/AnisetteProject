@@ -2,3 +2,7 @@
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg
 	branch = master
+[submodule "externals/SDL_mixer"]
+	path = externals/SDL_mixer
+	url = https://github.com/libsdl-org/SDL_mixer.git
+	branch = main

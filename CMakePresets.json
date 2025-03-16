@@ -12,21 +12,24 @@
             "hidden": true,
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
-            "installDir": "${sourceDir}/install/${presetName}",
+            "installDir": "${sourceDir}/out",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": {
                     "type": "FILEPATH",
                     "value": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                },
+                "DISCORD_CLIENT_ID": {
+                    "type": "STRING",
+                    "value": "1350787768351068180"
                 }
             }
         },
         {
-            "name": "x64-windows-dbg",
+            "name": "x64-linux-dbg",
             "inherits": "base",
-            "description": "Windows x64 (Debug)",
-            "generator": "Visual Studio 17 2022",
+            "displayName": "Linux x64 (Debug)",
             "architecture": {
-                "value": "x64",
+                "value": "x86_64",
                 "strategy": "external"
             },
             "cacheVariables": {
@@ -34,9 +37,31 @@
             }
         },
         {
+            "name": "x64-linux-rel",
+            "inherits": "x64-linux-dbg",
+            "displayName": "Linux x64 (Release)",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "x64-windows-dbg",
+            "inherits": "base",
+            "displayName": "Windows x64 (Debug)",
+            "generator": "Visual Studio 17 2022",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS": "TRUE"
+            }
+        },
+        {
             "name": "x64-windows-rel",
             "inherits": "x64-windows-dbg",
-            "description": "Windows x64 (Release)",
+            "displayName": "Windows x64 (Release)",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }

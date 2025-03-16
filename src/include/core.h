@@ -2,7 +2,6 @@
 // Created by Yuuki on 19/02/2025.
 //
 #pragma once
-#include <SDL3/SDL.h>
 
 namespace anisette::core {
     /**
@@ -11,40 +10,26 @@ namespace anisette::core {
      * This function initializes the game core and starts the main game loop.
      * It processes command-line arguments and sets up necessary resources.
      *
-     * @param argc Number of command-line arguments
-     * @param argv Array of command-line arguments
      * @return Exit code, 0 for success, otherwise errors
      */
     int run();
+    void handle_interrupt(int signal);
+    void set_video_fps(const int fps);
+    void set_event_tps(const int tps);
+    void request_stop();
 
-    class Module {
-    public:
-        virtual void cleanup() = 0;
+    namespace event {
+        void process_tick();
     };
 
-    class VideoModule : public Module {
-    public:
-        VideoModule();
-        void cleanup() override;
+    namespace video {
+        bool init();
+        void cleanup();
+        void process_frame();
+    }
 
-        [[nodiscard]]
-        SDL_Window *get_window() const;
-    private:
-        SDL_Window *window;
-        SDL_Renderer *renderer;
-    };
-
-    class AudioModule : public Module {
-    public:
-        AudioModule();
-
-        void cleanup() override;
-    };
-
-    class EventModule : public Module {
-    public:
-        EventModule();
-
-        void cleanup() override;
-    };
+    namespace audio {
+        bool init();
+        void cleanup();
+    }
 }
