@@ -1,7 +1,6 @@
-name: Build x64 Release for Windows
+name: Build x64 Release
 
-on:
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build-windows-x64:
