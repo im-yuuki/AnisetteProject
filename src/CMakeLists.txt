@@ -6,7 +6,7 @@ add_library(lib_anilog SHARED
 target_link_libraries(lib_anilog PUBLIC spdlog::spdlog)
 
 add_library(lib_anidiscord SHARED
-        utils/discord_rpc.cpp
+        utils/discord.cpp
 )
 target_include_directories(lib_anidiscord PRIVATE ${GAME_SDK_INCLUDE})
 target_link_libraries(lib_anidiscord PRIVATE ${GAME_SDK})

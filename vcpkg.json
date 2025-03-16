@@ -14,8 +14,8 @@
     "name" : "sdl3-ttf",
     "version>=" : "3.1.0"
   }, {
-    "name": "discord-game-sdk",
-    "version>=": "3.2.1"
+    "name": "discord-rpc",
+    "version>=": "3.4.0#4"
   }, {
     "name": "asio",
     "version>=": "1.32.0"

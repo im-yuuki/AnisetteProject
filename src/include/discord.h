@@ -4,5 +4,5 @@
 #pragma once
 
 namespace anisette::utils::discord {
-    void init();
+    void start_thread();
 }

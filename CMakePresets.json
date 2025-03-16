@@ -18,7 +18,7 @@
                     "type": "FILEPATH",
                     "value": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
                 },
-                "DISCORD_CLIENT_ID": {
+                "DISCORD_APPLICATION_ID": {
                     "type": "STRING",
                     "value": "1350787768351068180"
                 }
