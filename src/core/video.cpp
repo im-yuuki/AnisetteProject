@@ -43,7 +43,11 @@ namespace anisette::core::video {
     }
 
     bool init() {
-        logger->info("SDL_image version: {}", IMG_Version());
+        logger->info("SDL_image version: {}.{}.{}",
+            SDL_IMAGE_MAJOR_VERSION,
+            SDL_IMAGE_MINOR_VERSION,
+            SDL_IMAGE_MICRO_VERSION
+            );
         logger->debug("Initialize window with flags {}", WINDOW_INIT_FLAGS);
         window = SDL_CreateWindow(
             "Anisette",
