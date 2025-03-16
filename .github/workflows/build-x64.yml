@@ -1,0 +1,59 @@
+name: Build x64 Release for Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows-x64:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Use Visual Studio Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure CMake
+        run: cmake -S . --preset x64-windows-rel
+
+      - name: Build
+        run: cmake --build build\x64-windows-rel --target ALL_BUILD --config Release
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            build/bin/Release/**/*.exe
+            build/bin/Release/**/*.dll
+            assets/
+
+  build-linux-x64:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Install packages
+        run: sudo apt-get install -y cmake ninja-build
+
+      - name: Configure CMake
+        run: cmake -S . --preset x64-linux-rel
+
+      - name: Build
+        run: cmake --build build/x64-linux-rel --target ALL_BUILD --config Release
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            build/bin/Anisette
+            build/bin/**/*.so
+            assets/

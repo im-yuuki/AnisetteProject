@@ -12,11 +12,15 @@
             "hidden": true,
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
-            "installDir": "${sourceDir}/install/${presetName}",
+            "installDir": "${sourceDir}/out",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": {
                     "type": "FILEPATH",
                     "value": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                },
+                "DISCORD_CLIENT_ID": {
+                    "type": "STRING",
+                    "value": "1350787768351068180"
                 }
             }
         },
@@ -50,7 +54,8 @@
                 "strategy": "external"
             },
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS": "TRUE"
             }
         },
         {

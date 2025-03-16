@@ -29,6 +29,7 @@ static spdlog::level::level_enum convert(const Level level) {
 
 const static auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 const static auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(generate_filename(), true);
+const static std::initializer_list<std::shared_ptr<spdlog::sinks::sink>> sinks = { console_sink, file_sink };
 
 namespace anisette::logging {
     void init(const Level level) {
@@ -40,7 +41,7 @@ namespace anisette::logging {
     }
 
     std::shared_ptr<spdlog::logger> get(const std::string &name, const Level level) {
-        const auto logger = std::make_shared<spdlog::logger>(spdlog::logger(name, { console_sink, file_sink }));
+        const auto logger = std::make_shared<spdlog::logger>(spdlog::logger(name, sinks));
         logger->set_level(convert(level));
         logger->set_pattern("[%d-%m-%Y %H:%M:%S] %n [%^%l%$] %v");
         return logger;
