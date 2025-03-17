@@ -12,9 +12,21 @@ const auto logger = logging::get("main");
 int main(const int argc, char *argv[]) {
     signal(SIGINT, core::handle_interrupt);
     signal(SIGTERM, core::handle_interrupt);
-    if (strcmp(CMAKE_BUILD_TYPE, "Release") != 0) init(logging::DEBUG);
-    else init(logging::INFO);
+    logging::init();
     logger->info("Anisette version {}-{}", VERSION, CMAKE_BUILD_TYPE);
     // pass control to game core
     return core::run();
 }
+
+#ifdef WIN32
+#include <windows.h>
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
+    // handle interrupt signals
+    signal(SIGINT, core::handle_interrupt);
+    signal(SIGTERM, core::handle_interrupt);
+    logging::init();
+    logger->info("Anisette version {}-{}", VERSION, CMAKE_BUILD_TYPE);
+    // pass control to game core
+    return core::run();
+}
+#endif

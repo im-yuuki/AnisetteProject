@@ -1,4 +1,0 @@
-#pragma once
-#define VERSION "1.0.0"
-#define CMAKE_BUILD_TYPE "Debug"
-#define DISCORD_APPLICATION_ID "1350787768351068180"

@@ -2,6 +2,7 @@
 // Created by Yuuki on 19/02/2025.
 //
 #pragma once
+#include <cstdint>
 
 namespace anisette::core {
     /**
@@ -14,12 +15,14 @@ namespace anisette::core {
      */
     int run();
     void handle_interrupt(int signal);
-    void set_video_fps(const int fps);
-    void set_event_tps(const int tps);
+    void set_video_fps(int fps);
+    void set_event_tps(int tps);
     void request_stop();
 
     namespace event {
-        void process_tick();
+        bool init();
+        void cleanup();
+        void process_tick(const uint64_t &counter);
     };
 
     namespace video {

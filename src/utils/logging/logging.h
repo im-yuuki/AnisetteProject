@@ -20,10 +20,8 @@ namespace anisette::logging {
      *
      * This function initializes the logging system with the specified default log level.
      * It sets up the console and file sinks for logging output.
-     *
-     * @param level Default log level
      */
-    void init(Level level = DEFAULT);
+    void init();
 
     /**
      * @brief Get the logger instance by name

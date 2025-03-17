@@ -2,7 +2,7 @@
 // Created by Yuuki on 09/03/2025.
 //
 
-#include <core.h>
+#include "core.h"
 #include <logging.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3_image/SDL_image.h>
