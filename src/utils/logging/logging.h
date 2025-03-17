@@ -11,8 +11,8 @@ namespace anisette::logging {
         DEFAULT = 255,
         DEBUG = 0,
         INFO = 1,
-        WARNING = 2,
-        ERROR = 3
+        WARN = 2,
+        ERR = 3
     };
 
     /**

@@ -37,6 +37,15 @@ namespace anisette::utils::discord {
         if (is_ready) Discord_UpdatePresence(&presence);
     }
 
+    void set_idle() {
+        logger->debug("Set Discord presence to idle mode");
+        presence.state = "Idle";
+        presence.details = nullptr;
+        presence.smallImageKey = "idle";
+        presence.smallImageText = "Idle";
+    }
+
+
     void set_in_main_menu() {
         logger->debug("Set Discord presence to main menu mode");
         presence.state = "In the main menu";
@@ -49,7 +58,7 @@ namespace anisette::utils::discord {
         logger->debug("Set Discord presence to browsing library mode");
         presence.state = "Browsing songs";
         presence.details = nullptr;
-        presence.smallImageKey = "search";
+        presence.smallImageKey = "browse";
         presence.smallImageText = "Browsing";
     }
 

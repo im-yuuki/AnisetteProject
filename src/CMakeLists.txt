@@ -6,7 +6,7 @@ add_library(lib_anilog SHARED
         utils/logging/logging.cpp
 )
 target_include_directories(lib_anilog PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/utils/logging)
-target_link_libraries(lib_anilog PUBLIC spdlog::spdlog)
+target_link_libraries(lib_anilog PUBLIC spdlog::spdlog_header_only)
 
 # Discord RPC connection
 add_library(lib_anidiscord SHARED
@@ -25,14 +25,18 @@ add_library(lib_anicore SHARED
 )
 target_include_directories(lib_anicore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
 target_link_libraries(lib_anicore PRIVATE lib_anilog lib_anidiscord)
-target_link_libraries(lib_anicore PUBLIC SDL3::SDL3)
-target_link_libraries(lib_anicore
-        PUBLIC
-        $<IF:$<TARGET_EXISTS:SDL3_image::SDL3_image-shared>,SDL3_image::SDL3_image-shared,SDL3_image::SDL3_image-static>
+target_link_libraries(lib_anicore PUBLIC
+        $<IF:$<TARGET_EXISTS:SDL3::SDL3-static>,SDL3::SDL3-static,SDL3::SDL3>
 )
-target_link_libraries(lib_anicore PUBLIC $<IF:$<TARGET_EXISTS:SDL3_ttf::SDL3_ttf>,SDL3_ttf::SDL3_ttf,SDL3_ttf::SDL3_ttf-static>)
-target_link_libraries(lib_anicore PUBLIC SDL3_mixer::SDL3_mixer-static)
-
+target_link_libraries(lib_anicore PUBLIC
+        $<IF:$<TARGET_EXISTS:SDL3_image::SDL3_image-static>,SDL3_image::SDL3_image-static,SDL3_image::SDL3_image-shared>
+)
+target_link_libraries(lib_anicore PUBLIC
+        $<IF:$<TARGET_EXISTS:SDL3_ttf::SDL3_ttf-static>,SDL3_ttf::SDL3_ttf-static,SDL3_ttf::SDL3_ttf>
+)
+target_link_libraries(lib_anicore PUBLIC
+        $<IF:$<TARGET_EXISTS:SDL3_mixer::SDL3_mixer-static>,SDL3_mixer::SDL3_mixer-static,SDL3_mixer::SDL3_mixer>
+)
 
 # Main executable
 if(NOT WIN32)

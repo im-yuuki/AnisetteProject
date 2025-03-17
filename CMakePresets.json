@@ -12,7 +12,7 @@
             "hidden": true,
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
-            "installDir": "${sourceDir}/out",
+            "installDir": "${sourceDir}/out/${presetName}",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": {
                     "type": "FILEPATH",
@@ -31,6 +31,10 @@
                     "value": "ON"
                 },
                 "BUILD_EXAMPLES": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                },
+                "SPDLOG_BUILD_SHARED": {
                     "type": "BOOL",
                     "value": "OFF"
                 }

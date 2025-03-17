@@ -4,7 +4,7 @@ on: [pull_request, workflow_dispatch]
 
 jobs:
   build-windows-x64:
-    runs-on: windows-2022
+    runs-on: windows-2025
 
     steps:
       - name: Checkout repository
@@ -26,8 +26,7 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            build/bin/Release/**/*.exe
-            build/bin/Release/**/*.dll
+            build/bin/Release/
             assets/
 
   build-linux-x64:
