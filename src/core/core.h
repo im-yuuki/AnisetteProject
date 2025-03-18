@@ -4,7 +4,19 @@
 #pragma once
 #include <cstdint>
 
-namespace anisette::core {
+namespace anisette::core
+{
+    /**
+     * @brief The frequency of the system's performance counter.
+     *
+     * This variable holds the frequency of the system's performance counter,
+     * which is used for timing and measuring performance.
+     */
+    extern const uint64_t system_freq;
+
+    extern unsigned target_fps;
+    extern void commit_update();
+
     /**
      * @brief Start the game core
      *
@@ -13,26 +25,46 @@ namespace anisette::core {
      *
      * @return Exit code, 0 for success, otherwise errors
      */
-    int run();
-    void handle_interrupt(int signal);
-    void set_video_fps(int fps);
-    void set_event_tps(int tps);
-    void request_stop();
+    extern int run();
 
-    namespace event {
-        bool init();
-        void cleanup();
-        void process_tick(const uint64_t &counter);
+    /**
+     * @brief Request the game core to stop
+     *
+     * This function set the flag to stop the main game loop.
+     * It will then trigger the cleanup process and exit the game.
+     */
+    extern void request_stop();
+
+    namespace event
+    {
+        extern bool init();
+        extern void cleanup();
+
+        /**
+         * @brief Handle interrupt signal
+         *
+         * This function is called when the game receives an interrupt signal.
+         * It will request the game core to stop and trigger the cleanup process.
+         *
+         * @param signal Signal number
+         */
+        extern void handle_interrupt(int signal);
+        extern void process_tick(const uint64_t &counter);
     };
 
-    namespace video {
-        bool init();
-        void cleanup();
-        void process_frame();
+    namespace video
+    {
+        extern bool splash();
+        extern bool init();
+        extern void cleanup();
+        extern void process_frame(const uint64_t &counter);
     }
 
-    namespace audio {
-        bool init();
-        void cleanup();
+    namespace audio
+    {
+        extern bool init();
+        extern void cleanup();
+        extern void set_sound_volume(int volume);
+        extern void set_music_volume(int volume);
     }
 }

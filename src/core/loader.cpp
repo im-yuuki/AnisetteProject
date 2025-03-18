@@ -9,43 +9,39 @@
 #include <SDL3/SDL_version.h>
 
 const auto logger = anisette::logging::get("loader");
-constexpr SDL_InitFlags INIT_SUBSYSTEMS = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS;
+constexpr SDL_InitFlags INIT_SUBSYSTEMS = SDL_INIT_VIDEO | SDL_INIT_AUDIO;
 static std::atomic_bool stop_requested = false;
 
-static const Uint64 system_freq = SDL_GetPerformanceFrequency(); // constant
-static Uint64 target_video_frame_time = system_freq / 60;
-static Uint64 target_event_tick_time = system_freq / 100;
-static Uint64 target_discord_update_time = system_freq / 2;
+namespace anisette::core
+{
+    const Uint64 system_freq = SDL_GetPerformanceFrequency();
+    unsigned target_fps = 60;
 
-namespace anisette::core {
-    void handle_interrupt(int signal) {
-        logger->info("Received interrupt signal {}", signal);
-        request_stop();
+    static uint64_t target_frametime = system_freq / target_fps;
+    uint64_t frame_time;
+
+    void commit_update() {
+        if (target_fps == 0) {
+            target_frametime = 0;
+            logger->warn("FPS is basically unlimited, may lead to high resources usage");
+        } else {
+            target_frametime = system_freq / target_fps;
+            logger->info("FPS limit changed to {}", target_fps);
+        }
     }
 
     bool init() {
-        logger->info("Simple DirectMedia Layer (SDL) version: {}.{}.{}",
-            SDL_MAJOR_VERSION,
-            SDL_MINOR_VERSION,
-            SDL_MICRO_VERSION
-            );
-        logger->debug("Initializing SDL subsystems with flags {}", INIT_SUBSYSTEMS);
+        logger->info("Simple DirectMedia Layer (SDL) version: {}.{}.{}", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
         if (!SDL_InitSubSystem(INIT_SUBSYSTEMS)) {
             logger->error("Initialize SDL failed: {}", SDL_GetError());
             return false;
         }
         // init video and audio subsystems
-        if (!event::init()) return false;
-        if (!video::init()) return false;
-        if (!audio::init()) return false;
-        // Discord RPC
-        utils::discord::init();
-        return true;
+        return video::splash() && event::init() && audio::init() && video::init();
     }
 
     void cleanup() {
         logger->info("Shutting down");
-        utils::discord::cleanup();
         event::cleanup();
         audio::cleanup();
         video::cleanup();
@@ -55,39 +51,27 @@ namespace anisette::core {
     }
 
     void loop() {
-        static Uint64 now;
-        static Uint64 next_tick;
-        static Uint64 next_video_frame = SDL_GetPerformanceCounter();
-        static Uint64 next_event_tick = SDL_GetPerformanceCounter();
-        static Uint64 next_discord_update = SDL_GetPerformanceCounter();
-
         logger->debug("Entering main loop");
+        static uint64_t now, start_frame, target_next_frame;
+
         while (!stop_requested) {
-            if (now = SDL_GetPerformanceCounter(); now >= next_event_tick) {
-                event::process_tick(now);
-                next_event_tick = now + target_event_tick_time;
-            }
-            if (now = SDL_GetPerformanceCounter(); now >= next_video_frame) {
-                video::process_frame();
-                next_video_frame = now + target_video_frame_time;
-            }
-            if (now >= next_discord_update) {
-                utils::discord::update();
-                next_discord_update = now + target_discord_update_time;
-            }
-            // sleep to save CPU cycles
-            now = SDL_GetPerformanceCounter();
-            next_tick = std::min(next_discord_update, next_event_tick);
-            if (next_tick > now) SDL_Delay((next_tick - now) * 1000 / system_freq);
+            start_frame = SDL_GetPerformanceCounter();
+            event::process_tick(start_frame);
+            video::process_frame(start_frame);
+            target_next_frame = start_frame + target_frametime;
+            // delay until next frame, and calculate the frame time
+            if (now = SDL_GetPerformanceCounter(); now < target_next_frame) {
+                frame_time = target_next_frame - start_frame;
+                SDL_Delay((target_next_frame - now) * 1000 / system_freq);
+            } else frame_time = now - start_frame;
         }
+
         logger->debug("Exited main loop");
     }
 
     int run() {
         if (init()) {
-            // pass control to main loop
             loop();
-            // cleanup resources
             cleanup();
             return 0;
         }
@@ -96,18 +80,8 @@ namespace anisette::core {
         return 1;
     }
 
-    void set_video_fps(const int fps) {
-        logger->info("Setting video fps to {}", fps);
-        target_video_frame_time = system_freq / fps;
-    }
-
-    void set_event_tps(const int tps) {
-        logger->info("Setting event tps to {}", tps);
-        target_event_tick_time = system_freq / tps;
-    }
-
     void request_stop() {
-        logger->info("Application stop requested");
+        logger->info("Core stop requested");
         stop_requested = true;
     }
 }

@@ -18,3 +18,5 @@ cmake-build-*/
 .idea/
 .vscode/
 .vs/
+
+src/version.h

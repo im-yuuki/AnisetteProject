@@ -3,7 +3,8 @@
 //
 #include "logging.h"
 #include <string>
-using namespace anisette::logging;
+#include <spdlog/sinks/callback_sink.h>
+using namespace spdlog;
 
 #ifdef NDEBUG
 #include <spdlog/sinks/basic_file_sink.h>
@@ -12,34 +13,35 @@ static std::string generate_filename() {
     const auto now = system_clock::to_time_t(system_clock::now());
     return "log/anisette-run-" + std::to_string(now) + ".log";
 }
-const static auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(generate_filename(), true);
-static constexpr spdlog::level::level_enum default_level = spdlog::level::info;
+const auto output_sink = std::make_shared<sinks::basic_file_sink_st>(generate_filename(), true);
+constexpr level::level_enum default_level = level::info;
 #else
 #include <spdlog/sinks/stdout_color_sinks.h>
-const static auto sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-static constexpr spdlog::level::level_enum default_level = spdlog::level::debug;
+const auto output_sink = std::make_shared<sinks::stdout_color_sink_st>();
+constexpr level::level_enum default_level = level::debug;
 #endif
 
-static spdlog::level::level_enum convert(const Level level) {
-    switch (level) {
-        case DEBUG: return spdlog::level::debug;
-        case INFO: return spdlog::level::info;
-        case WARN: return spdlog::level::warn;
-        case ERR: return spdlog::level::err;
-        case DEFAULT: break;
-    }
-    return default_level;
-}
+std::function<void(const details::log_msg &)> callback = nullptr;
+const static auto callback_sink = std::make_shared<sinks::callback_sink_st>([](const details::log_msg &msg) {
+    if (callback == nullptr) return;
+    callback(msg);
+});
 
-namespace anisette::logging {
+namespace anisette::logging
+{
     void init() {
-        set_default_logger(get("default"));
+        output_sink->set_level(default_level);
+        callback_sink->set_level(level::warn);
     }
 
-    std::shared_ptr<spdlog::logger> get(const std::string &name, const Level level) {
-        const auto logger = std::make_shared<spdlog::logger>(spdlog::logger(name, sink));
-        logger->set_level(convert(level));
-        logger->set_pattern("[%d-%m-%Y %H:%M:%S] %n [%^%l%$] %v");
-        return logger;
+    std::shared_ptr<logger> get(const std::string &name) {
+        const auto _return = std::make_shared<logger>(logger(name, {output_sink, callback_sink}));
+        _return->set_level(default_level);
+        _return->set_pattern("[%d-%m-%Y %H:%M:%S] %n [%^%l%$] %v");
+        return _return;
+    }
+
+    void register_callback(const std::function<void(const details::log_msg &)> &function) {
+        callback = function;
     }
 }

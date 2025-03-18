@@ -2,7 +2,6 @@
 // Created by Yuuki on 16/03/2025.
 //
 #include "discord.h"
-#include <version.h>
 #include <logging.h>
 #include <discord_rpc.h>
 
@@ -20,15 +19,17 @@ static DiscordRichPresence presence {
     .smallImageText = "Home",
 };
 
-namespace anisette::utils::discord {
-    void init() {
-        logger->info("Initializing Discord RPC connection");
+namespace anisette::utils::discord
+{
+    void start() {
+        logger->debug("Initializing Discord RPC connection");
         Discord_Initialize(DISCORD_APPLICATION_ID, nullptr, 1, nullptr);
         is_ready = true;
+        update(); // first update, later updates will be handled by the main loop
     }
 
-    void cleanup() {
-        logger->info("Shutting down Discord RPC connection");
+    void shutdown() {
+        logger->debug("Shutting down Discord RPC connection");
         is_ready = false;
         Discord_Shutdown();
     }

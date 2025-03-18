@@ -1,39 +1,47 @@
 //
 // Created by Yuuki on 09/03/2025.
 //
+#include <discord.h>
+
 #include "core.h"
 #include <logging.h>
-#include <discord.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_timer.h>
 
-#ifndef EVENT_PER_TICK
-#define EVENT_PER_TICK 10
-#endif
-
 const auto logger = anisette::logging::get("event");
-static SDL_Event ev;
 
-namespace anisette::core::event {
+namespace anisette::core::event
+{
     bool init() {
+        SDL_SetEventEnabled(SDL_EVENT_KEYBOARD_ADDED, false);
+        SDL_SetEventEnabled(SDL_EVENT_KEYBOARD_REMOVED, false);
+        // start discord rpc
+        utils::discord::start();
         return true;
     }
 
     void cleanup() {
+        utils::discord::shutdown();
+    }
+
+    void handle_interrupt(int signal) {
+        logger->debug("Received interrupt signal {}", signal);
+        request_stop();
+    }
+
+    void warning_callback(const spdlog::details::log_msg &msg) {
+        SDL_Event ev;
+        SDL_PushEvent(&ev);
     }
 
     void process_tick(const uint64_t &counter) {
-        static int i;
-        for (i = 0; i < EVENT_PER_TICK; i++) {
-            if (!SDL_PollEvent(&ev)) break;
-            switch (ev.type) {
-                case SDL_EVENT_QUIT:
-                    logger->info("Received quit event");
+        static SDL_Event ev;
+        if (!SDL_PollEvent(&ev)) return;
+        switch (ev.type) {
+            case SDL_EVENT_QUIT:
                 request_stop();
                 break;
-                default: break;
-            }
+            default: break;
         }
-
     }
 }
