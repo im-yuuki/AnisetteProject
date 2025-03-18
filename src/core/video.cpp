@@ -84,7 +84,7 @@ namespace anisette::core::video
             return false;
         }
         target_fps = static_cast<unsigned>(display_mode->refresh_rate);
-        commit_update();
+        apply_settings();
         const bool pipeline = SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255)
                             && SDL_RenderClear(renderer)
                             && SDL_RenderPresent(renderer);

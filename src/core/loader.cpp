@@ -20,7 +20,7 @@ namespace anisette::core
     static uint64_t target_frametime = system_freq / target_fps;
     uint64_t frame_time;
 
-    void commit_update() {
+    void apply_settings() {
         if (target_fps == 0) {
             target_frametime = 0;
             logger->warn("FPS is basically unlimited, may lead to high resources usage");
