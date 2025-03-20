@@ -4,12 +4,12 @@
 #include "core.h"
 #include <logging.h>
 #include <discord.h>
-#include <SDL3/SDL_init.h>
-#include <SDL3/SDL_timer.h>
-#include <SDL3/SDL_version.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_timer.h>
+#include <SDL2/SDL_version.h>
 
 const auto logger = anisette::logging::get("loader");
-constexpr SDL_InitFlags INIT_SUBSYSTEMS = SDL_INIT_VIDEO | SDL_INIT_AUDIO;
+constexpr uint32_t INIT_SUBSYSTEMS = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
 static std::atomic_bool stop_requested = false;
 
 namespace anisette::core
@@ -31,8 +31,8 @@ namespace anisette::core
     }
 
     bool init() {
-        logger->info("Simple DirectMedia Layer (SDL) version: {}.{}.{}", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
-        if (!SDL_InitSubSystem(INIT_SUBSYSTEMS)) {
+        logger->info("Simple DirectMedia Layer (SDL) version: {}.{}.{}", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
+        if (SDL_InitSubSystem(INIT_SUBSYSTEMS)) {
             logger->error("Initialize SDL failed: {}", SDL_GetError());
             return false;
         }

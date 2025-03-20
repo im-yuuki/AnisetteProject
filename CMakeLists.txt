@@ -13,15 +13,14 @@ else()
 endif()
 
 # dependencies
-add_subdirectory(externals/discord-rpc EXCLUDE_FROM_ALL) # discord rpc
-add_subdirectory(externals/SDL_mixer EXCLUDE_FROM_ALL) # SDL3_mixer is not currently available in vcpkg, so I have to build it myself
+find_library(GAME_SDK discord_game_sdk)
+find_library(CPP_GAME_SDK discord_game_sdk_cpp)
 # spdlog
 find_package(spdlog CONFIG REQUIRED)
 # SDL3 and its extensions
-find_package(SDL3 CONFIG REQUIRED)
-find_package(SDL3_image CONFIG REQUIRED)
-find_package(SDL3_ttf CONFIG REQUIRED)
-# asio
-find_package(asio CONFIG REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL2_image CONFIG REQUIRED)
+find_package(SDL2_mixer CONFIG REQUIRED)
+find_package(SDL2_ttf CONFIG REQUIRED)
 
 add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)

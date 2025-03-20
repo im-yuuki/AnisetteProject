@@ -5,16 +5,17 @@
 
 #include "core.h"
 #include <logging.h>
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_timer.h>
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_timer.h>
 
 const auto logger = anisette::logging::get("event");
 
 namespace anisette::core::event
 {
     bool init() {
-        SDL_SetEventEnabled(SDL_EVENT_KEYBOARD_ADDED, false);
-        SDL_SetEventEnabled(SDL_EVENT_KEYBOARD_REMOVED, false);
+        SDL_SetEventFilter([](void *userdata, SDL_Event *event) {
+            return 1;
+        }, nullptr);
         // start discord rpc
         utils::discord::start();
         return true;
@@ -38,7 +39,7 @@ namespace anisette::core::event
         static SDL_Event ev;
         if (!SDL_PollEvent(&ev)) return;
         switch (ev.type) {
-            case SDL_EVENT_QUIT:
+            case SDL_QUIT:
                 request_stop();
                 break;
             default: break;

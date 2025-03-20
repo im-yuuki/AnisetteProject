@@ -1,25 +1,25 @@
 # Game core
-add_library(libani_core SHARED
+add_library(anisette_core SHARED
         core/loader.cpp
         core/video.cpp
         core/audio.cpp
         core/event.cpp
 )
-target_include_directories(libani_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
-target_link_libraries(libani_core PRIVATE libani_log libani_discord)
-# link SDL3 and its extensions
-target_link_libraries(libani_core PUBLIC
-        $<IF:$<TARGET_EXISTS:SDL3::SDL3-static>,SDL3::SDL3-static,SDL3::SDL3>
+target_include_directories(anisette_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
+target_link_libraries(anisette_core PRIVATE anisette_log anisette_discord)
+# link SDL2 and its extensions
+target_link_libraries(anisette_core PUBLIC
+        $<IF:$<TARGET_EXISTS:SDL2::SDL2-static>,SDL2::SDL2-static,SDL2::SDL2>
 )
-target_link_libraries(libani_core PUBLIC
-        $<IF:$<TARGET_EXISTS:SDL3_image::SDL3_image-static>,SDL3_image::SDL3_image-static,SDL3_image::SDL3_image-shared>
+target_link_libraries(anisette_core PUBLIC
+        $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image-static>,SDL2_image::SDL2_image-static,SDL2_image::SDL2_image-shared>
 )
-target_link_libraries(libani_core PUBLIC
-        $<IF:$<TARGET_EXISTS:SDL3_ttf::SDL3_ttf-static>,SDL3_ttf::SDL3_ttf-static,SDL3_ttf::SDL3_ttf>
+target_link_libraries(anisette_core PUBLIC
+        $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf-static>,SDL2_ttf::SDL2_ttf-static,SDL2_ttf::SDL2_ttf>
 )
-target_link_libraries(libani_core PUBLIC
-        $<IF:$<TARGET_EXISTS:SDL3_mixer::SDL3_mixer-static>,SDL3_mixer::SDL3_mixer-static,SDL3_mixer::SDL3_mixer>
+target_link_libraries(anisette_core PUBLIC
+        $<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer-static>,SDL2_mixer::SDL2_mixer-static,SDL2_mixer::SDL2_mixer>
 )
 
 # aliases
-add_library(${PROJECT_NAME}::Core ALIAS libani_core)
+add_library(${PROJECT_NAME}::Core ALIAS anisette_core)

@@ -5,7 +5,7 @@
 
 // you can define your own application ID in the build system
 #ifndef DISCORD_APPLICATION_ID
-#define DISCORD_APPLICATION_ID "1350787768351068180"
+#define DISCORD_APPLICATION_ID 1350787768351068180
 #endif
 
 /**

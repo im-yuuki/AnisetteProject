@@ -14,4 +14,4 @@ else()
     add_executable(${PROJECT_NAME} main.cpp resource.rc)
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE libani_core libani_log)
+target_link_libraries(${PROJECT_NAME} PRIVATE anisette_core anisette_log)

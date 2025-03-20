@@ -26,9 +26,13 @@
                     "type": "BOOL",
                     "value": "ON"
                 },
-                "BUILD_EXAMPLES": {
+                "SPDLOG_FMT_EXTERNAL": {
                     "type": "BOOL",
                     "value": "OFF"
+                },
+                "VCPKG_INSTALL_OPTIONS": {
+                    "type": "STRING",
+                    "value": "--allow-unsupported"
                 }
             }
         },
@@ -73,6 +77,16 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
+        },
+        {
+            "name": "x64-osx-dbg",
+            "inherits": "x64-linux-dbg",
+            "displayName": "macOS x64 (Debug)"
+        },
+        {
+            "name": "x64-osx-rel",
+            "inherits": "x64-linux-rel",
+            "displayName": "macOS x64 (Release)"
         }
     ]
 }

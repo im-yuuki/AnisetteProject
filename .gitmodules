@@ -2,11 +2,3 @@
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg
 	branch = master
-[submodule "externals/SDL_mixer"]
-	path = externals/SDL_mixer
-	url = https://github.com/libsdl-org/SDL_mixer.git
-	branch = main
-[submodule "externals/discord-rpc"]
-	path = externals/discord-rpc
-	url = https://github.com/im-yuuki/discord-rpc.git
-	branch = master
