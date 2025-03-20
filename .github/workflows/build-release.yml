@@ -35,7 +35,7 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            build/bin/Release/
+            build/x64-windows-rel/bin/Release/
 
   linux-x64:
     runs-on: ubuntu-latest
@@ -69,8 +69,8 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            build/bin/Anisette
-            build/bin/**/*.so
+            build/x64-linux-rel/bin/Anisette
+            build/x64-linux-rel/bin/**/*.so
 
   osx-x64:
     runs-on: macos-latest
@@ -104,5 +104,5 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            build/bin/Anisette
-            build/bin/**/*.dylib
+            build/x64-osx-rel/bin/Anisette
+            build/x64-osx-rel/bin/**/*.dylib
