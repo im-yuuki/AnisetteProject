@@ -2,7 +2,7 @@
 
 This is a rhythm game. Tap the notes in the right time!
 
-[![Build x64 Release](https://github.com/im-yuuki/AnisetteProject/actions/workflows/build-x64-release.yml/badge.svg?branch=master)](https://github.com/im-yuuki/AnisetteProject/actions/workflows/build-x64-release.yml)
+[![Build x64 Release](https://github.com/im-yuuki/AnisetteProject/actions/workflows/build-release.yml/badge.svg)](https://github.com/im-yuuki/AnisetteProject/actions/workflows/build-release.yml)
 
 ## Preview
 *sorry, but this game is not completed yet* 😭
