@@ -4,7 +4,7 @@ on: [pull_request, workflow_dispatch]
 
 jobs:
   windows-x64:
-    runs-on: windows-2022
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -38,7 +38,7 @@ jobs:
             build/bin/Release/
 
   linux-x64:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -73,7 +73,7 @@ jobs:
             build/bin/**/*.so
 
   osx-x64:
-    runs-on: macos-12.2
+    runs-on: macos-latest
 
     steps:
       - name: Checkout repository
