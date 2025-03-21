@@ -1,9 +1,8 @@
 # Game core
 add_library(anisette_core SHARED
-        core/loader.cpp
+        core/core.cpp
         core/video.cpp
         core/audio.cpp
-        core/event.cpp
 )
 target_include_directories(anisette_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
 target_link_libraries(anisette_core PRIVATE anisette_log anisette_discord)

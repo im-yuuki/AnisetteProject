@@ -9,24 +9,17 @@
 #include <SDL2/SDL_ttf.h>
 
 const auto logger = anisette::logging::get("video");
+
 constexpr uint32_t SPLASH_WINDOW_INIT_FLAGS = SDL_WINDOW_BORDERLESS | SDL_WINDOW_SHOWN;
-constexpr uint32_t SDL_IMAGE_INIT_FLAGS = IMG_INIT_PNG;
-constexpr uint32_t RENDERER_INIT_FLAGS = SDL_RENDERER_ACCELERATED;
+constexpr uint32_t SDL_IMAGE_INIT_FLAGS = IMG_INIT_PNG | IMG_INIT_JPG;
+constexpr uint32_t RENDERER_INIT_FLAGS = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
+constexpr uint32_t MAIN_WINDOW_FLAGS = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_SHOWN;
+
 static SDL_DisplayMode display_mode;
-static int MAIN_WINDOW_FLAGS = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_SHOWN;
 static SDL_Window *window = nullptr;
-static SDL_Renderer *renderer = nullptr;
 
 namespace anisette::core::video
 {
-    void process_frame(const uint64_t &counter) {
-        static int r;
-        r = (r + 1) % 256;
-        SDL_SetRenderDrawColor(renderer, r, 0, 0, 0);
-        SDL_RenderClear(renderer);
-        SDL_RenderPresent(renderer);
-    }
-
     bool refresh_display_info() {
         const int display_id = SDL_GetWindowDisplayIndex(window);
         if (display_id < 0) {
@@ -62,10 +55,10 @@ namespace anisette::core::video
             logger->error("Load splash logo failed: {}", SDL_GetError());
             return false;
         }
-        const bool pipeline = SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0)
-                            || SDL_RenderClear(renderer)
-                            || SDL_RenderCopy(renderer, splash_logo, nullptr, nullptr);
-        if (pipeline) {
+        const bool flow = SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0)
+                        || SDL_RenderClear(renderer)
+                        || SDL_RenderCopy(renderer, splash_logo, nullptr, nullptr);
+        if (flow) {
             logger->error("Render failed: {}", SDL_GetError());
             return false;
         }
@@ -89,8 +82,7 @@ namespace anisette::core::video
         }
         target_fps = static_cast<unsigned>(display_mode.refresh_rate);
         apply_settings();
-        const bool pipeline = SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255) || SDL_RenderClear(renderer);
-        if (pipeline) {
+        if (SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255) || SDL_RenderClear(renderer)) {
             logger->error("Render failed: {}", SDL_GetError());
             return false;
         }

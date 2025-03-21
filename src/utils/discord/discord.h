@@ -32,7 +32,7 @@ namespace anisette::utils::discord
      *
      * This function needs to be called periodically to commit the current presence mode to Discord client.
      */
-    void update();
+    void poll();
 
     /**
      * @brief Set the Discord presence status to idle mode

@@ -3,6 +3,7 @@
 //
 #pragma once
 #include <cstdint>
+#include <SDL_render.h>
 
 /**
  * @brief Anisette game core, the soul of this project
@@ -54,39 +55,30 @@ namespace anisette::core
     extern void request_stop();
 
     /**
-     * @brief Submodule for event-related features
+     * @brief Handle interrupt signal
+     *
+     * This function is called when the game receives an interrupt signal.
+     * It will request the game core to stop and trigger the cleanup process.
+     *
+     * @param signal Signal number
      */
-    namespace event
-    {
-        extern bool init();
-        extern void cleanup();
-
-        /**
-         * @brief Handle interrupt signal
-         *
-         * This function is called when the game receives an interrupt signal.
-         * It will request the game core to stop and trigger the cleanup process.
-         *
-         * @param signal Signal number
-         */
-        extern void handle_interrupt(int signal);
-        extern void process_tick(const uint64_t &counter);
-    };
+    extern void handle_interrupt(int signal);
 
     /**
-     * @brief Submodule for rendering and displaying task
+     * @brief Handler for rendering and displaying task
      */
     namespace video
     {
+        extern SDL_Renderer *renderer;
+
         extern bool splash();
         extern bool init();
         extern void cleanup();
         extern bool refresh_display_info();
-        extern void process_frame(const uint64_t &counter);
     }
 
     /**
-     * @brief Submodule for audio output
+     * @brief Handler for audio output
      */
     namespace audio
     {
@@ -94,5 +86,10 @@ namespace anisette::core
         extern void cleanup();
         extern void set_sound_volume(int volume);
         extern void set_music_volume(int volume);
+
+        extern bool play_music(const char* path);
+        extern void pause_music();
+        extern void resume_music();
+        extern void stop_music();
     }
 }

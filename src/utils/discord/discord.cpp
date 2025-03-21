@@ -31,7 +31,7 @@ namespace anisette::utils::discord
             return;
         }
         is_ready = true;
-        update(); // first update, later updates will be handled by the main loop
+        poll(); // first update, later updates will be handled by the main loop
     }
 
     void shutdown() {
@@ -40,7 +40,7 @@ namespace anisette::utils::discord
         delete core;
     }
 
-    void update() {
+    void poll() {
         if (is_ready && core) {
             core->ActivityManager().UpdateActivity(presence, [](discord_sdk::Result result) {
                 if (result == discord_sdk::Result::Ok) return;
@@ -56,7 +56,7 @@ namespace anisette::utils::discord
         presence.SetDetails("");
         presence.GetAssets().SetSmallImage("idle");
         presence.GetAssets().SetSmallText("Idle");
-        update();
+        poll();
     }
 
     void set_in_main_menu() {
@@ -65,7 +65,7 @@ namespace anisette::utils::discord
         presence.SetDetails(nullptr);
         presence.GetAssets().SetSmallImage("home");
         presence.GetAssets().SetSmallText("Home");
-        update();
+        poll();
     }
 
     void set_browsing_library() {
@@ -74,7 +74,7 @@ namespace anisette::utils::discord
         presence.SetDetails("");
         presence.GetAssets().SetSmallImage("browse");
         presence.GetAssets().SetSmallText("Browsing");
-        update();
+        poll();
     }
 
     void set_playing_song(const char *song, const char* difficulty) {
@@ -83,7 +83,7 @@ namespace anisette::utils::discord
         presence.SetDetails(difficulty);
         presence.GetAssets().SetSmallImage("play");
         presence.GetAssets().SetSmallText("Playing");
-        update();
+        poll();
     }
 
     void set_spectate_song(const char *song, const char *difficulty) {
@@ -92,6 +92,6 @@ namespace anisette::utils::discord
         presence.SetDetails(difficulty);
         presence.GetAssets().SetSmallImage("spectate");
         presence.GetAssets().SetSmallText("Spectating");
-        update();
+        poll();
     }
 }
