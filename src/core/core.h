@@ -4,6 +4,7 @@
 #pragma once
 #include <cstdint>
 #include <SDL_render.h>
+#include <string>
 
 /**
  * @brief Anisette game core, the soul of this project
@@ -22,19 +23,28 @@ namespace anisette::core
     extern const uint64_t system_freq;
 
     /**
-     * @brief Target FPS (frames per second) of the game
-     *
-     * This variable holds the target FPS of the game, which is used to limit
-     * the frame rate of the game. Set to 0 to disable frame rate limiting.
-     *
-     * @note Call `apply_settings()` after changing this value to apply.
+     * @brief Frame time of the latest handle
      */
-    extern unsigned target_fps;
+    inline uint64_t last_frame_time = 0;
+
+
+    enum FPS_MODE {
+        UNLIMITED,
+        VSYNC,
+        DISPLAY,
+        HALF_DISPLAY,
+        CUSTOM
+    };
 
     /**
-     * @brief Apply new settings to the game core
+     * @brief Set the frame rate limit mode
+     *
+     * @param mode FPS mode
      */
-    extern void apply_settings();
+    extern void set_fps_mode(FPS_MODE mode);
+
+    extern bool load_scene(const std::string &scene_name);
+    extern void back_scene();
 
     /**
      * @brief Start the game core
@@ -69,9 +79,23 @@ namespace anisette::core
      */
     namespace video
     {
-        extern SDL_Renderer *renderer;
+        /**
+         * @brief Global renderer
+         */
+        inline SDL_Renderer *renderer = nullptr;
+        inline SDL_DisplayMode display_mode;
 
+        /**
+         * @brief Initialize dependencies, load splash screen and fetch the display info
+         * 
+         * @return true if all are success, false otherwise
+         */
         extern bool splash();
+
+        /**
+         * 
+         * @return true if success, false otherwise
+         */
         extern bool init();
         extern void cleanup();
         extern bool refresh_display_info();

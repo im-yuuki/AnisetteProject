@@ -15,7 +15,6 @@ constexpr uint32_t SDL_IMAGE_INIT_FLAGS = IMG_INIT_PNG | IMG_INIT_JPG;
 constexpr uint32_t RENDERER_INIT_FLAGS = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
 constexpr uint32_t MAIN_WINDOW_FLAGS = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_SHOWN;
 
-static SDL_DisplayMode display_mode;
 static SDL_Window *window = nullptr;
 
 namespace anisette::core::video
@@ -50,7 +49,7 @@ namespace anisette::core::video
             logger->error("Initialize splash screen failed: {}", SDL_GetError());
             return false;
         }
-        SDL_Texture *splash_logo = IMG_LoadTexture(renderer, "assets/logo.bmp");
+        SDL_Texture *splash_logo = IMG_LoadTexture(renderer, "assets/logo.png");
         if (splash_logo == nullptr) {
             logger->error("Load splash logo failed: {}", SDL_GetError());
             return false;
@@ -80,8 +79,6 @@ namespace anisette::core::video
             logger->error("Initialize renderer failed: {}", SDL_GetError());
             return false;
         }
-        target_fps = static_cast<unsigned>(display_mode.refresh_rate);
-        apply_settings();
         if (SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255) || SDL_RenderClear(renderer)) {
             logger->error("Render failed: {}", SDL_GetError());
             return false;

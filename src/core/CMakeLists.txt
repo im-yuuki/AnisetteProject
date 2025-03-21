@@ -5,7 +5,7 @@ add_library(anisette_core SHARED
         core/audio.cpp
 )
 target_include_directories(anisette_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
-target_link_libraries(anisette_core PRIVATE anisette_log anisette_discord)
+target_link_libraries(anisette_core PUBLIC anisette_log anisette_discord)
 # link SDL2 and its extensions
 target_link_libraries(anisette_core PUBLIC
         $<IF:$<TARGET_EXISTS:SDL2::SDL2-static>,SDL2::SDL2-static,SDL2::SDL2>

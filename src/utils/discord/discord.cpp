@@ -25,9 +25,8 @@ namespace anisette::utils::discord
         presence.SetDetails("");
         // initialize Discord RPC connection
         logger->debug("Initializing Discord RPC connection");
-        const auto result = discord_sdk::Core::Create(DISCORD_APPLICATION_ID, DiscordCreateFlags_NoRequireDiscord, &core);
-        if (result != discord_sdk::Result::Ok) {
-            logger->error("Iinitialize Discord RPC failed: core return error code {}", static_cast<int>(result));
+        if (const auto result = discord_sdk::Core::Create(DISCORD_APPLICATION_ID, DiscordCreateFlags_NoRequireDiscord, &core); result != discord_sdk::Result::Ok) {
+            logger->error("Initialize Discord RPC failed: core return error code {}", static_cast<int>(result));
             return;
         }
         is_ready = true;
