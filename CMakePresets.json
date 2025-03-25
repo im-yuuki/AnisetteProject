@@ -60,7 +60,6 @@
             "name": "x64-windows-dbg",
             "inherits": "base",
             "displayName": "Windows x64 (Debug)",
-            "generator": "Visual Studio 17 2022",
             "architecture": {
                 "value": "x64",
                 "strategy": "external"

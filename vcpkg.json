@@ -1,24 +1,36 @@
 {
-  "name" : "anisette",
+  "name": "anisette",
   "version": "1.0.0",
-  "dependencies" : [ {
-    "name" : "spdlog",
-    "version>=" : "1.15.1"
-  }, {
-    "name" : "sdl2",
-    "version>=" : "2.32.2"
-  }, {
-    "name" : "sdl2-image",
-    "version>=" : "2.8.8#1",
-    "features": [ "libjpeg-turbo" ]
-  }, {
-    "name" : "sdl2-ttf",
-    "version>=" : "2.24.0"
-  }, {
-    "name": "sdl2-mixer",
-    "version>=": "2.8.1"
-  }, {
-    "name": "discord-game-sdk",
-    "version>=": "3.2.1"
-  } ]
+  "dependencies": [
+    {
+      "name": "discord-game-sdk",
+      "version>=": "3.2.1"
+    },
+    {
+      "name": "sdl2",
+      "version>=": "2.32.2"
+    },
+    {
+      "name": "sdl2-image",
+      "features": [
+        "libjpeg-turbo"
+      ],
+      "version>=": "2.8.8#1"
+    },
+    {
+      "name": "sdl2-mixer",
+      "version>=": "2.8.1"
+    },
+    {
+      "name": "sdl2-ttf",
+      "version>=": "2.24.0"
+    },
+    {
+      "name": "spdlog",
+      "version>=": "1.15.1"
+    },
+    {
+      "name": "glew",
+      "version>=": "2.2.0#6"
+    } ]
 }

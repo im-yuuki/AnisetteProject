@@ -3,7 +3,6 @@
 //
 #include "scene_register.h"
 #include <discord.h>
-#include <scene.h>
 #include <SDL2/SDL_render.h>
 
 namespace anisette::screens {
@@ -26,5 +25,13 @@ namespace anisette::screens {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         SDL_RenderPresent(renderer);
+    }
+
+    bool MainMenu::handle_frame_on_focus() {
+        return false;
+    }
+
+    bool MainMenu::handle_frame_on_leave() {
+        return false;
     }
 }

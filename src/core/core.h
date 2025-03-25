@@ -4,7 +4,8 @@
 #pragma once
 #include <cstdint>
 #include <SDL_render.h>
-#include <string>
+#include <functional>
+#include <abs.h>
 
 /**
  * @brief Anisette game core, the soul of this project
@@ -43,8 +44,9 @@ namespace anisette::core
      */
     extern void set_fps_mode(FPS_MODE mode);
 
-    extern bool load_scene(const std::string &scene_name);
-    extern void back_scene();
+
+    extern void insert_handler(abstract::FrameHandler *handler);
+    extern void remove_handler();
 
     /**
      * @brief Start the game core

@@ -35,7 +35,7 @@ jobs:
         with:
           name: x64-windows-release
           path: |
-            build/x64-windows-rel/bin/Release/
+            build/x64-windows-rel/bin
 
   linux-x64:
     runs-on: ubuntu-22.04
@@ -69,8 +69,7 @@ jobs:
         with:
           name: x64-linux-release
           path: |
-            build/x64-linux-rel/bin/Anisette
-            build/x64-linux-rel/bin/**/*.so
+            build/x64-linux-rel/bin
 
   osx-x64:
     runs-on: macos-13
@@ -104,5 +103,4 @@ jobs:
         with:
           name: x64-osx-release
           path: |
-            build/x64-osx-rel/bin/Anisette
-            build/x64-osx-rel/bin/**/*.dylib
+            build/x64-osx-rel/bin

@@ -2,10 +2,9 @@
 // Created by Yuuki on 09/03/2025.
 //
 #include "core.h"
-#include "scene.h"
 #include <logging.h>
 #include <discord.h>
-#include <vector>
+#include <stack>
 #include <csignal>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
@@ -16,8 +15,9 @@ constexpr int MAXIMUM_EVENT_POLL_PER_FRAME = 10;
 constexpr uint32_t INIT_SUBSYSTEMS = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
 
 static std::atomic_bool stop_requested = false;
-static std::vector<anisette::core::Scene*> scene_stack;
 static uint64_t target_frame_time = 0;
+
+static std::stack<anisette::core::abstract::FrameHandler*> frame_handlers;
 
 namespace anisette::core
 {
@@ -35,7 +35,7 @@ namespace anisette::core
         // start discord rpc
         utils::discord::start();
         // init video and audio handlers
-        return video::splash() && audio::init() && video::init() && load_scene("main_menu");
+        return video::splash() && audio::init() && video::init();
     }
 
     void cleanup() {
@@ -78,41 +78,32 @@ namespace anisette::core
     }
 
     // scene manager
-    bool load_scene(const std::string& scene_name) {
-        const auto result = SceneFactory::instance()->create_scene(scene_name, video::renderer);
-        if (result == nullptr) {
-            logger->error("Failed to load scene {}", scene_name);
-            return false;
-        }
-        logger->info("Load scene {}", scene_name);
-        scene_stack.push_back(result);
-        return true;
+    void insert_handler(abstract::FrameHandler *handler) {
+        assert(handler == nullptr);
+        frame_handlers.push(handler);
     }
 
-    void back_scene() {
-        if (scene_stack.size() < 2) {
-            logger->warn("No previous scene to go back");
-            return;
-        }
-        logger->info("Back to previous scene");
-        scene_stack.pop_back();
+    void remove_handler() {
+        frame_handlers.pop();
     }
 
     // handle event
-    void handle_event(uint64_t &start_frame) {
+    void handle_event(const uint64_t &start_frame) {
         static SDL_Event event;
         for (int i = 0; i < MAXIMUM_EVENT_POLL_PER_FRAME; i++) {
             if (!SDL_PollEvent(&event)) break;
-            // pass event to current scene
-            for (auto it = scene_stack.rbegin(); it != scene_stack.rend(); ++it) if ((*it)->handle_event(event)) break;
-            // global event
             switch (event.type) {
                 case SDL_QUIT:
                     request_stop();
                     break;
-                default: break;
+                default: frame_handlers.top()->handle_event(start_frame, event);
             }
         }
+    }
+
+    // handle frame
+    void handle_frame(const uint64_t &start_frame) {
+        frame_handlers.top()->handle_frame(start_frame);
     }
 
     void loop() {
@@ -127,10 +118,8 @@ namespace anisette::core
                 next_discord_poll = start_frame + system_freq / 2;
             }
 
-            // handle event
             handle_event(start_frame);
-            // pass frame to current scene
-            scene_stack.back()->handle_frame(start_frame);
+            handle_frame(start_frame);
 
             // delay until next frame, and calculate the frame time
             target_next_frame = start_frame + target_frame_time;
