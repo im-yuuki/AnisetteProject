@@ -4,20 +4,16 @@
 #include "core.h"
 #include <logging.h>
 #include <discord.h>
-#include <stack>
 #include <csignal>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_version.h>
 
 const auto logger = anisette::logging::get("core");
-constexpr int MAXIMUM_EVENT_POLL_PER_FRAME = 10;
 constexpr uint32_t INIT_SUBSYSTEMS = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
 
 static std::atomic_bool stop_requested = false;
 static uint64_t target_frame_time = 0;
-
-static std::stack<anisette::core::abstract::FrameHandler*> frame_handlers;
 
 namespace anisette::core
 {
@@ -61,54 +57,33 @@ namespace anisette::core
         }
         SDL_RenderSetVSync(video::renderer, false);
         switch (mode) {
-        case UNLIMITED:
-            logger->warn("FPS is no longer being limited. This may cause high resources usage.");
+            case UNLIMITED:
+                logger->warn("FPS is no longer being limited. This may cause high resources usage.");
             target_frame_time = 0;
             break;
-        case DISPLAY:
-            logger->info("FPS: {}", video::display_mode.refresh_rate);
+            case DISPLAY:
+                logger->info("FPS: {}", video::display_mode.refresh_rate);
             target_frame_time = system_freq / video::display_mode.refresh_rate;
             break;
-        case HALF_DISPLAY:
-            logger->info("FPS: {}", video::display_mode.refresh_rate / 2);
+            case HALF_DISPLAY:
+                logger->info("FPS: {}", video::display_mode.refresh_rate / 2);
             target_frame_time = system_freq / (video::display_mode.refresh_rate * 2);
             break;
-        default: break;
+            default: break;
         }
     }
 
-    // scene manager
-    void insert_handler(abstract::FrameHandler *handler) {
-        assert(handler == nullptr);
-        frame_handlers.push(handler);
-    }
-
-    void remove_handler() {
-        frame_handlers.pop();
-    }
-
-    // handle event
-    void handle_event(const uint64_t &start_frame) {
-        static SDL_Event event;
-        for (int i = 0; i < MAXIMUM_EVENT_POLL_PER_FRAME; i++) {
-            if (!SDL_PollEvent(&event)) break;
-            switch (event.type) {
-                case SDL_QUIT:
-                    request_stop();
-                    break;
-                default: frame_handlers.top()->handle_event(start_frame, event);
-            }
+    // entrypoint
+    int run() {
+        int err = 0;
+        if (!init()) {
+            logger->error("Initialization failed, exiting");
+            err = 1;
+            goto quit;
         }
-    }
 
-    // handle frame
-    void handle_frame(const uint64_t &start_frame) {
-        frame_handlers.top()->handle_frame(start_frame);
-    }
-
-    void loop() {
         logger->debug("Entering main loop");
-        static uint64_t now = 0, start_frame = 0, target_next_frame = 0, next_discord_poll = 0;
+        uint64_t now = 0, start_frame = 0, target_next_frame = 0, next_discord_poll = 0;
 
         while (!stop_requested) {
             start_frame = SDL_GetPerformanceCounter();
@@ -130,18 +105,10 @@ namespace anisette::core
         }
 
         logger->debug("Exited main loop");
-    }
 
-    // entrypoint
-    int run() {
-        if (init()) {
-            loop();
-            cleanup();
-            return 0;
-        }
-        logger->error("Initialization failed, exiting");
+        quit:
         cleanup();
-        return 1;
+        return err;
     }
 
     void request_stop() {

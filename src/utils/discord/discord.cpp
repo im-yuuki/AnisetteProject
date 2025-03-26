@@ -55,7 +55,6 @@ namespace anisette::utils::discord
         presence.SetDetails("");
         presence.GetAssets().SetSmallImage("idle");
         presence.GetAssets().SetSmallText("Idle");
-        poll();
     }
 
     void set_in_main_menu() {
@@ -64,7 +63,6 @@ namespace anisette::utils::discord
         presence.SetDetails(nullptr);
         presence.GetAssets().SetSmallImage("home");
         presence.GetAssets().SetSmallText("Home");
-        poll();
     }
 
     void set_browsing_library() {
@@ -73,7 +71,6 @@ namespace anisette::utils::discord
         presence.SetDetails("");
         presence.GetAssets().SetSmallImage("browse");
         presence.GetAssets().SetSmallText("Browsing");
-        poll();
     }
 
     void set_playing_song(const char *song, const char* difficulty) {
@@ -82,7 +79,6 @@ namespace anisette::utils::discord
         presence.SetDetails(difficulty);
         presence.GetAssets().SetSmallImage("play");
         presence.GetAssets().SetSmallText("Playing");
-        poll();
     }
 
     void set_spectate_song(const char *song, const char *difficulty) {
@@ -91,6 +87,5 @@ namespace anisette::utils::discord
         presence.SetDetails(difficulty);
         presence.GetAssets().SetSmallImage("spectate");
         presence.GetAssets().SetSmallText("Spectating");
-        poll();
     }
 }

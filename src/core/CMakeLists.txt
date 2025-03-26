@@ -3,6 +3,7 @@ add_library(anisette_core SHARED
         core/core.cpp
         core/video.cpp
         core/audio.cpp
+        core/frame.cpp
 )
 target_include_directories(anisette_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
 target_link_libraries(anisette_core PUBLIC anisette_log anisette_discord)

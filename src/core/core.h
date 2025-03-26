@@ -76,6 +76,9 @@ namespace anisette::core
      */
     extern void handle_interrupt(int signal);
 
+    extern void handle_event(const uint64_t &start_frame);
+    extern void handle_frame(const uint64_t &start_frame);
+
     /**
      * @brief Handler for rendering and displaying task
      */

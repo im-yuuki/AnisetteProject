@@ -14,4 +14,3 @@ namespace anisette::core::abstract {
         virtual void handle_frame(const uint64_t &start_frame) = 0;
     };
 }
-s
