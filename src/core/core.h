@@ -4,7 +4,6 @@
 #pragma once
 #include <cstdint>
 #include <SDL_render.h>
-#include <functional>
 #include <abs.h>
 
 /**
@@ -29,23 +28,38 @@ namespace anisette::core
     inline uint64_t last_frame_time = 0;
 
 
-    enum FPS_MODE {
-        UNLIMITED,
-        VSYNC,
-        DISPLAY,
-        HALF_DISPLAY,
-        CUSTOM
+    enum FPS_MODE : int {
+        // higher than 0 means custom FPS limit
+        VSYNC = 0, // enable vsync and limit to display refresh rate
+        UNLIMITED = -1, // no limit
+        HALF_DISPLAY = -2, // limit to half of display refresh rate
+        DISPLAY = -3, // limit to display refresh rate
+        X2_DISPLAY = -4, // limit to double of display refresh rate
+        X4_DISPLAY = -5, // limit to quadruple of display refresh rate
+        X8_DISPLAY = -6, // limit to octuple of display refresh rate
     };
 
     /**
      * @brief Set the frame rate limit mode
      *
-     * @param mode FPS mode
+     * @param value FPS mode
      */
-    extern void set_fps_mode(FPS_MODE mode);
+    extern void set_fps_mode(FPS_MODE value);
 
-
+    /**
+     * @brief Insert a new frame handler to the core stack
+     *
+     * The core will redirect the frame update to the handler on the top of the stack.
+     *
+     * @param handler The frame handler to be inserted
+     */
     extern void insert_handler(abstract::FrameHandler *handler);
+
+    /**
+     * @brief Remove the top frame handler from the core stack
+     *
+     * The core will redirect the frame update to the new top handler of the stack.
+     */
     extern void remove_handler();
 
     /**
@@ -66,18 +80,8 @@ namespace anisette::core
      */
     extern void request_stop();
 
-    /**
-     * @brief Handle interrupt signal
-     *
-     * This function is called when the game receives an interrupt signal.
-     * It will request the game core to stop and trigger the cleanup process.
-     *
-     * @param signal Signal number
-     */
-    extern void handle_interrupt(int signal);
-
-    extern void handle_event(const uint64_t &start_frame);
-    extern void handle_frame(const uint64_t &start_frame);
+    extern void _handle_event(const uint64_t &start_frame);
+    extern void _handle_frame(const uint64_t &start_frame);
 
     /**
      * @brief Handler for rendering and displaying task

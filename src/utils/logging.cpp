@@ -1,9 +1,9 @@
 //
 // Created by Yuuki on 19/02/2025.
 //
-#include "logging.h"
+#include "log/logging.h"
+#include <../../build/x64-windows-dbg/vcpkg_installed/x64-windows/include/spdlog/sinks/callback_sink.h>
 #include <string>
-#include <spdlog/sinks/callback_sink.h>
 using namespace spdlog;
 
 #ifdef NDEBUG
@@ -16,7 +16,7 @@ static std::string generate_filename() {
 const auto output_sink = std::make_shared<sinks::basic_file_sink_st>(generate_filename(), true);
 constexpr level::level_enum default_level = level::info;
 #else
-#include <spdlog/sinks/stdout_color_sinks.h>
+#include <../../build/x64-windows-dbg/vcpkg_installed/x64-windows/include/spdlog/sinks/stdout_color_sinks.h>
 const auto output_sink = std::make_shared<sinks::stdout_color_sink_st>();
 constexpr level::level_enum default_level = level::debug;
 #endif

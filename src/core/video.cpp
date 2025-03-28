@@ -11,16 +11,15 @@
 const auto logger = anisette::logging::get("video");
 
 constexpr uint32_t SPLASH_WINDOW_INIT_FLAGS = SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_SHOWN;
-constexpr uint32_t SDL_IMAGE_INIT_FLAGS = IMG_INIT_PNG | IMG_INIT_JPG;
 constexpr uint32_t RENDERER_INIT_FLAGS = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
 constexpr uint32_t MAIN_WINDOW_FLAGS = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_SHOWN;
 
-static SDL_Window *window = nullptr;
-
 namespace anisette::core::video
 {
+    static SDL_Window *_window = nullptr;
+
     bool refresh_display_info() {
-        const int display_id = SDL_GetWindowDisplayIndex(window);
+        const int display_id = SDL_GetWindowDisplayIndex(_window);
         if (display_id < 0) {
             logger->warn("Failed to get display ID for window: {}", SDL_GetError());
             return false;
@@ -34,23 +33,8 @@ namespace anisette::core::video
     }
 
     bool splash() {
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-
-        logger->info("SDL_image version: {}.{}.{}", SDL_IMAGE_MAJOR_VERSION, SDL_IMAGE_MINOR_VERSION, SDL_IMAGE_PATCHLEVEL);
-        logger->info("SDL_ttf version: {}.{}.{}", SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, SDL_IMAGE_PATCHLEVEL);
-        if (IMG_Init(SDL_IMAGE_INIT_FLAGS) != (SDL_IMAGE_INIT_FLAGS)) {
-            logger->error("SDL_image init failed: {}", SDL_GetError());
-            return false;
-        }
-        if (TTF_Init()) {
-            logger->error("SDL_ttf init failed: {}", SDL_GetError());
-            return false;
-        }
         logger->debug("Initializing splash screen");
-        if (SDL_CreateWindowAndRenderer(600, 200, SPLASH_WINDOW_INIT_FLAGS, &window, &renderer)) {
+        if (SDL_CreateWindowAndRenderer(600, 200, SPLASH_WINDOW_INIT_FLAGS, &_window, &renderer)) {
             logger->error("Initialize splash screen failed: {}", SDL_GetError());
             return false;
         }
@@ -73,14 +57,19 @@ namespace anisette::core::video
 
     bool init() {
         SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
+        SDL_DestroyWindow(_window);
         SDL_Delay(500); // just wait for splash screen to be closed
         logger->debug("Initializing main window");
-        window = SDL_CreateWindow("Anisette", -1, -1, display_mode.w, display_mode.h, MAIN_WINDOW_FLAGS);
-        if (window == nullptr) {
+        _window = SDL_CreateWindow(
+            "Anisette",
+            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+            display_mode.w, display_mode.h,
+            MAIN_WINDOW_FLAGS
+            );
+        if (_window == nullptr) {
             logger->error("Initialize main window failed: {}", SDL_GetError());
             return false;
-        } if (renderer = SDL_CreateRenderer(window, -1, RENDERER_INIT_FLAGS); renderer == nullptr) {
+        } if (renderer = SDL_CreateRenderer(_window, -1, RENDERER_INIT_FLAGS); renderer == nullptr) {
             logger->error("Initialize renderer failed: {}", SDL_GetError());
             return false;
         }
@@ -94,7 +83,6 @@ namespace anisette::core::video
 
     void cleanup() {
         SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        TTF_Quit();
+        SDL_DestroyWindow(_window);
     }
 }

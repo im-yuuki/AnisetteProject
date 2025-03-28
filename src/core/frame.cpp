@@ -16,14 +16,16 @@ namespace anisette::core {
     void insert_handler(abstract::FrameHandler *handler) {
         assert(handler == nullptr);
         frame_handlers.push(handler);
+        logger->debug("New frame handler inserted");
     }
 
     void remove_handler() {
         frame_handlers.pop();
+        logger->debug("Removed the last frame handler");
     }
 
     // handle event
-    void handle_event(const uint64_t &start_frame) {
+    void _handle_event(const uint64_t &start_frame) {
         static SDL_Event event;
         for (int i = 0; i < MAXIMUM_EVENT_POLL_PER_FRAME; i++) {
             if (!SDL_PollEvent(&event)) break;
@@ -31,13 +33,25 @@ namespace anisette::core {
                 case SDL_QUIT:
                     request_stop();
                     break;
-                default: frame_handlers.top()->handle_event(start_frame, event);
+                default:
+                    const auto handler = frame_handlers.top();
+                    if (handler == nullptr) {
+                        logger->error("There is no frame handler in the stack, application will stop");
+                        return request_stop();
+                    }
+                    handler->handle_event(start_frame, event);
+                    break;
             }
         }
     }
 
     // handle frame
-    void handle_frame(const uint64_t &start_frame) {
-        frame_handlers.top()->handle_frame(start_frame);
+    void _handle_frame(const uint64_t &start_frame) {
+        const auto handler = frame_handlers.top();
+        if (handler == nullptr) {
+            logger->error("There is no frame handler in the stack, application will stop");
+            return request_stop();
+        }
+        handler->handle_frame(start_frame);
     }
 }

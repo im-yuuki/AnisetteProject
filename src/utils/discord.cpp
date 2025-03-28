@@ -2,20 +2,20 @@
 // Created by Yuuki on 16/03/2025.
 //
 #include "discord.h"
+#include <../../build/x64-windows-dbg/vcpkg_installed/x64-windows/include/discord-game-sdk/discord.h>
 #include <logging.h>
-#include <discord-game-sdk/discord.h>
 
 const auto logger = anisette::logging::get("discord");
-static bool is_ready = true;
 
 // alias for discord namespace to avoid conflict with my own namespace
 namespace discord_sdk = discord;
 
-discord_sdk::Core *core = nullptr;
-discord_sdk::Activity presence {};
-
 namespace anisette::utils::discord
 {
+    static std::atomic_bool is_ready = true;
+    static discord_sdk::Core *core = nullptr;
+    static discord_sdk::Activity presence {};
+
     void start() {
         // default values
         presence.SetType(discord_sdk::ActivityType::Playing);
@@ -43,6 +43,7 @@ namespace anisette::utils::discord
         if (is_ready && core) {
             core->ActivityManager().UpdateActivity(presence, [](discord_sdk::Result result) {
                 if (result == discord_sdk::Result::Ok) return;
+                if (!is_ready) return;
                 logger->error("Failed to update Discord presence: code {}", static_cast<int>(result));
             });
             core->RunCallbacks();

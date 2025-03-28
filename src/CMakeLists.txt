@@ -3,7 +3,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in ${CMAKE_CURRENT_SOURCE_D
 
 include(utils/CMakeLists.txt)
 include(core/CMakeLists.txt)
-include(screens/CMakeLists.txt)
+#include(screens/CMakeLists.txt)
 
 # Main executable
 if(NOT WIN32)
@@ -14,4 +14,4 @@ else()
     add_executable(${PROJECT_NAME} main.cpp resource.rc)
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE anisette_core anisette_screens)
+target_link_libraries(${PROJECT_NAME} PRIVATE anisette_core)
