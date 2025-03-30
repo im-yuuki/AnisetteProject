@@ -26,10 +26,10 @@ namespace anisette::core::config {
     };
 
     // default values
-    inline unsigned render_width = 1920;
-    inline unsigned render_height = 1080;
+    inline unsigned render_width = 1280;
+    inline unsigned render_height = 720;
     inline int fps = DISPLAY;
-    inline DISPLAY_MODE display_mode = EXCLUSIVE;
+    inline DISPLAY_MODE display_mode = BORDERLESS;
     inline uint8_t sound_volume = 128;
     inline uint8_t music_volume = 128;
     inline bool enable_discord_rpc = true;

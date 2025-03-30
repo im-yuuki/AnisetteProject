@@ -4,9 +4,8 @@ add_library(anisette_core SHARED
         core/video.cpp
         core/audio.cpp
         core/frame.cpp
-        core/config_loader.cpp
+        core/config.cpp
 )
-target_include_directories(anisette_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
 target_link_libraries(anisette_core PUBLIC anisette_utils)
 # link SDL2 and its extensions
 target_link_libraries(anisette_core PUBLIC

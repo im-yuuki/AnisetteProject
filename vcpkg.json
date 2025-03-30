@@ -12,13 +12,12 @@
     },
     {
       "name": "sdl2-image",
-      "features": [
-        "libjpeg-turbo"
-      ],
+      "features": [ "libjpeg-turbo" ],
       "version>=": "2.8.8#1"
     },
     {
       "name": "sdl2-mixer",
+      "features": [ "mpg123", "wavpack" ],
       "version>=": "2.8.1"
     },
     {

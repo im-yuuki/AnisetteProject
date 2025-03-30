@@ -2,8 +2,8 @@
 // Created by Yuuki on 16/03/2025.
 //
 #include "discord.h"
+#include "logging.h"
 #include <discord-game-sdk/discord.h>
-#include <logging.h>
 
 const auto logger = anisette::logging::get("discord");
 
@@ -45,7 +45,9 @@ namespace anisette::utils::discord
         if (!core) return;
         core->ActivityManager().UpdateActivity(presence, [](discord_sdk::Result result) {
             if (result == discord_sdk::Result::Ok) return;
-            logger->error("Failed to update Discord presence: code {}", static_cast<int>(result));
+            const int code = static_cast<int>(result);
+            if (code == 43) return; // 43 is aborted
+            logger->error("Failed to update Discord presence: code {}", code);
         });
         core->RunCallbacks();
     }

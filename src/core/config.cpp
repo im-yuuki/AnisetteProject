@@ -2,14 +2,15 @@
 // Created by Yuuki on 31/03/2025.
 //
 #include "config.h"
-#include <logging.h>
+#include "utils/logging.h"
 #include <fstream>
 #include <SDL_events.h>
 #include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
 #include <rapidjson/ostreamwrapper.h>
-#include <rapidjson/writer.h>
+#include <rapidjson/prettywriter.h>
 
-#define CONFIG_FILE_NAME "settings.json"
+#define CONFIG_FILE_NAME "anisette_settings.json"
 
 const auto logger = anisette::logging::get("loader");
 
@@ -21,41 +22,39 @@ namespace anisette::core::config
     bool load() {
         std::lock_guard lock(mutex);
         // load config file
+        logger->debug("Loading config file");
+        std::ifstream config_file(CONFIG_FILE_NAME);
+        if (!config_file.is_open()) {
+            logger->warn("Config file not found, fallback to default values");
+            return false;
+        }
+        rapidjson::IStreamWrapper wrapper(config_file);
+        // parse config file
         rapidjson::Document doc;
-        if (doc.Parse("config.json").HasParseError()) {
-            if (const auto err_code = doc.GetParseError(); err_code == rapidjson::kParseErrorDocumentEmpty) {
-                logger->warn("Config file is empty, using default values");
-            } else {
-                logger->error("Failed to parse config file: error {} at line {}", err_code, doc.GetErrorOffset());
-            }
+        if (doc.ParseStream(wrapper).HasParseError()) {
+            logger->warn("Failed to parse config file at line {}", doc.GetErrorOffset());
             return false;
         }
-        // check for required fields
-        if (!doc.HasMember("render_width") || !doc.HasMember("render_height") || !doc.HasMember("fps")) {
-            logger->error("Missing required fields in config file");
-            return false;
-        }
-
         for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
             if (it->value.IsNull()) continue;
             const auto key = it->name.GetString();
             switch (it->value.GetType()) {
                 case rapidjson::kNumberType:
-                    if (key == "render_width") {
+                    if (strcmp(key, "render_width") == 0) {
                         render_width = it->value.GetUint();
-                    } else if (key == "render_height") {
+                    } else if (strcmp(key, "render_height") == 0) {
                         render_height = it->value.GetUint();
-                    } else if (key == "fps") {
+                    } else if (strcmp(key, "fps_value") == 0) {
                         fps = it->value.GetInt();
-                    } else if (key == "sound_volume") {
+                    } else if (strcmp(key, "sound_volume") == 0) {
                         sound_volume = it->value.GetUint();
-                    } else if (key == "music_volume") {
+                    } else if (strcmp(key, "music_volume") == 0) {
                         music_volume = it->value.GetUint();
                     }
                     break;
                 case rapidjson::kTrueType:
                 case rapidjson::kFalseType:
-                    if (key == "enable_discord_rpc") {
+                    if (strcmp(key, "enable_discord_rpc") == 0) {
                         enable_discord_rpc = it->value.GetBool();
                     }
                 default: break;
@@ -73,7 +72,7 @@ namespace anisette::core::config
         rapidjson::Document::AllocatorType &allocator = doc.GetAllocator();
         doc.AddMember("render_width", render_width, allocator);
         doc.AddMember("render_height", render_height, allocator);
-        doc.AddMember("fps", fps, allocator);
+        doc.AddMember("fps_value", fps, allocator);
         doc.AddMember("sound_volume", sound_volume, allocator);
         doc.AddMember("music_volume", music_volume, allocator);
         doc.AddMember("enable_discord_rpc", enable_discord_rpc, allocator);
@@ -84,8 +83,10 @@ namespace anisette::core::config
             return false;
         }
         rapidjson::OStreamWrapper wrapper(ofs);
-        rapidjson::Writer writer(wrapper);
+        rapidjson::PrettyWriter writer(wrapper);
         doc.Accept(writer);
+        ofs.close();
+        if (!quiet) logger->debug("Config file saved successfully");
         return true;
     }
 

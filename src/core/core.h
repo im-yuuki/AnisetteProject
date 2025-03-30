@@ -3,7 +3,6 @@
 //
 #pragma once
 #include "abs.h"
-#include "config.h"
 #include <cstdint>
 #include <SDL2/SDL_render.h>
 
@@ -33,7 +32,7 @@ namespace anisette::core
      *
      * @param value FPS
      */
-    extern void set_fps(config::FPS_VALUE value);
+    extern void set_fps(int value);
 
     /**
      * @brief Insert a new frame handler to the core stack
@@ -84,14 +83,8 @@ namespace anisette::core
         inline SDL_DisplayMode display_mode;
 
         /**
-         * @brief Initialize dependencies, load splash screen and fetch the display info
-         * 
-         * @return true if all are success, false otherwise
-         */
-        extern bool splash();
-
-        /**
-         * 
+         * @brief Initialize the video module
+         *
          * @return true if success, false otherwise
          */
         extern bool init();

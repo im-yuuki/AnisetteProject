@@ -2,13 +2,13 @@
 // Created by Yuuki on 25/03/2025.
 //
 #include "core.h"
-#include <logging.h>
+#include "utils/logging.h"
 #include <stack>
 #include <cassert>
 
 constexpr int MAXIMUM_EVENT_POLL_PER_FRAME = 10;
 
-const static auto logger = anisette::logging::get("frame_handler");
+const static auto logger = anisette::logging::get("frame");
 
 
 namespace anisette::core {
@@ -36,12 +36,11 @@ namespace anisette::core {
                     request_stop();
                     break;
                 default:
-                    const auto handler = frame_handlers.top();
-                    if (handler == nullptr) {
-                        logger->error("There is no frame handler in the stack, application will stop");
+                    if (frame_handlers.empty()) {
+                        logger->error("No frame handler in the stack");
                         return request_stop();
                     }
-                    handler->handle_event(start_frame, event);
+                    frame_handlers.top()->handle_event(start_frame, event);
                     break;
             }
         }
@@ -49,11 +48,10 @@ namespace anisette::core {
 
     // handle frame
     void _handle_frame(const uint64_t &start_frame) {
-        const auto handler = frame_handlers.top();
-        if (handler == nullptr) {
-            logger->error("There is no frame handler in the stack, application will stop");
+        if (frame_handlers.empty()) {
+            logger->error("No frame handler in the stack");
             return request_stop();
         }
-        handler->handle_frame(start_frame);
+        frame_handlers.top()->handle_frame(start_frame);
     }
 }

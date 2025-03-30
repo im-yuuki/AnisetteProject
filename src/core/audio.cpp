@@ -2,7 +2,8 @@
 // Created by Yuuki on 09/03/2025.
 //
 #include "core.h"
-#include <logging.h>
+#include "config.h"
+#include "utils/logging.h"
 #include <SDL2/SDL_mixer.h>
 
 const auto logger = anisette::logging::get("audio");
@@ -12,12 +13,17 @@ namespace anisette::core::audio
     static Mix_Music *_current_music = nullptr;
 
     bool init() {
+        if (Mix_OpenAudioDevice(44100, MIX_DEFAULT_FORMAT, 2, 1024, nullptr, 0)) {
+            logger->error("Failed to open audio device");
+            return false;
+        }
         set_music_volume(config::music_volume);
         set_sound_volume(config::sound_volume);
         return true;
     }
 
     void cleanup() {
+        Mix_CloseAudio();
     }
 
     void set_music_volume(const uint8_t volume) {

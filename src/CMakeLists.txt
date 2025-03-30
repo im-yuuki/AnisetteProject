@@ -1,6 +1,7 @@
 # pass CMake-related variables to the source code
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/version.h @ONLY)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include(utils/CMakeLists.txt)
 include(core/CMakeLists.txt)
 #include(screens/CMakeLists.txt)

@@ -4,7 +4,6 @@
 
 #pragma once
 #include <spdlog/spdlog.h>
-#include <memory>
 
 /**
  * Anisette logging module

@@ -2,8 +2,9 @@
 // Created by Yuuki on 09/03/2025.
 //
 #include "core.h"
-#include <logging.h>
-#include <discord.h>
+#include "config.h"
+#include "utils/logging.h"
+#include "utils/discord.h"
 
 #include <csignal>
 #include <SDL_mixer.h>
@@ -47,6 +48,8 @@ namespace anisette::core
         // register signal handlers
         signal(SIGINT, handle_interrupt);
         signal(SIGTERM, handle_interrupt);
+        // load config
+        config::load();
 
         // initialize SDL and its modules
         logger->info("Simple DirectMedia Layer (SDL) version: {}.{}.{}", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
@@ -69,15 +72,14 @@ namespace anisette::core
             logger->error("Failed to initialize audio mixer");
             return false;
         }
-        if (Mix_OpenAudioDevice(44100, MIX_DEFAULT_FORMAT, 2, 1024, nullptr, 0)) {
-            logger->error("Failed to initialize audio mixer!");
-            return false;
-        }
-
         // start discord rpc
         if (config::enable_discord_rpc) utils::discord::start();
         // init video and audio handlers
-        return audio::init() && video::init();
+        if (audio::init() && video::init()) {
+            set_fps(config::fps);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -97,11 +99,13 @@ namespace anisette::core
         IMG_Quit();
         SDL_QuitSubSystem(INIT_SUBSYSTEMS);
         SDL_Quit();
+        // save config
+        config::save();
     }
 
-    void set_fps(const FPS_VALUE value) {
+    void set_fps(const int value) {
         assert(video::renderer != nullptr);
-        if (value == VSYNC) {
+        if (value == config::VSYNC) {
             logger->debug("FPS is now in VSync mode");
             SDL_RenderSetVSync(video::renderer, true);
             _target_frame_time = system_freq / video::display_mode.refresh_rate;
@@ -114,27 +118,27 @@ namespace anisette::core
             return;
         }
         switch (value) {
-            case UNLIMITED:
+            case config::UNLIMITED:
                 logger->warn("FPS is now in unlimited mode");
                 _target_frame_time = 0;
                 break;
-            case DISPLAY:
+            case config::DISPLAY:
                 logger->debug("FPS is match to display refresh rate");
                 _target_frame_time = system_freq / video::display_mode.refresh_rate;
                 break;
-            case X2_DISPLAY:
+            case config::X2_DISPLAY:
                 logger->debug("FPS is 2x of display refresh rate");
                 _target_frame_time = system_freq / video::display_mode.refresh_rate / 2;
                 break;
-            case X4_DISPLAY:
+            case config::X4_DISPLAY:
                 logger->debug("FPS is 2x of display refresh rate");
                 _target_frame_time = system_freq / video::display_mode.refresh_rate / 4;
                 break;
-            case X8_DISPLAY:
+            case config::X8_DISPLAY:
                 logger->debug("FPS is 2x of display refresh rate");
                 _target_frame_time = system_freq / video::display_mode.refresh_rate / 8;
                 break;
-            case HALF_DISPLAY:
+            case config::HALF_DISPLAY:
                 logger->debug("FPS is half of display refresh rate");
                 _target_frame_time = system_freq / video::display_mode.refresh_rate * 2;
                 break;
@@ -183,7 +187,7 @@ namespace anisette::core
     }
 
     void request_stop() {
-        logger->info("Core stop requested");
+        logger->debug("Core stop requested");
         _stop_requested = true;
     }
 }
