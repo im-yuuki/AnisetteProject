@@ -22,5 +22,7 @@ find_package(SDL2 CONFIG REQUIRED)
 find_package(SDL2_image CONFIG REQUIRED)
 find_package(SDL2_mixer CONFIG REQUIRED)
 find_package(SDL2_ttf CONFIG REQUIRED)
+# rapidjson
+find_package(RapidJSON CONFIG REQUIRED)
 
 add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)

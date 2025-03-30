@@ -2,7 +2,7 @@
 // Created by Yuuki on 16/03/2025.
 //
 #include "discord.h"
-#include <../../build/x64-windows-dbg/vcpkg_installed/x64-windows/include/discord-game-sdk/discord.h>
+#include <discord-game-sdk/discord.h>
 #include <logging.h>
 
 const auto logger = anisette::logging::get("discord");
@@ -10,44 +10,44 @@ const auto logger = anisette::logging::get("discord");
 // alias for discord namespace to avoid conflict with my own namespace
 namespace discord_sdk = discord;
 
+discord_sdk::Activity init_presence() {
+    discord_sdk::Activity presence;
+    // default values
+    presence.SetType(discord_sdk::ActivityType::Playing);
+    presence.GetAssets().SetLargeImage("icon");
+    presence.GetAssets().SetLargeText("Anisette");
+    return presence;
+}
+
 namespace anisette::utils::discord
 {
-    static std::atomic_bool is_ready = true;
     static discord_sdk::Core *core = nullptr;
-    static discord_sdk::Activity presence {};
+    static discord_sdk::Activity presence = init_presence();
 
     void start() {
-        // default values
-        presence.SetType(discord_sdk::ActivityType::Playing);
-        presence.GetAssets().SetLargeImage("icon");
-        presence.GetAssets().SetLargeText("Anisette");
-        presence.SetState("In the main menu");
-        presence.SetDetails("");
-        // initialize Discord RPC connection
+        if (core) return;
         logger->debug("Initializing Discord RPC connection");
         if (const auto result = discord_sdk::Core::Create(DISCORD_APPLICATION_ID, DiscordCreateFlags_NoRequireDiscord, &core); result != discord_sdk::Result::Ok) {
             logger->error("Initialize Discord RPC failed: core return error code {}", static_cast<int>(result));
-            return;
+            delete core;
+            core = nullptr;
         }
-        is_ready = true;
-        poll(); // first update, later updates will be handled by the main loop
     }
 
     void shutdown() {
+        if (!core) return;
         logger->debug("Shutting down Discord RPC connection");
-        is_ready = false;
         delete core;
+        core = nullptr;
     }
 
     void poll() {
-        if (is_ready && core) {
-            core->ActivityManager().UpdateActivity(presence, [](discord_sdk::Result result) {
-                if (result == discord_sdk::Result::Ok) return;
-                if (!is_ready) return;
-                logger->error("Failed to update Discord presence: code {}", static_cast<int>(result));
-            });
-            core->RunCallbacks();
-        }
+        if (!core) return;
+        core->ActivityManager().UpdateActivity(presence, [](discord_sdk::Result result) {
+            if (result == discord_sdk::Result::Ok) return;
+            logger->error("Failed to update Discord presence: code {}", static_cast<int>(result));
+        });
+        core->RunCallbacks();
     }
 
     void set_idle() {

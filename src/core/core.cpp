@@ -14,6 +14,7 @@
 #include <SDL2/SDL_version.h>
 
 const auto logger = anisette::logging::get("core");
+
 constexpr uint32_t INIT_SUBSYSTEMS = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER;
 constexpr uint32_t SDL_IMAGE_INIT_FLAGS = IMG_INIT_PNG | IMG_INIT_JPG;
 constexpr uint32_t SDL_MIXER_INIT_FLAGS = MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_WAVPACK;
@@ -74,7 +75,7 @@ namespace anisette::core
         }
 
         // start discord rpc
-        utils::discord::start();
+        if (config::enable_discord_rpc) utils::discord::start();
         // init video and audio handlers
         return audio::init() && video::init();
     }
@@ -98,7 +99,7 @@ namespace anisette::core
         SDL_Quit();
     }
 
-    void set_fps_mode(const FPS_MODE value) {
+    void set_fps(const FPS_VALUE value) {
         assert(video::renderer != nullptr);
         if (value == VSYNC) {
             logger->debug("FPS is now in VSync mode");

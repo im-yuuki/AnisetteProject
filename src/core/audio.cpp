@@ -12,17 +12,19 @@ namespace anisette::core::audio
     static Mix_Music *_current_music = nullptr;
 
     bool init() {
+        set_music_volume(config::music_volume);
+        set_sound_volume(config::sound_volume);
         return true;
     }
 
     void cleanup() {
     }
 
-    void set_music_volume(const int volume) {
+    void set_music_volume(const uint8_t volume) {
         Mix_VolumeMusic(volume);
     }
 
-    void set_sound_volume(const int volume) {
+    void set_sound_volume(const uint8_t volume) {
         Mix_Volume(-1, volume);
     }
 

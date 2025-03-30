@@ -4,6 +4,7 @@ add_library(anisette_core SHARED
         core/video.cpp
         core/audio.cpp
         core/frame.cpp
+        core/config_loader.cpp
 )
 target_include_directories(anisette_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
 target_link_libraries(anisette_core PUBLIC anisette_utils)
@@ -14,5 +15,8 @@ target_link_libraries(anisette_core PUBLIC
         $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf-static>,SDL2_ttf::SDL2_ttf-static,SDL2_ttf::SDL2_ttf>
         $<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer-static>,SDL2_mixer::SDL2_mixer-static,SDL2_mixer::SDL2_mixer>
 )
+# link rapidjson
+target_link_libraries(anisette_core PUBLIC RapidJSON rapidjson)
+
 # aliases
 add_library(${PROJECT_NAME}::Core ALIAS anisette_core)

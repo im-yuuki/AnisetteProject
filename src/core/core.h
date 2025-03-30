@@ -2,9 +2,10 @@
 // Created by Yuuki on 19/02/2025.
 //
 #pragma once
+#include "abs.h"
+#include "config.h"
 #include <cstdint>
-#include <SDL_render.h>
-#include <abs.h>
+#include <SDL2/SDL_render.h>
 
 /**
  * @brief Anisette game core, the soul of this project
@@ -27,24 +28,12 @@ namespace anisette::core
      */
     inline uint64_t last_frame_time = 0;
 
-
-    enum FPS_MODE : int {
-        // higher than 0 means custom FPS limit
-        VSYNC = 0, // enable vsync and limit to display refresh rate
-        UNLIMITED = -1, // no limit
-        HALF_DISPLAY = -2, // limit to half of display refresh rate
-        DISPLAY = -3, // limit to display refresh rate
-        X2_DISPLAY = -4, // limit to double of display refresh rate
-        X4_DISPLAY = -5, // limit to quadruple of display refresh rate
-        X8_DISPLAY = -6, // limit to octuple of display refresh rate
-    };
-
     /**
-     * @brief Set the frame rate limit mode
+     * @brief Set the frame rate limit
      *
-     * @param value FPS mode
+     * @param value FPS
      */
-    extern void set_fps_mode(FPS_MODE value);
+    extern void set_fps(config::FPS_VALUE value);
 
     /**
      * @brief Insert a new frame handler to the core stack
@@ -117,8 +106,8 @@ namespace anisette::core
     {
         extern bool init();
         extern void cleanup();
-        extern void set_sound_volume(int volume);
-        extern void set_music_volume(int volume);
+        extern void set_sound_volume(uint8_t volume);
+        extern void set_music_volume(uint8_t volume);
 
         extern bool play_music(const char* path);
         extern void pause_music();

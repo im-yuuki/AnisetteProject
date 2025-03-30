@@ -9,9 +9,11 @@
 constexpr int MAXIMUM_EVENT_POLL_PER_FRAME = 10;
 
 const static auto logger = anisette::logging::get("frame_handler");
-static std::stack<anisette::core::abstract::FrameHandler*> frame_handlers;
+
 
 namespace anisette::core {
+    static std::stack<abstract::FrameHandler*> frame_handlers;
+
     // scene manager
     void insert_handler(abstract::FrameHandler *handler) {
         assert(handler == nullptr);
