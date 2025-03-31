@@ -2,6 +2,7 @@
 // Created by Yuuki on 25/03/2025.
 //
 #include "core.h"
+#include "_internal.h"
 #include "utils/logging.h"
 #include <stack>
 #include <cassert>
@@ -16,7 +17,7 @@ namespace anisette::core {
 
     // scene manager
     void insert_handler(abstract::FrameHandler *handler) {
-        assert(handler == nullptr);
+        assert(handler != nullptr);
         frame_handlers.push(handler);
         logger->debug("New frame handler inserted");
     }

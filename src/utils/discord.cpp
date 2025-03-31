@@ -11,7 +11,7 @@ const auto logger = anisette::logging::get("discord");
 namespace discord_sdk = discord;
 
 discord_sdk::Activity init_presence() {
-    discord_sdk::Activity presence;
+    discord_sdk::Activity presence {};
     // default values
     presence.SetType(discord_sdk::ActivityType::Playing);
     presence.GetAssets().SetLargeImage("icon");
@@ -28,7 +28,7 @@ namespace anisette::utils::discord
         if (core) return;
         logger->debug("Initializing Discord RPC connection");
         if (const auto result = discord_sdk::Core::Create(DISCORD_APPLICATION_ID, DiscordCreateFlags_NoRequireDiscord, &core); result != discord_sdk::Result::Ok) {
-            logger->error("Initialize Discord RPC failed: core return error code {}", static_cast<int>(result));
+            logger->error("Initialize Discord RPC failed: error code {}", static_cast<int>(result));
             delete core;
             core = nullptr;
         }

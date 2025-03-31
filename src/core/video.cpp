@@ -2,6 +2,7 @@
 // Created by Yuuki on 09/03/2025.
 //
 #include "core.h"
+#include "_internal.h"
 #include "config.h"
 #include "utils/logging.h"
 #include <GL/glew.h>
@@ -17,6 +18,7 @@ namespace anisette::core::video
         // target opengl 3.3
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         // Initialize
         logger->debug("Initializing main window");
         uint32_t flags = SDL_WINDOW_OPENGL;
@@ -32,15 +34,18 @@ namespace anisette::core::video
             return false;
         }
         if (!refresh_display_info()) return false;
-        // init OpenGL context
-        glewExperimental = GL_TRUE;
-        glewInit();
         gl_context = SDL_GL_CreateContext(window);
         if (!gl_context) {
             logger->error("Create OpenGL context failed: {}", SDL_GetError());
             return false;
         }
-        return refresh_display_info();
+        // init OpenGL context
+        glewExperimental = GL_TRUE;
+        if (glewInit() != GLEW_OK) {
+            logger->error("Failed to initialize GLEW");
+            return false;
+        }
+        return true;
     }
 
     bool refresh_display_info() {

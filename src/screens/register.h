@@ -20,7 +20,7 @@ namespace anisette::screens {
     };
 
     inline void load() {
-        core::register_startup_frame_handler([&]() {
+        core::register_first_frame_handler([&]() {
             return new TestScreen();
         });
     }

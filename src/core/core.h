@@ -2,7 +2,6 @@
 // Created by Yuuki on 19/02/2025.
 //
 #pragma once
-#include <SDL2/SDL_render.h>
 #include <cstdint>
 #include <functional>
 #include "abs.h"
@@ -15,14 +14,6 @@
  */
 namespace anisette::core
 {
-    /**
-     * @brief The frequency of the system's performance counter.
-     *
-     * This is simply value of `SDL_GetPerformanceFrequency()`.
-     * I keep it here for easy access and avoid calling the function multiple times.
-     */
-    extern const uint64_t system_freq;
-
     /**
      * @brief Frame time of the latest handle
      */
@@ -46,7 +37,7 @@ namespace anisette::core
 
     /**
      * @brief Remove the top frame handler from the core stack
-     *
+     * 
      * The core will redirect the frame update to the new top handler of the stack.
      */
     extern void remove_handler();
@@ -63,52 +54,40 @@ namespace anisette::core
 
     /**
      * @brief Request the game core to stop
-     *
-     * This function set the flag to stop the main game loop.
-     * It will then trigger the cleanup process and exit the game.
      */
     extern void request_stop();
 
-    extern void _handle_event(const uint64_t &start_frame);
-    extern void _handle_frame(const uint64_t &start_frame);
-
-    extern void register_startup_frame_handler(const std::function<abstract::FrameHandler *()> &handler);
-
     /**
-     * @brief Handler for rendering and displaying task
+     *
+     * @param reg_fn
      */
-    namespace video
-    {
-        /**
-         * @brief Global OpenGL context
-         */
-        inline SDL_GLContext gl_context = nullptr;
-        inline SDL_Window* window = nullptr;
-        inline SDL_DisplayMode display_mode;
+    extern void register_first_frame_handler(const std::function<abstract::FrameHandler *()> &reg_fn);
+} // namespace anisette::core
 
-        /**
-         * @brief Initialize the video module
-         *
-         * @return true if success, false otherwise
-         */
-        extern bool init();
-        extern void cleanup();
-        extern bool refresh_display_info();
-    }
 
+/**
+ * @brief Handler for rendering and displaying task
+ */
+namespace anisette::core::video
+{
     /**
-     * @brief Handler for audio output
+     * @brief Initialize the video module
+     *
+     * @return true if success, false otherwise
      */
-    namespace audio
-    {
-        extern bool init();
-        extern void cleanup();
-        extern void set_sound_volume(uint8_t volume);
-        extern void set_music_volume(uint8_t volume);
+    extern bool refresh_display_info();
+} // namespace anisette::core::video
 
-        extern bool play_music(const char* path);
-        extern void pause_music();
-        extern void resume_music();
-        extern void stop_music();
-    }
-}
+
+/**
+ * @brief Handler for audio output
+ */
+namespace anisette::core::audio
+{
+    extern void set_sound_volume(uint8_t volume);
+    extern void set_music_volume(uint8_t volume);
+    extern bool play_music(const char *path);
+    extern void pause_music();
+    extern void resume_music();
+    extern void stop_music();
+} // namespace anisette::core::audio

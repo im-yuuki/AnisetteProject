@@ -2,6 +2,7 @@
 // Created by Yuuki on 09/03/2025.
 //
 #include "core.h"
+#include "_internal.h"
 #include "config.h"
 #include "utils/logging.h"
 #include "utils/discord.h"
@@ -41,8 +42,8 @@ namespace anisette::core
     }
 
 
-    void register_startup_frame_handler(const std::function<abstract::FrameHandler *()> &handler) {
-        register_function = handler;
+    void register_first_frame_handler(const std::function<abstract::FrameHandler *()> &reg_fn) {
+        register_function = reg_fn;
     }
 
     /**
@@ -113,7 +114,7 @@ namespace anisette::core
     void set_fps(const int value) {
         // assert(video::renderer != nullptr);
         if (value == config::VSYNC) {
-            logger->debug("FPS is now in VSync mode");
+            logger->debug("FPS is set to VSync mode");
             // SDL_RenderSetVSync(video::renderer, true);
             _target_frame_time = system_freq / video::display_mode.refresh_rate;
             return;
@@ -126,27 +127,27 @@ namespace anisette::core
         }
         switch (value) {
             case config::UNLIMITED:
-                logger->warn("FPS is now in unlimited mode");
+                logger->warn("FPS is set to unlimited mode, can lead to high resource usage");
                 _target_frame_time = 0;
                 break;
             case config::DISPLAY:
-                logger->debug("FPS is match to display refresh rate");
+                logger->debug("FPS is set to match display refresh rate");
                 _target_frame_time = system_freq / video::display_mode.refresh_rate;
                 break;
             case config::X2_DISPLAY:
-                logger->debug("FPS is 2x of display refresh rate");
+                logger->debug("FPS is set to 2x of display refresh rate");
                 _target_frame_time = system_freq / video::display_mode.refresh_rate / 2;
                 break;
             case config::X4_DISPLAY:
-                logger->debug("FPS is 2x of display refresh rate");
+                logger->debug("FPS is set to 4x of display refresh rate");
                 _target_frame_time = system_freq / video::display_mode.refresh_rate / 4;
                 break;
             case config::X8_DISPLAY:
-                logger->debug("FPS is 2x of display refresh rate");
+                logger->debug("FPS is set to 8x of display refresh rate");
                 _target_frame_time = system_freq / video::display_mode.refresh_rate / 8;
                 break;
             case config::HALF_DISPLAY:
-                logger->debug("FPS is half of display refresh rate");
+                logger->debug("FPS is set to half of display refresh rate");
                 _target_frame_time = system_freq / video::display_mode.refresh_rate * 2;
                 break;
             default: break;
