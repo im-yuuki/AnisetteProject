@@ -2,9 +2,10 @@
 // Created by Yuuki on 19/02/2025.
 //
 #pragma once
-#include "abs.h"
-#include <cstdint>
 #include <SDL2/SDL_render.h>
+#include <cstdint>
+#include <functional>
+#include "abs.h"
 
 /**
  * @brief Anisette game core, the soul of this project
@@ -71,6 +72,8 @@ namespace anisette::core
     extern void _handle_event(const uint64_t &start_frame);
     extern void _handle_frame(const uint64_t &start_frame);
 
+    extern void register_startup_frame_handler(const std::function<abstract::FrameHandler *()> &handler);
+
     /**
      * @brief Handler for rendering and displaying task
      */
@@ -80,6 +83,7 @@ namespace anisette::core
          * @brief Global OpenGL context
          */
         inline SDL_GLContext gl_context = nullptr;
+        inline SDL_Window* window = nullptr;
         inline SDL_DisplayMode display_mode;
 
         /**

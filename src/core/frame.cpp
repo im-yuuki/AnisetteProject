@@ -53,5 +53,6 @@ namespace anisette::core {
             return request_stop();
         }
         frame_handlers.top()->handle_frame(start_frame);
+        SDL_GL_SwapWindow(video::window);
     }
 }

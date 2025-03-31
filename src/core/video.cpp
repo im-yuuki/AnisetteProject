@@ -4,7 +4,7 @@
 #include "core.h"
 #include "config.h"
 #include "utils/logging.h"
-#include "utils/gl_utils.h"
+#include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_ttf.h>
@@ -12,7 +12,6 @@
 const auto logger = anisette::logging::get("video");
 namespace anisette::core::video
 {
-    static SDL_Window *_window = nullptr;
 
     bool init() {
         // target opengl 3.3
@@ -23,17 +22,20 @@ namespace anisette::core::video
         uint32_t flags = SDL_WINDOW_OPENGL;
         if (config::display_mode == config::EXCLUSIVE) flags |= SDL_WINDOW_FULLSCREEN;
         else if (config::display_mode == config::BORDERLESS) flags |= SDL_WINDOW_BORDERLESS;
-        _window = SDL_CreateWindow(
+        window = SDL_CreateWindow(
             "Anisette",
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
             config::render_width, config::render_height, flags
             );
-        if (!_window) {
+        if (!window) {
             logger->error("Initialize main window failed: {}", SDL_GetError());
             return false;
         }
         if (!refresh_display_info()) return false;
-        gl_context = SDL_GL_CreateContext(_window);
+        // init OpenGL context
+        glewExperimental = GL_TRUE;
+        glewInit();
+        gl_context = SDL_GL_CreateContext(window);
         if (!gl_context) {
             logger->error("Create OpenGL context failed: {}", SDL_GetError());
             return false;
@@ -42,7 +44,7 @@ namespace anisette::core::video
     }
 
     bool refresh_display_info() {
-        if (SDL_GetDesktopDisplayMode(SDL_GetWindowDisplayIndex(_window), &display_mode)) {
+        if (SDL_GetDesktopDisplayMode(SDL_GetWindowDisplayIndex(window), &display_mode)) {
             logger->error("Failed to query display information: {}", SDL_GetError());
             return false;
         }
@@ -51,6 +53,6 @@ namespace anisette::core::video
     }
 
     void cleanup() {
-        SDL_DestroyWindow(_window);
+        SDL_DestroyWindow(window);
     }
 }

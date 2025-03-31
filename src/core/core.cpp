@@ -22,6 +22,7 @@ constexpr uint32_t SDL_MIXER_INIT_FLAGS = MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT
 
 namespace anisette::core
 {
+    static std::function<abstract::FrameHandler*()> register_function;
     static std::atomic_bool _stop_requested = false;
     static uint64_t _target_frame_time = 0;
     const uint64_t system_freq = SDL_GetPerformanceFrequency();
@@ -37,6 +38,11 @@ namespace anisette::core
     void handle_interrupt(int signal) {
         logger->debug("Received interrupt signal {}", signal);
         request_stop();
+    }
+
+
+    void register_startup_frame_handler(const std::function<abstract::FrameHandler *()> &handler) {
+        register_function = handler;
     }
 
     /**
@@ -77,6 +83,7 @@ namespace anisette::core
         // init video and audio handlers
         if (audio::init() && video::init()) {
             set_fps(config::fps);
+            insert_handler(register_function());
             return true;
         }
         return false;
@@ -104,14 +111,14 @@ namespace anisette::core
     }
 
     void set_fps(const int value) {
-        assert(video::renderer != nullptr);
+        // assert(video::renderer != nullptr);
         if (value == config::VSYNC) {
             logger->debug("FPS is now in VSync mode");
-            SDL_RenderSetVSync(video::renderer, true);
+            // SDL_RenderSetVSync(video::renderer, true);
             _target_frame_time = system_freq / video::display_mode.refresh_rate;
             return;
         }
-        SDL_RenderSetVSync(video::renderer, false);
+        // SDL_RenderSetVSync(video::renderer, false);
         if (value > 0) {
             logger->debug("FPS: {}", value);
             _target_frame_time = system_freq / value;

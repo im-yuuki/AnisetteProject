@@ -3,13 +3,25 @@
 //
 #pragma once
 #include "core/abs.h"
-#include <SDL2/SDL_render.h>
+#include "utils/gl_utils.h"
+
+#include <core/core.h>
 
 namespace anisette::screens {
-    class Screen : public core::abstract::FrameHandler {
+    class TestScreen final : public core::abstract::FrameHandler {
     public:
-        Screen();
-        bool handle_event(const uint64_t &start_frame, const SDL_Event &event) override;
+        TestScreen();
+        void handle_event(const uint64_t &start_frame, const SDL_Event &event) override;
+        ~TestScreen() override;
         void handle_frame(const uint64_t &start_frame) override;
+    private:
+        utils::gl::GLProgram* shaderProgram;
+        GLuint VAO, VBO, EBO;
     };
+
+    inline void load() {
+        core::register_startup_frame_handler([&]() {
+            return new TestScreen();
+        });
+    }
 }

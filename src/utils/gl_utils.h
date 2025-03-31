@@ -3,16 +3,17 @@
 //
 #pragma once
 #include "logging.h"
+#include <initializer_list>
 #include <GL/glew.h>
 
 namespace anisette::utils::gl
 {
     class GLObjectWrapper {
     public:
-        [[nodiscard]] GLuint get() const { return obj; }
+        [[nodiscard]] GLuint get() const { return obj_id; }
         virtual ~GLObjectWrapper() = default;
     protected:
-        GLuint obj = 0;
+        GLuint obj_id = 0;
     };
 
     class GLShader final : public GLObjectWrapper {
@@ -24,7 +25,7 @@ namespace anisette::utils::gl
 
     class GLProgram final : public GLObjectWrapper {
     public:
-        explicit GLProgram(const GLShader& shaders...);
+        explicit GLProgram(std::initializer_list<GLShader> shaders);
         ~GLProgram() override;
     protected:
         std::vector<GLenum> shaders_list;
