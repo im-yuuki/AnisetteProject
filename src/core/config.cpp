@@ -41,15 +41,17 @@ namespace anisette::core::config
             switch (it->value.GetType()) {
                 case rapidjson::kNumberType:
                     if (strcmp(key, "render_width") == 0) {
-                        render_width = it->value.GetUint();
+                        render_width = it->value.GetInt();
                     } else if (strcmp(key, "render_height") == 0) {
-                        render_height = it->value.GetUint();
-                    } else if (strcmp(key, "fps_value") == 0) {
+                        render_height = it->value.GetInt();
+                    } else if (strcmp(key, "fps") == 0) {
                         fps = it->value.GetInt();
                     } else if (strcmp(key, "sound_volume") == 0) {
                         sound_volume = it->value.GetUint();
                     } else if (strcmp(key, "music_volume") == 0) {
                         music_volume = it->value.GetUint();
+                    } else if (strcmp(key, "display_mode") == 0) {
+                        display_mode = static_cast<DISPLAY_MODE>(it->value.GetUint());
                     }
                     break;
                 case rapidjson::kTrueType:
@@ -61,11 +63,27 @@ namespace anisette::core::config
             }
         }
         is_fallback = false;
+        validate();
         return true;
     }
 
+    void validate() {
+        // minimum resolution is 800x600
+        if (render_width < 800 || render_height < 600) {
+            logger->warn("Invalid resolution config");
+            render_width = 1280;
+            render_height = 720;
+        }
+        if (fps < -10) {
+            logger->warn("Invalid FPS config");
+            fps = DISPLAY;
+        }
+    }
+
+
     bool save(const bool quiet) {
         std::lock_guard lock(mutex);
+        validate();
         if (!quiet) logger->debug("Saving config file");
         rapidjson::Document doc;
         doc.SetObject();

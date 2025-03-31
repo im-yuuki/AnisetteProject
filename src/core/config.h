@@ -8,7 +8,7 @@ namespace anisette::core::config {
     extern const uint32_t SDL_EVENT_SAVE_CONFIG_FAILURE;
     inline bool is_fallback = true;
 
-    enum FPS_VALUE : int {
+    enum FPS_SPECIAL_VALUE : int {
         // higher than 0 means custom FPS limit
         VSYNC = 0, // enable vsync and limit to display refresh rate
         UNLIMITED = -1, // no limit
@@ -26,8 +26,8 @@ namespace anisette::core::config {
     };
 
     // default values
-    inline unsigned render_width = 1280;
-    inline unsigned render_height = 720;
+    inline int render_width = 1280;
+    inline int render_height = 720;
     inline int fps = DISPLAY;
     inline DISPLAY_MODE display_mode = BORDERLESS;
     inline uint8_t sound_volume = 128;
@@ -35,6 +35,7 @@ namespace anisette::core::config {
     inline bool enable_discord_rpc = true;
 
     extern bool load();
+    extern void validate();
     extern bool save(bool quiet = false);
     extern void save_async();
 }

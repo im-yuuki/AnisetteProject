@@ -77,9 +77,9 @@ namespace anisette::core
     namespace video
     {
         /**
-         * @brief Global renderer
+         * @brief Global OpenGL context
          */
-        inline SDL_Renderer *renderer = nullptr;
+        inline SDL_GLContext gl_context = nullptr;
         inline SDL_DisplayMode display_mode;
 
         /**
