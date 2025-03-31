@@ -1,6 +1,6 @@
 # Game core
 add_library(anisette_core SHARED
-        core/core.cpp
+        core/base.cpp
         core/video.cpp
         core/audio.cpp
         core/frame.cpp

@@ -3,30 +3,34 @@
 //
 #pragma once
 #include <SDL2/SDL_video.h>
+#include <SDL2/SDL_timer.h>
+#include <atomic>
 #include <cstdint>
 
 namespace anisette::core
 {
     /**
- * @brief The frequency of the system's performance counter.
- *
- * This is simply value of `SDL_GetPerformanceFrequency()`.
- * I keep it here for easy access and avoid calling the function multiple times.
- */
-    extern const uint64_t system_freq;
-    extern void _handle_event(const uint64_t &start_frame);
-    extern void _handle_frame(const uint64_t &start_frame);
+     * @brief The frequency of the system's performance counter.
+     *
+     * This is simply value of `SDL_GetPerformanceFrequency()`.
+     * I keep it here for easy access and avoid calling the function multiple times.
+     */
+    inline std::atomic_bool _stop_requested = false;
+    inline uint64_t _target_frame_time = 0;
 
-}
+    const uint64_t system_freq = SDL_GetPerformanceFrequency();
+
+    extern bool init();
+    extern void cleanup();
+
+    extern void _main_loop();
+
+} // namespace anisette::core
 
 namespace anisette::core::video
 {
-    /**
-     * @brief Global OpenGL context
-     */
-    inline SDL_GLContext gl_context = nullptr;
     inline SDL_Window *window = nullptr;
-    inline SDL_DisplayMode display_mode;
+    inline SDL_DisplayMode display_mode {};
 
     /**
      * @brief Initialize the video module
@@ -41,4 +45,4 @@ namespace anisette::core::audio
 {
     extern bool init();
     extern void cleanup();
-}
+} // namespace anisette::core::audio

@@ -5,23 +5,16 @@
 #include "_internal.h"
 #include "config.h"
 #include "utils/logging.h"
-#include <GL/glew.h>
-#include <SDL2/SDL_opengl.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_ttf.h>
 
 const auto logger = anisette::logging::get("video");
 namespace anisette::core::video
 {
-
     bool init() {
-        // target opengl 3.3
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         // Initialize
         logger->debug("Initializing main window");
-        uint32_t flags = SDL_WINDOW_OPENGL;
+        uint32_t flags = 0;
         if (config::display_mode == config::EXCLUSIVE) flags |= SDL_WINDOW_FULLSCREEN;
         else if (config::display_mode == config::BORDERLESS) flags |= SDL_WINDOW_BORDERLESS;
         window = SDL_CreateWindow(
@@ -34,15 +27,9 @@ namespace anisette::core::video
             return false;
         }
         if (!refresh_display_info()) return false;
-        gl_context = SDL_GL_CreateContext(window);
-        if (!gl_context) {
-            logger->error("Create OpenGL context failed: {}", SDL_GetError());
-            return false;
-        }
-        // init OpenGL context
-        glewExperimental = GL_TRUE;
-        if (glewInit() != GLEW_OK) {
-            logger->error("Failed to initialize GLEW");
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+        if (!renderer) {
+            logger->error("Initialize main window failed: {}", SDL_GetError());
             return false;
         }
         return true;

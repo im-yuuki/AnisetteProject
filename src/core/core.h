@@ -70,11 +70,7 @@ namespace anisette::core
  */
 namespace anisette::core::video
 {
-    /**
-     * @brief Initialize the video module
-     *
-     * @return true if success, false otherwise
-     */
+    inline SDL_Renderer *renderer = nullptr;
     extern bool refresh_display_info();
 } // namespace anisette::core::video
 

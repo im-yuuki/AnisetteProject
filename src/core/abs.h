@@ -4,13 +4,13 @@
 
 #pragma once
 #include <SDL2/SDL_events.h>
+#include <SDL_render.h>
 
 namespace anisette::core::abstract {
     class FrameHandler {
     public:
-
         virtual ~FrameHandler() = default;
-        virtual void handle_event(const uint64_t &start_frame, const SDL_Event &event) = 0;
-        virtual void handle_frame(const uint64_t &start_frame) = 0;
+        virtual void on_event(const uint64_t &start_frame, const SDL_Event &event) = 0;
+        virtual void update(const uint64_t &start_frame) = 0;
     };
 }

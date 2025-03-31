@@ -1,40 +1,41 @@
 {
-  "name": "anisette",
-  "version": "1.0.0",
-  "dependencies": [
-    {
-      "name": "discord-game-sdk",
-      "version>=": "3.2.1"
-    },
-    {
-      "name": "sdl2",
-      "version>=": "2.32.2"
-    },
-    {
-      "name": "sdl2-image",
-      "features": [ "libjpeg-turbo" ],
-      "version>=": "2.8.8#1"
-    },
-    {
-      "name": "sdl2-mixer",
-      "features": [ "mpg123", "wavpack" ],
-      "version>=": "2.8.1"
-    },
-    {
-      "name": "sdl2-ttf",
-      "version>=": "2.24.0"
-    },
-    {
-      "name": "spdlog",
-      "version>=": "1.15.1"
-    }, {
-      "name": "opengl",
-      "version>=": "2022-12-04#3"
-    }, {
-      "name": "glew",
-      "version>=": "2.2.0#6"
-    }, {
-      "name": "rapidjson",
-      "version>=": "2025-02-26"
-    } ]
+	"name": "anisette",
+	"version": "1.0.0",
+	"dependencies": [
+		{
+			"name": "discord-game-sdk",
+			"version>=": "3.2.1"
+		},
+		{
+			"name": "sdl2",
+			"version>=": "2.32.2"
+		},
+		{
+			"name": "sdl2-image",
+			"features": [
+				"libjpeg-turbo"
+			],
+			"version>=": "2.8.8#1"
+		},
+		{
+			"name": "sdl2-mixer",
+			"features": [
+				"mpg123",
+				"wavpack"
+			],
+			"version>=": "2.8.1"
+		},
+		{
+			"name": "sdl2-ttf",
+			"version>=": "2.24.0"
+		},
+		{
+			"name": "spdlog",
+			"version>=": "1.15.1"
+		},
+		{
+			"name": "rapidjson",
+			"version>=": "2025-02-26"
+		}
+	]
 }

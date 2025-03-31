@@ -24,9 +24,6 @@ constexpr uint32_t SDL_MIXER_INIT_FLAGS = MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT
 namespace anisette::core
 {
     static std::function<abstract::FrameHandler*()> register_function;
-    static std::atomic_bool _stop_requested = false;
-    static uint64_t _target_frame_time = 0;
-    const uint64_t system_freq = SDL_GetPerformanceFrequency();
 
     /**
      * @brief Handle interrupt signal
@@ -82,12 +79,11 @@ namespace anisette::core
         // start discord rpc
         if (config::enable_discord_rpc) utils::discord::start();
         // init video and audio handlers
-        if (audio::init() && video::init()) {
-            set_fps(config::fps);
-            insert_handler(register_function());
-            return true;
-        }
-        return false;
+        if (!(audio::init() && video::init())) return false;
+        // post-init task
+        set_fps(config::fps);
+        insert_handler(register_function());
+        return true;
     }
 
     /**
@@ -112,14 +108,14 @@ namespace anisette::core
     }
 
     void set_fps(const int value) {
-        // assert(video::renderer != nullptr);
+        assert(video::renderer != nullptr);
         if (value == config::VSYNC) {
             logger->debug("FPS is set to VSync mode");
-            // SDL_RenderSetVSync(video::renderer, true);
+            SDL_RenderSetVSync(video::renderer, true);
             _target_frame_time = system_freq / video::display_mode.refresh_rate;
             return;
         }
-        // SDL_RenderSetVSync(video::renderer, false);
+        SDL_RenderSetVSync(video::renderer, false);
         if (value > 0) {
             logger->debug("FPS: {}", value);
             _target_frame_time = system_freq / value;
@@ -158,8 +154,6 @@ namespace anisette::core
     // entrypoint
     int run() {
         int err = 0;
-        uint64_t now = 0, start_frame = 0, target_next_frame = 0, next_discord_poll = 0;
-
         if (!init()) {
             logger->error("Initialization failed, exiting");
             err = 1;
@@ -167,26 +161,7 @@ namespace anisette::core
         }
 
         logger->debug("Entering main loop");
-
-        while (!_stop_requested) {
-            start_frame = SDL_GetPerformanceCounter();
-            // poll discord rpc
-            if (start_frame > next_discord_poll) {
-                utils::discord::poll();
-                next_discord_poll = start_frame + system_freq / 2;
-            }
-
-            _handle_event(start_frame);
-            _handle_frame(start_frame);
-
-            // delay until next frame, and calculate the frame time
-            target_next_frame = start_frame + _target_frame_time;
-            if (now = SDL_GetPerformanceCounter(); now < target_next_frame) {
-                last_frame_time = target_next_frame - start_frame;
-                SDL_Delay((target_next_frame - now) * 1000 / system_freq);
-            } else last_frame_time = now - start_frame;
-        }
-
+        _main_loop();
         logger->debug("Exited main loop");
 
         quit:

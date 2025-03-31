@@ -2,13 +2,11 @@
 add_library(anisette_utils SHARED
         utils/logging.cpp
         utils/discord.cpp
-        utils/gl_utils.cpp
 )
 # link spdlog
 target_link_libraries(anisette_utils PUBLIC spdlog::spdlog_header_only)
 # link discord-rpc
 find_path(GAME_SDK_INCLUDE discord-game-sdk/discord.h)
 target_link_libraries(anisette_utils PUBLIC ${GAME_SDK} ${CPP_GAME_SDK})
-target_link_libraries(anisette_utils PUBLIC GLEW::GLEW)
 # aliases
 add_library(${PROJECT_NAME}::Utils ALIAS anisette_utils)

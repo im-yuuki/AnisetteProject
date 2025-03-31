@@ -24,8 +24,5 @@ find_package(SDL2_mixer CONFIG REQUIRED)
 find_package(SDL2_ttf CONFIG REQUIRED)
 # rapidjson
 find_package(RapidJSON CONFIG REQUIRED)
-# glew
-find_package(GLEW CONFIG REQUIRED)
 
 add_subdirectory(src ${CMAKE_BINARY_DIR}/bin)
-add_subdirectory(tests ${CMAKE_BINARY_DIR}/tests)
