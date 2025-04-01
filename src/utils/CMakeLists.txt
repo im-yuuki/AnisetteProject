@@ -4,7 +4,7 @@ add_library(anisette_utils SHARED
         utils/discord.cpp
 )
 # link spdlog
-target_link_libraries(anisette_utils PUBLIC spdlog::spdlog_header_only)
+target_link_libraries(anisette_utils PUBLIC spdlog::spdlog)
 # link discord-rpc
 find_path(GAME_SDK_INCLUDE discord-game-sdk/discord.h)
 target_link_libraries(anisette_utils PUBLIC ${GAME_SDK} ${CPP_GAME_SDK})

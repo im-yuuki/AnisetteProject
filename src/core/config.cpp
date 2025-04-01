@@ -10,12 +10,23 @@
 #include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/prettywriter.h>
 
-#define CONFIG_FILE_NAME "anisette_settings.json"
+#define CONFIG_FILE_NAME "settings.json"
 
 const auto logger = anisette::logging::get("loader");
 
 namespace anisette::core::config
 {
+     bool is_fallback = true;
+    // default values
+     int render_width = 1600;
+     int render_height = 900;
+     int fps = X2_DISPLAY;
+     DISPLAY_MODE display_mode = WINDOWED;
+     uint8_t sound_volume = 128;
+     uint8_t music_volume = 128;
+     bool show_frametime_overlay = true;
+     bool enable_discord_rpc = true;
+    
     const uint32_t SDL_EVENT_SAVE_CONFIG_FAILURE = SDL_RegisterEvents(1);
     static std::mutex mutex;
 
@@ -42,28 +53,43 @@ namespace anisette::core::config
                 case rapidjson::kNumberType:
                     if (strcmp(key, "render_width") == 0) {
                         render_width = it->value.GetInt();
+                        if (render_width < 640) render_width = 640;
                     } else if (strcmp(key, "render_height") == 0) {
                         render_height = it->value.GetInt();
+                        if (render_height < 480) render_height = 480;
                     } else if (strcmp(key, "fps") == 0) {
                         fps = it->value.GetInt();
+                        if (fps < X8_DISPLAY) fps = X8_DISPLAY;
                     } else if (strcmp(key, "sound_volume") == 0) {
                         sound_volume = it->value.GetUint();
                     } else if (strcmp(key, "music_volume") == 0) {
                         music_volume = it->value.GetUint();
                     } else if (strcmp(key, "display_mode") == 0) {
-                        display_mode = static_cast<DISPLAY_MODE>(it->value.GetUint());
+                        switch (it->value.GetUint()) {
+                            case EXCLUSIVE:
+                                display_mode = EXCLUSIVE;
+                                break;
+                            case BORDERLESS:
+                                display_mode = BORDERLESS;
+                                break;
+                            case WINDOWED:
+                            default:
+                                display_mode = WINDOWED;
+                                break;
+                        }
                     }
                     break;
                 case rapidjson::kTrueType:
                 case rapidjson::kFalseType:
                     if (strcmp(key, "enable_discord_rpc") == 0) {
                         enable_discord_rpc = it->value.GetBool();
+                    } else if (strcmp(key, "show_frametime_overlay") == 0) {
+                        show_frametime_overlay = it->value.GetBool();
                     }
                 default: break;
             }
         }
         is_fallback = false;
-        validate();
         return true;
     }
 
@@ -83,17 +109,17 @@ namespace anisette::core::config
 
     bool save(const bool quiet) {
         std::lock_guard lock(mutex);
-        validate();
         if (!quiet) logger->debug("Saving config file");
         rapidjson::Document doc;
         doc.SetObject();
         rapidjson::Document::AllocatorType &allocator = doc.GetAllocator();
         doc.AddMember("render_width", render_width, allocator);
         doc.AddMember("render_height", render_height, allocator);
-        doc.AddMember("fps_value", fps, allocator);
+        doc.AddMember("fps", fps, allocator);
         doc.AddMember("sound_volume", sound_volume, allocator);
         doc.AddMember("music_volume", music_volume, allocator);
         doc.AddMember("enable_discord_rpc", enable_discord_rpc, allocator);
+        doc.AddMember("show_frametime_overlay", show_frametime_overlay, allocator);
         // save to file
         std::ofstream ofs(CONFIG_FILE_NAME);
         if (!ofs.is_open()) {

@@ -5,6 +5,7 @@
 #include "_internal.h"
 #include "utils/logging.h"
 #include "utils/discord.h"
+#include "components/frametime_overlay.h"
 #include <stack>
 #include <cassert>
 
@@ -28,8 +29,9 @@ namespace anisette::core {
     }
 
     void _main_loop() {
-        static SDL_Event event;
-        static abstract::FrameHandler* current_handler = nullptr;
+        const auto system_freq = SDL_GetPerformanceFrequency();
+        SDL_Event event;
+        abstract::FrameHandler* current_handler = nullptr;
 
         while (!_stop_requested) {
             start_frame = SDL_GetPerformanceCounter();
@@ -46,7 +48,6 @@ namespace anisette::core {
             current_handler = frame_handlers.top();
 
             // listen for events
-
             for (int i = 0; i < MAXIMUM_EVENT_POLL_PER_FRAME; i++) {
                 if (!SDL_PollEvent(&event)) break;
                 switch (event.type) {
@@ -56,8 +57,10 @@ namespace anisette::core {
                 }
             }
             // update screen
-            SDL_RenderClear(video::renderer);
             current_handler->update(start_frame);
+            // draw frame time overlay
+            if (frame_time_overlay) frame_time_overlay->draw();
+            // render
             SDL_RenderPresent(video::renderer);
 
             // delay until next frame, and calculate the frame time

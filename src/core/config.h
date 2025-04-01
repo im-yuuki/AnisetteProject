@@ -6,7 +6,6 @@
 
 namespace anisette::core::config {
     extern const uint32_t SDL_EVENT_SAVE_CONFIG_FAILURE;
-    inline bool is_fallback = true;
 
     enum FPS_SPECIAL_VALUE : int {
         // higher than 0 means custom FPS limit
@@ -25,17 +24,18 @@ namespace anisette::core::config {
         BORDERLESS = 2,
     };
 
+    extern bool is_fallback;
     // default values
-    inline int render_width = 1280;
-    inline int render_height = 720;
-    inline int fps = DISPLAY;
-    inline DISPLAY_MODE display_mode = BORDERLESS;
-    inline uint8_t sound_volume = 128;
-    inline uint8_t music_volume = 128;
-    inline bool enable_discord_rpc = true;
+    extern int render_width;
+    extern int render_height;
+    extern int fps;
+    extern DISPLAY_MODE display_mode;
+    extern uint8_t sound_volume;
+    extern uint8_t music_volume;
+    extern bool enable_discord_rpc;
+    extern bool show_frametime_overlay;
 
     extern bool load();
-    extern void validate();
     extern bool save(bool quiet = false);
     extern void save_async();
 }

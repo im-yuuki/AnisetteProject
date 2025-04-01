@@ -61,7 +61,7 @@ namespace anisette::core
      *
      * @param reg_fn
      */
-    extern void register_first_frame_handler(const std::function<abstract::FrameHandler *()> &reg_fn);
+    extern void register_first_frame_handler(const std::function<abstract::FrameHandler*(SDL_Renderer*)> &reg_fn);
 } // namespace anisette::core
 
 
@@ -70,8 +70,12 @@ namespace anisette::core
  */
 namespace anisette::core::video
 {
-    inline SDL_Renderer *renderer = nullptr;
-    extern bool refresh_display_info();
+    enum RenderPositionX { LEFT, CENTER, RIGHT };
+    enum RenderPositionY { TOP, MIDDLE, BOTTOM };
+
+    [[nodiscard]]
+    extern SDL_Rect get_overlay_render_position(RenderPositionX position_x, RenderPositionY position_y, int width, int height, int margin_x, int margin_y);
+    bool fetch_display_info();
 } // namespace anisette::core::video
 
 

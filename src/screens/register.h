@@ -9,16 +9,17 @@
 namespace anisette::screens {
     class TestScreen final : public core::abstract::FrameHandler {
     public:
-        TestScreen();
+        explicit TestScreen(SDL_Renderer * renderer);
         void on_event(const uint64_t &start_frame, const SDL_Event &event) override;
         ~TestScreen() override;
         void update(const uint64_t &start_frame) override;
     private:
+        SDL_Renderer* renderer;
     };
 
     inline void load() {
-        core::register_first_frame_handler([&]() {
-            return new TestScreen();
+        core::register_first_frame_handler([&](SDL_Renderer *renderer) {
+            return new TestScreen(renderer);
         });
     }
 }

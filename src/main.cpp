@@ -10,7 +10,7 @@ using namespace anisette;
 
 const auto logger = logging::get("main");
 
-int main(const int argc, char *argv[]) {
+int main() {
     std::cout << R"(
 Anisette Copyright (C) 2025 Yuuki (https://github.com/im-yuuki)
 This program comes with ABSOLUTELY NO WARRANTY.
@@ -28,6 +28,6 @@ This is free software, and you are welcome to redistribute it under certain cond
 #ifdef WIN32
 #include <windows.h>
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
-    return main(0, nullptr);
+    return main();
 }
 #endif
