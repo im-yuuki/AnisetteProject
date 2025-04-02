@@ -16,14 +16,18 @@ namespace anisette::screens {
         ~MenuScreen() override;
 
         void load_async();
-        bool is_load_async_finished() { return load_async_finished; }
+        bool is_load_async_finished();
 
+        void on_click(const int x, const int y);
         void on_event(const uint64_t &now, const SDL_Event &event) override;
         void update(const uint64_t &now) override;
         void on_focus(const uint64_t &now) override;
 
     private:
-        const uint8_t parallax_range = 100;
+        uint64_t action_start_time = 0;
+        std::queue<std::function<bool(const uint64_t &now)>> action_hook;
+
+        const uint8_t parallax_range = 120;
         std::atomic_bool load_async_finished = false;
 
         Mix_Chunk* click_sound = nullptr;

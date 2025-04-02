@@ -19,15 +19,13 @@ namespace anisette::screens
         display_mode = core::video::get_display_mode();
     }
 
+    void MenuScreen::on_click(const int x, const int y) {
+
+    }
+
     void MenuScreen::update(const uint64_t &now) {
         if (!load_async_finished) return;
-        // load the background image
-        if (background_surface) {
-            SDL_DestroyTexture(background);
-            background = SDL_CreateTextureFromSurface(renderer, background_surface);
-            SDL_FreeSurface(background_surface);
-            background_surface = nullptr;
-        }
+
         // get mouse position
         int mouse_x, mouse_y;
         SDL_GetMouseState(&mouse_x, &mouse_y);
@@ -39,14 +37,26 @@ namespace anisette::screens
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, background, &bg_src_rect, nullptr);
+
+        // run action hooks
+        if (!action_hook.empty()) if (action_hook.front()(now)) {
+            action_hook.pop();
+            action_start_time = now;
+        }
     }
 
     void MenuScreen::on_event(const uint64_t &now, const SDL_Event &event) {
         switch (event.type) {
             case SDL_MOUSEBUTTONDOWN:
                 core::audio::play_sound(click_sound, 1);
+                return;
             case SDL_MOUSEBUTTONUP:
-
+                int mouse_x, mouse_y;
+                SDL_GetMouseState(&mouse_x, &mouse_y);
+                on_click(mouse_x, mouse_y);
+                return;
+            case SDL_MOUSEWHEEL:
+                return;
             default:
                 break;
         }
@@ -99,8 +109,32 @@ namespace anisette::screens
         t.detach();
     }
 
+    bool MenuScreen::is_load_async_finished() {
+        if (!load_async_finished) return false;
+        // load the background image
+        if (background_surface) {
+            SDL_DestroyTexture(background);
+            background = SDL_CreateTextureFromSurface(renderer, background_surface);
+            SDL_SetTextureBlendMode(background, SDL_BLENDMODE_BLEND);
+            SDL_FreeSurface(background_surface);
+            background_surface = nullptr;
+        }
+        return true;
+    }
+
     void MenuScreen::on_focus(const uint64_t &now) {
         utils::discord::set_in_main_menu();
+        SDL_SetTextureAlphaMod(background, 0);
+        action_start_time = now;
+        action_hook.emplace([this](const uint64_t &_now) {
+            const auto alpha = 255 * (_now - action_start_time) / utils::system_freq;
+            if (alpha > 255) {
+                SDL_SetTextureAlphaMod(background, 255);
+                return true;
+            }
+            SDL_SetTextureAlphaMod(background, alpha);
+            return false;
+        });
     }
 
     MenuScreen::~MenuScreen() {

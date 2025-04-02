@@ -59,16 +59,17 @@ namespace anisette::screens {
     };
 
     void SplashScreen::update(const uint64_t &now) {
-        // run action hooks
-        if (!action_hook.empty()) if (action_hook.front()(now)) {
-            action_hook.pop();
-            action_start_time = now;
-        }
         // Render the scene
         if (!logo) return;
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, logo, nullptr, &logo_rect);
+
+        // run action hooks
+        if (!action_hook.empty()) if (action_hook.front()(now)) {
+            action_hook.pop();
+            action_start_time = now;
+        }
     }
 
     SplashScreen::~SplashScreen() {
