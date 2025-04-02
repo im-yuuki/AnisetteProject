@@ -11,6 +11,7 @@ namespace anisette::core::abstract {
     public:
         virtual ~Screen() = default;
         virtual void on_event(const uint64_t &now, const SDL_Event &event) = 0;
+        virtual void on_back(const uint64_t &now) = 0;
         virtual void update(const uint64_t &now) = 0;
     };
 }

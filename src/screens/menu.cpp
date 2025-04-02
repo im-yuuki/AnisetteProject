@@ -28,7 +28,7 @@ namespace anisette::screens
             }
         }
         assert(!backgrounds.empty());
-        const auto random_index = rand() % backgrounds.size();
+        const auto random_index = utils::randint(0, backgrounds.size() - 1);
         auto bg_surface = IMG_Load(backgrounds[random_index].c_str());
         assert(bg_surface);
         // scale the image to fit the screen
@@ -46,6 +46,8 @@ namespace anisette::screens
         assert(background);
         utils::discord::set_in_main_menu();
     }
+
+
 
     void MenuScreen::update(const uint64_t &now) {
         // get mouse position

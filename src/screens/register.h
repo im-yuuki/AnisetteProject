@@ -15,6 +15,8 @@ namespace anisette::screens {
         void on_event(const uint64_t &now, const SDL_Event &event) override;
         ~SplashScreen() override;
         void update(const uint64_t &now) override;
+        void on_back(const uint64_t &now) override {};
+
     private:
         SDL_Renderer* renderer;
         SDL_Texture* logo;
@@ -27,11 +29,16 @@ namespace anisette::screens {
     class MenuScreen final : public core::abstract::Screen {
     public:
         explicit MenuScreen(SDL_Renderer *renderer);
+        ~MenuScreen() override;
+
+        void load_async();
+        bool is_load_async_finished() { return load_async_finished; }
+
         void on_event(const uint64_t &now, const SDL_Event &event) override;
         void update(const uint64_t &now) override;
-        ~MenuScreen() override;
     private:
         const uint8_t parallax_range = 100;
+        std::atomic_bool load_async_finished = false;
 
         Mix_Chunk* click_sound = nullptr;
         SDL_Texture* background = nullptr;
