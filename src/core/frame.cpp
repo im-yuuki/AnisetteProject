@@ -1,7 +1,6 @@
 //
 // Created by Yuuki on 25/03/2025.
 //
-#include <cassert>
 #include <stack>
 #include <utils/common.h>
 #include "_internal.h"
@@ -9,7 +8,7 @@
 #include "utils/discord.h"
 #include "utils/logging.h"
 
-constexpr int MAXIMUM_EVENT_POLL_PER_FRAME = 10;
+constexpr int MAXIMUM_EVENT_POLL_PER_FRAME = 16;
 const static auto logger = anisette::logging::get("frame");
 
 namespace anisette::core {
@@ -21,13 +20,15 @@ namespace anisette::core {
 
     // scene manager
     void open(abstract::Screen *handler) {
-        assert(handler != nullptr);
         screen_stack.push(handler);
         logger->debug("Open new screen");
     }
 
     void back() {
-        assert(!back_screen_flag);
+        if (back_screen_flag) {
+            logger->warn("Another back request is made in this frame");
+            return;
+        }
         logger->debug("Back to previous screen");
         back_screen_flag = true;
     }
@@ -72,6 +73,7 @@ namespace anisette::core {
                 back_screen_flag = false;
                 delete current_handler;
                 screen_stack.pop();
+                if (!screen_stack.empty()) screen_stack.top()->on_back(now);
             }
 
             // delay until next frame, and calculate the frame time

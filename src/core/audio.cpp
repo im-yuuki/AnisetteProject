@@ -12,8 +12,10 @@ const auto logger = anisette::logging::get("audio");
 namespace anisette::core::audio
 {
     static Mix_Music *_current_music = nullptr;
+    static std::string name;
 
     bool init() {
+        logger->debug("Opening audio device");
         if (Mix_OpenAudioDevice(44100, MIX_DEFAULT_FORMAT, 2, 1024, nullptr, 0)) {
             logger->error("Failed to open audio device");
             return false;
@@ -35,8 +37,8 @@ namespace anisette::core::audio
         Mix_Volume(-1, volume);
     }
 
-    Mix_Chunk* load_sound(const char* path) {
-        Mix_Chunk *sound = Mix_LoadWAV(path);
+    Mix_Chunk* load_sound(const std::string &path) {
+        Mix_Chunk *sound = Mix_LoadWAV(path.c_str());
         if (sound == nullptr) {
             logger->error("Failed to load sound file: {}", path);
             return nullptr;
@@ -44,44 +46,64 @@ namespace anisette::core::audio
         return sound;
     }
 
-    bool play_sound(Mix_Chunk *sound) {
-        if (Mix_PlayChannel(-1, sound, 0) == -1) {
+    bool play_sound(Mix_Chunk *sound, const int channel) {
+        if (Mix_PlayChannel(channel, sound, 0) == -1) {
             logger->error("Failed to play sound: {}", SDL_GetError());
             return false;
         }
         return true;
     }
 
-    bool play_music(const char* path) {
+    CurrentMusicInfo get_current_music_info() {
+        CurrentMusicInfo info;
+        if (_current_music == nullptr) return info;
+        info.display_name = name;
+        info.path = Mix_GetMusicTitle(_current_music);
+        info.current_position_ms = 1000 * Mix_GetMusicPosition(_current_music);
+        info.total_duration_ms = 1000 * Mix_MusicDuration(_current_music);
+        info.paused = Mix_PausedMusic();
+        return info;
+    }
+
+    bool play_music(const std::string &path, const std::string &display_name) {
         stop_music();
-        _current_music = Mix_LoadMUS(path);
+        _current_music = Mix_LoadMUS(path.c_str());
         if (_current_music == nullptr) {
             logger->error("Failed to load music file: {}", path);
+            stop_music();
             return false;
         }
-        if (!Mix_PlayMusic(_current_music, 0)) {
+        if (Mix_PlayMusic(_current_music, 0)) {
             logger->error("Failed to play music: {}", SDL_GetError());
+            stop_music();
+            return false;
         }
-        logger->debug("Playing music: {}", Mix_GetMusicTitle(_current_music));
+        if (display_name.empty()) {
+            name = Mix_GetMusicTitle(_current_music);
+        } else {
+            name = display_name;
+        }
+        logger->debug("Playing music: {}", name);
         return true;
     }
 
     void pause_music() {
         if (_current_music == nullptr) return;
-        logger->debug("Pausing music: {}", Mix_GetMusicTitle(_current_music));
+        logger->debug("Pausing music: {}", name);
         Mix_PauseMusic();
     }
 
     void resume_music() {
         if (_current_music == nullptr) return;
-        logger->debug("Resuming music: {}", Mix_GetMusicTitle(_current_music));
+        logger->debug("Resuming music: {}", name);
         Mix_ResumeMusic();
     }
 
     void stop_music() {
         if (_current_music == nullptr) return;
-        logger->debug("Stopping music: {}", Mix_GetMusicTitle(_current_music));
+        logger->debug("Stopping music: {}", name);
         Mix_HaltMusic();
         Mix_FreeMusic(_current_music);
+        name = "";
     }
 }

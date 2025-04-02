@@ -25,6 +25,7 @@ namespace anisette::core::video
         } else if (config::display_mode == config::BORDERLESS) {
             flags |= SDL_WINDOW_BORDERLESS;
         }
+        logger->debug("Initializing window with flags: {}", flags);
         window = SDL_CreateWindow(
             "Anisette",
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -34,6 +35,7 @@ namespace anisette::core::video
             logger->error("Initialize main window failed: {}", SDL_GetError());
             return false;
         }
+        logger->debug("Initializing renderer");
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
         if (!renderer) {
             logger->error("Initialize renderer failed: {}", SDL_GetError());
@@ -45,7 +47,10 @@ namespace anisette::core::video
         }
         logger->info("Display info: {}x{}@{}Hz", display_mode.w, display_mode.h, display_mode.refresh_rate);
 
-        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        if (SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND)) {
+            logger->error("Set renderer blend mode failed: {}", SDL_GetError());
+            return false;
+        }
         return true;
     }
 

@@ -4,6 +4,7 @@
 #pragma once
 #include <cstdint>
 #include <functional>
+#include <string>
 #include "abs.h"
 
 #include <SDL_mixer.h>
@@ -78,14 +79,25 @@ namespace anisette::core::video
  */
 namespace anisette::core::audio
 {
+    struct CurrentMusicInfo {
+        std::string display_name;
+        std::string path;
+        int current_position_ms = 0;
+        int total_duration_ms = 0;
+        bool paused = false;
+    };
+
     extern void set_sound_volume(uint8_t volume);
     extern void set_music_volume(uint8_t volume);
 
     [[nodiscard]]
-    extern Mix_Chunk *load_sound(const char *path);
-    extern bool play_sound(Mix_Chunk *sound);
+    extern Mix_Chunk *load_sound(const std::string &path);
+    extern bool play_sound(Mix_Chunk *sound, int channel = -1);
 
-    extern bool play_music(const char *path);
+    [[nodiscard]]
+    extern CurrentMusicInfo get_current_music_info();
+
+    extern bool play_music(const std::string &path, const std::string &display_name = "");
     extern void pause_music();
     extern void resume_music();
     extern void stop_music();

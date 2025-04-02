@@ -13,16 +13,16 @@ static std::string generate_filename() {
     const auto now = system_clock::to_time_t(system_clock::now());
     return "log/anisette-run-" + std::to_string(now) + ".log";
 }
-const auto output_sink = std::make_shared<sinks::basic_file_sink_st>(generate_filename(), true);
+const auto output_sink = std::make_shared<sinks::basic_file_sink_mt>(generate_filename(), true);
 constexpr level::level_enum default_level = level::info;
 #else
 #include <spdlog/sinks/stdout_color_sinks.h>
-const auto output_sink = std::make_shared<sinks::stdout_color_sink_st>();
+const auto output_sink = std::make_shared<sinks::stdout_color_sink_mt>();
 constexpr level::level_enum default_level = level::debug;
 #endif
 
 std::function<void(const details::log_msg &)> callback = nullptr;
-const static auto callback_sink = std::make_shared<sinks::callback_sink_st>([](const details::log_msg &msg) {
+const static auto callback_sink = std::make_shared<sinks::callback_sink_mt>([](const details::log_msg &msg) {
     if (callback == nullptr) return;
     callback(msg);
 });

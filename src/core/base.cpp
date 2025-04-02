@@ -66,6 +66,18 @@ namespace anisette::core
             logger->error("Failed to initialize audio mixer");
             return false;
         }
+        // register event filter
+        SDL_SetEventFilter([](void *userdata, SDL_Event *event) {
+            switch (event->type) {
+                case SDL_QUIT:
+                case SDL_MOUSEBUTTONDOWN:
+                case SDL_MOUSEBUTTONUP:
+                    return 1;
+
+                default:
+                    return 0;
+            }
+        }, nullptr);
         // init video and audio handlers
         if (!(audio::init() && video::init())) return false;
         // post-init task
@@ -130,8 +142,10 @@ namespace anisette::core
         }
         // frame time overlay
         if (config::show_frametime_overlay && !frame_time_overlay) {
+            logger->debug("Frame time overlay enabled");
             frame_time_overlay = new FrameTimeOverlay(video::renderer);
         } else {
+            logger->debug("Frame time overlay disabled");
             delete frame_time_overlay;
             frame_time_overlay = nullptr;
         }
