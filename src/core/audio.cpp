@@ -35,6 +35,23 @@ namespace anisette::core::audio
         Mix_Volume(-1, volume);
     }
 
+    Mix_Chunk* load_sound(const char* path) {
+        Mix_Chunk *sound = Mix_LoadWAV(path);
+        if (sound == nullptr) {
+            logger->error("Failed to load sound file: {}", path);
+            return nullptr;
+        }
+        return sound;
+    }
+
+    bool play_sound(Mix_Chunk *sound) {
+        if (Mix_PlayChannel(-1, sound, 0) == -1) {
+            logger->error("Failed to play sound: {}", SDL_GetError());
+            return false;
+        }
+        return true;
+    }
+
     bool play_music(const char* path) {
         stop_music();
         _current_music = Mix_LoadMUS(path);

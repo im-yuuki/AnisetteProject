@@ -63,7 +63,7 @@ namespace anisette::utils::discord
     void set_in_main_menu() {
         logger->debug("Set Discord presence to main menu mode");
         presence.SetState("In the main menu");
-        presence.SetDetails(nullptr);
+        presence.SetDetails("");
         presence.GetAssets().SetSmallImage("home");
         presence.GetAssets().SetSmallText("Home");
     }

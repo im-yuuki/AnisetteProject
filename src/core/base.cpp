@@ -7,13 +7,13 @@
 #include "utils/logging.h"
 #include "utils/discord.h"
 
-#include <csignal>
-#include <SDL_mixer.h>
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_version.h>
+#include <SDL_mixer.h>
+#include <csignal>
+#include <utils/common.h>
 
 const auto logger = anisette::logging::get("core");
 
@@ -23,32 +23,21 @@ constexpr uint32_t SDL_MIXER_INIT_FLAGS = MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT
 
 namespace anisette::core
 {
-    static const auto system_freq = SDL_GetPerformanceFrequency();
-    static std::function<abstract::FrameHandler*(SDL_Renderer*)> register_function;
+    std::atomic_bool stop_requested = false;
+    uint64_t target_frame_time = 0;
+    FrameTimeOverlay *frame_time_overlay = nullptr;
+    
+    static std::function<abstract::Screen*(SDL_Renderer*)> register_function;
 
-    /**
-     * @brief Handle interrupt signal
-     *
-     * This function is called when the game receives an interrupt signal.
-     * It will request the game core to stop and trigger the cleanup process.
-     *
-     * @param signal Signal number
-     */
     void handle_interrupt(int signal) {
         logger->debug("Received interrupt signal {}", signal);
         request_stop();
     }
 
-
-    void register_first_frame_handler(const std::function<abstract::FrameHandler*(SDL_Renderer* renderer)> &reg_fn) {
+    void register_first_screen(const std::function<abstract::Screen*(SDL_Renderer* renderer)> &reg_fn) {
         register_function = reg_fn;
     }
 
-    /**
-     * @brief Initialize eveything of the game core
-     *
-     * @return true if all are success, false otherwise
-     */
     bool init() {
         // register signal handlers
         signal(SIGINT, handle_interrupt);
@@ -77,15 +66,11 @@ namespace anisette::core
             logger->error("Failed to initialize audio mixer");
             return false;
         }
-        // start discord rpc
-        if (config::enable_discord_rpc) utils::discord::start();
         // init video and audio handlers
         if (!(audio::init() && video::init())) return false;
         // post-init task
-        set_fps(config::fps);
-        insert_handler(register_function(video::renderer));
-        if (config::show_frametime_overlay)
-            frame_time_overlay = new components::FrameTimeOverlay(video::renderer, &last_frame_time);
+        reload_config();
+        open(register_function(video::renderer));
         return true;
     }
 
@@ -110,50 +95,49 @@ namespace anisette::core
         config::save();
     }
 
-    void set_fps(const int value) {
+    void reload_config() {
         assert(video::renderer);
-        if (value == config::VSYNC) {
+        const auto display_mode = video::get_display_mode();
+        // reload fps value
+        if (config::fps == config::VSYNC) {
             logger->debug("FPS is set to VSync mode");
             SDL_RenderSetVSync(video::renderer, true);
-            _target_frame_time = system_freq / 2000;
-            return;
-        }
-
-        SDL_RenderSetVSync(video::renderer, false);
-        if (value > 0) {
-            logger->debug("FPS: {}", value);
-            _target_frame_time = system_freq / value;
-            return;
-        }
-
-        switch (value) {
-            case config::UNLIMITED:
+            target_frame_time = utils::system_freq / 2000;
+        } else {
+            SDL_RenderSetVSync(video::renderer, false);
+            if (config::fps > 0) {
+                logger->debug("FPS: {}", config::fps);
+                target_frame_time = utils::system_freq / config::fps;
+            } else if (config::fps == config::UNLIMITED) {
                 logger->warn("FPS is set to unlimited mode, can lead to high resource usage");
-                _target_frame_time = 0;
-                break;
-            case config::DISPLAY:
+                target_frame_time = 0;
+            } else if (config::fps == config::DISPLAY) {
                 logger->debug("FPS is set to match display refresh rate");
-                _target_frame_time = system_freq / video::display_mode.refresh_rate;
-                break;
-            case config::X2_DISPLAY:
+                target_frame_time = utils::system_freq / display_mode->refresh_rate;
+            } else if (config::fps == config::X2_DISPLAY) {
                 logger->debug("FPS is set to 2x of display refresh rate");
-                _target_frame_time = system_freq / video::display_mode.refresh_rate / 2;
-                break;
-            case config::X4_DISPLAY:
+                target_frame_time = utils::system_freq / display_mode->refresh_rate / 2;
+            } else if (config::fps == config::X4_DISPLAY) {
                 logger->debug("FPS is set to 4x of display refresh rate");
-                _target_frame_time = system_freq / video::display_mode.refresh_rate / 4;
-                break;
-            case config::X8_DISPLAY:
+                target_frame_time = utils::system_freq / display_mode->refresh_rate / 4;
+            } else if (config::fps == config::X8_DISPLAY) {
                 logger->debug("FPS is set to 8x of display refresh rate");
-                _target_frame_time = system_freq / video::display_mode.refresh_rate / 8;
-                break;
-            case config::HALF_DISPLAY:
+                target_frame_time = utils::system_freq / display_mode->refresh_rate / 8;
+            } else if (config::fps == config::HALF_DISPLAY) {
                 logger->debug("FPS is set to half of display refresh rate");
-                _target_frame_time = system_freq / video::display_mode.refresh_rate * 2;
-                break;
-            default: break;
+                target_frame_time = utils::system_freq / display_mode->refresh_rate * 2;
+            }
         }
-
+        // frame time overlay
+        if (config::show_frametime_overlay && !frame_time_overlay) {
+            frame_time_overlay = new FrameTimeOverlay(video::renderer);
+        } else {
+            delete frame_time_overlay;
+            frame_time_overlay = nullptr;
+        }
+        // discord rpc
+        if (config::enable_discord_rpc) utils::discord::start();
+        else utils::discord::shutdown();
     }
 
     // entrypoint
@@ -176,6 +160,6 @@ namespace anisette::core
 
     void request_stop() {
         logger->debug("Core stop requested");
-        _stop_requested = true;
+        stop_requested = true;
     }
 }

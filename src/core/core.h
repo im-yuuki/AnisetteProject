@@ -6,6 +6,8 @@
 #include <functional>
 #include "abs.h"
 
+#include <SDL_mixer.h>
+
 /**
  * @brief Anisette game core, the soul of this project
  *
@@ -14,17 +16,7 @@
  */
 namespace anisette::core
 {
-    /**
-     * @brief Frame time of the latest handle
-     */
-    inline uint64_t last_frame_time = 0;
-
-    /**
-     * @brief Set the frame rate limit
-     *
-     * @param value FPS
-     */
-    extern void set_fps(int value);
+    extern void reload_config();
 
     /**
      * @brief Insert a new frame handler to the core stack
@@ -33,14 +25,14 @@ namespace anisette::core
      *
      * @param handler The frame handler to be inserted
      */
-    extern void insert_handler(abstract::FrameHandler *handler);
+    extern void open(abstract::Screen *handler);
 
     /**
      * @brief Remove the top frame handler from the core stack
      * 
      * The core will redirect the frame update to the new top handler of the stack.
      */
-    extern void remove_handler();
+    extern void back();
 
     /**
      * @brief Start the game core
@@ -61,7 +53,7 @@ namespace anisette::core
      *
      * @param reg_fn
      */
-    extern void register_first_frame_handler(const std::function<abstract::FrameHandler*(SDL_Renderer*)> &reg_fn);
+    extern void register_first_screen(const std::function<abstract::Screen*(SDL_Renderer*)> &reg_fn);
 } // namespace anisette::core
 
 
@@ -75,7 +67,9 @@ namespace anisette::core::video
 
     [[nodiscard]]
     extern SDL_Rect get_overlay_render_position(RenderPositionX position_x, RenderPositionY position_y, int width, int height, int margin_x, int margin_y);
-    bool fetch_display_info();
+
+    [[nodiscard]]
+    extern SDL_DisplayMode* get_display_mode();
 } // namespace anisette::core::video
 
 
@@ -86,6 +80,11 @@ namespace anisette::core::audio
 {
     extern void set_sound_volume(uint8_t volume);
     extern void set_music_volume(uint8_t volume);
+
+    [[nodiscard]]
+    extern Mix_Chunk *load_sound(const char *path);
+    extern bool play_sound(Mix_Chunk *sound);
+
     extern bool play_music(const char *path);
     extern void pause_music();
     extern void resume_music();

@@ -11,12 +11,20 @@
 const auto logger = anisette::logging::get("video");
 namespace anisette::core::video
 {
+    SDL_Window *window = nullptr;
+    SDL_Renderer *renderer = nullptr;
+
+    static SDL_DisplayMode display_mode {};
+
     bool init() {
         // Initialize
         logger->debug("Initializing main window");
-        uint32_t flags = 0;
-        if (config::display_mode == config::EXCLUSIVE) flags |= SDL_WINDOW_FULLSCREEN;
-        else if (config::display_mode == config::BORDERLESS) flags |= SDL_WINDOW_BORDERLESS;
+        uint32_t flags = SDL_WINDOW_OPENGL;
+        if (config::display_mode == config::WINDOWED) {
+            flags |= SDL_WINDOW_RESIZABLE;
+        } else if (config::display_mode == config::BORDERLESS) {
+            flags |= SDL_WINDOW_BORDERLESS;
+        }
         window = SDL_CreateWindow(
             "Anisette",
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -31,20 +39,22 @@ namespace anisette::core::video
             logger->error("Initialize renderer failed: {}", SDL_GetError());
             return false;
         }
-        return fetch_display_info();
-    }
-
-    bool fetch_display_info() {
         if (SDL_GetDesktopDisplayMode(SDL_GetWindowDisplayIndex(window), &display_mode)) {
             logger->error("Fetch display mode failed: {}", SDL_GetError());
             return false;
         }
         logger->info("Display info: {}x{}@{}Hz", display_mode.w, display_mode.h, display_mode.refresh_rate);
+
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         return true;
     }
 
     void cleanup() {
         SDL_DestroyWindow(window);
+    }
+
+    SDL_DisplayMode* get_display_mode() {
+        return &display_mode;
     }
 
     SDL_Rect get_overlay_render_position(const RenderPositionX position_x, const RenderPositionY position_y,

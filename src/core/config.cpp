@@ -20,8 +20,8 @@ namespace anisette::core::config
     // default values
      int render_width = 1600;
      int render_height = 900;
-     int fps = X2_DISPLAY;
-     DISPLAY_MODE display_mode = WINDOWED;
+     FPS_VALUE fps = X2_DISPLAY;
+     DISPLAY_MODE display_mode = EXCLUSIVE;
      uint8_t sound_volume = 128;
      uint8_t music_volume = 128;
      bool show_frametime_overlay = true;

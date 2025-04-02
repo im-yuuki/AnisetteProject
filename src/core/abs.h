@@ -7,10 +7,10 @@
 #include <SDL_render.h>
 
 namespace anisette::core::abstract {
-    class FrameHandler {
+    class Screen {
     public:
-        virtual ~FrameHandler() = default;
-        virtual void on_event(const uint64_t &start_frame, const SDL_Event &event) = 0;
-        virtual void update(const uint64_t &start_frame) = 0;
+        virtual ~Screen() = default;
+        virtual void on_event(const uint64_t &now, const SDL_Event &event) = 0;
+        virtual void update(const uint64_t &now) = 0;
     };
 }
