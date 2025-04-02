@@ -15,13 +15,14 @@ namespace anisette::core {
     uint64_t last_frame_time = 0;
 
     static std::stack<abstract::Screen*> screen_stack;
-    static bool back_screen_flag = false;
+    static bool new_screen_flag = false, back_screen_flag = false;
     static uint64_t now = 0, start_frame = 0, target_next_frame = 0, next_discord_poll = 0;
 
     // scene manager
     void open(abstract::Screen *handler) {
         screen_stack.push(handler);
         logger->debug("Open new screen");
+        new_screen_flag = true;
     }
 
     void back() {
@@ -51,6 +52,13 @@ namespace anisette::core {
             }
             current_handler = screen_stack.top();
 
+            // trigger hook if the screen is changed
+            if (new_screen_flag || back_screen_flag) {
+                current_handler->on_focus(now);
+                new_screen_flag = false;
+                back_screen_flag = false;
+            }
+
             // listen for events
             for (int i = 0; i < MAXIMUM_EVENT_POLL_PER_FRAME; i++) {
                 if (!SDL_PollEvent(&event)) break;
@@ -70,10 +78,8 @@ namespace anisette::core {
 
             // check if requested to back to previous screen
             if (back_screen_flag) {
-                back_screen_flag = false;
                 delete current_handler;
                 screen_stack.pop();
-                if (!screen_stack.empty()) screen_stack.top()->on_back(now);
             }
 
             // delay until next frame, and calculate the frame time

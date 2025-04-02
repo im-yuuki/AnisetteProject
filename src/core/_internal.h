@@ -26,13 +26,13 @@ namespace anisette::core
     class FrameTimeOverlay {
     public:
         explicit FrameTimeOverlay(SDL_Renderer *renderer) : renderer(renderer) {
-            texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, 100, 100);
+            texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, src_rect.w, src_rect.h);
             SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-            fps_font = TTF_OpenFont(FRT_OVERLAY_FONT_FILE, 16);
-            frame_time_font = TTF_OpenFont(FRT_OVERLAY_FONT_FILE, 12);
+            font = TTF_OpenFont(FRT_OVERLAY_FONT_FILE, 16);
         };
 
-        void render_text(const std::string &text, TTF_Font* font, const SDL_Color &color, int &max_width, int &max_height) const {
+        void render_text(const std::string &text, const int font_size, const SDL_Color &color, int &max_width, int &max_height) const {
+            TTF_SetFontSize(font, font_size);
             SDL_Surface *surface = TTF_RenderText_Blended(font, text.c_str(), color);
             if (!surface) return;
             SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -76,8 +76,9 @@ namespace anisette::core
                 // draw the FPS text
                 src_rect.w = 0;
                 src_rect.h = 0;
-                render_text(fps_text, fps_font, *selected_color, src_rect.w, src_rect.h);
-                render_text(frame_time_text, frame_time_font, *selected_color, src_rect.w, src_rect.h);
+                // render the text
+                render_text(fps_text, 16, *selected_color, src_rect.w, src_rect.h);
+                render_text(frame_time_text, 12, *selected_color, src_rect.w, src_rect.h);
                 dst_rect = get_overlay_render_position(
                     video::RIGHT, video::BOTTOM,
                     src_rect.w, src_rect.h, 10, 10
@@ -91,8 +92,7 @@ namespace anisette::core
 
         ~FrameTimeOverlay() {
             if (texture) SDL_DestroyTexture(texture);
-            if (frame_time_font) TTF_CloseFont(frame_time_font);
-            if (fps_font) TTF_CloseFont(fps_font);
+            if (font) TTF_CloseFont(font);
         }
     private:
         const SDL_Color color = {0, 255, 0, 255};
@@ -101,15 +101,14 @@ namespace anisette::core
 
         SDL_Rect src_rect { 0, 0, 100, 50};
         SDL_Rect dst_rect = get_overlay_render_position(
-            core::video::RIGHT, core::video::BOTTOM,
+            video::RIGHT, video::BOTTOM,
             src_rect.w, src_rect.h, 10, 10
             );
 
         uint64_t next_refresh = 0;
         SDL_Renderer* renderer = nullptr;
         SDL_Texture* texture = nullptr;
-        TTF_Font* frame_time_font = nullptr;
-        TTF_Font* fps_font = nullptr;
+        TTF_Font* font = nullptr;
     };
 
     extern FrameTimeOverlay *frame_time_overlay;

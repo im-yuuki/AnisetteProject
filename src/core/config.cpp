@@ -26,12 +26,8 @@ namespace anisette::core::config
      uint8_t music_volume = 128;
      bool show_frametime_overlay = true;
      bool enable_discord_rpc = true;
-    
-    const uint32_t SDL_EVENT_SAVE_CONFIG_FAILURE = SDL_RegisterEvents(1);
-    static std::mutex mutex;
 
     bool load() {
-        std::lock_guard lock(mutex);
         // load config file
         logger->debug("Loading config file");
         std::ifstream config_file(CONFIG_FILE_NAME);
@@ -108,7 +104,6 @@ namespace anisette::core::config
 
 
     bool save(const bool quiet) {
-        std::lock_guard lock(mutex);
         if (!quiet) logger->debug("Saving config file");
         rapidjson::Document doc;
         doc.SetObject();
@@ -130,15 +125,7 @@ namespace anisette::core::config
         rapidjson::PrettyWriter writer(wrapper);
         doc.Accept(writer);
         ofs.close();
-        if (!quiet) logger->debug("Config file saved successfully");
+        if (!quiet) logger->info("Config file saved successfully");
         return true;
-    }
-
-    void save_async() {
-        logger->debug("Saving config file asynchronously");
-        std::thread t([&]() {
-            if (save(true)) return;
-            SDL_PushEvent(new SDL_Event{.type = SDL_EVENT_SAVE_CONFIG_FAILURE});
-        });
     }
 }

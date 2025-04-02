@@ -35,5 +35,4 @@ namespace anisette::core::config {
 
     extern bool load();
     extern bool save(bool quiet = false);
-    extern void save_async();
 }

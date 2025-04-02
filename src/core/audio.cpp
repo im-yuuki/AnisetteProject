@@ -47,6 +47,7 @@ namespace anisette::core::audio
     }
 
     bool play_sound(Mix_Chunk *sound, const int channel) {
+        if (sound == nullptr) return false;
         if (Mix_PlayChannel(channel, sound, 0) == -1) {
             logger->error("Failed to play sound: {}", SDL_GetError());
             return false;
@@ -66,6 +67,7 @@ namespace anisette::core::audio
     }
 
     bool play_music(const std::string &path, const std::string &display_name) {
+        if (path.empty()) return false;
         stop_music();
         _current_music = Mix_LoadMUS(path.c_str());
         if (_current_music == nullptr) {

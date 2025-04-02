@@ -3,8 +3,10 @@
 //
 
 #include <SDL_image.h>
+#include <core/_internal.h>
 #include <filesystem>
 #include <register.h>
+
 #include "core/core.h"
 #include "utils/discord.h"
 #include "utils/logging.h"
@@ -19,6 +21,13 @@ namespace anisette::screens
 
     void MenuScreen::update(const uint64_t &now) {
         if (!load_async_finished) return;
+        // load the background image
+        if (background_surface) {
+            SDL_DestroyTexture(background);
+            background = SDL_CreateTextureFromSurface(renderer, background_surface);
+            SDL_FreeSurface(background_surface);
+            background_surface = nullptr;
+        }
         // get mouse position
         int mouse_x, mouse_y;
         SDL_GetMouseState(&mouse_x, &mouse_y);
@@ -56,9 +65,14 @@ namespace anisette::screens
             std::vector<std::string> backgrounds;
             for (const auto &entry: std::filesystem::directory_iterator("assets/backgrounds")) {
                 if (entry.is_regular_file()) {
-                    // check if the file is a jpg file
-                    if (entry.path().extension() != ".jpg")
-                        continue;
+                    // allowed: .jpg .jpeg .png .bmp
+                    if (entry.path().extension() == ".jpg") goto accept;
+                    if (entry.path().extension() == ".jpeg") goto accept;
+                    if (entry.path().extension() == ".png") goto accept;
+                    if (entry.path().extension() == ".bmp") goto accept;
+                    continue;
+
+                    accept:
                     backgrounds.push_back(entry.path().string());
                 }
             }
@@ -67,25 +81,25 @@ namespace anisette::screens
                 return;
             }
             const auto random_index = utils::randint(0, backgrounds.size() - 1);
-            const auto bg_surface = IMG_Load(backgrounds[random_index].c_str());
+            // load the background image
+            background_surface = IMG_Load(backgrounds[random_index].c_str());
+            const int width = background_surface->w, height = background_surface->h;
             // scale the image to fit the screen
-            const float image_ratio = static_cast<float>(bg_surface->w) / bg_surface->h;
+            const float image_ratio = static_cast<float>(width) / height;
             const float screen_ratio = static_cast<float>(display_mode->w) / display_mode->h;
             if (image_ratio > screen_ratio) {
-                bg_src_rect.w = bg_surface->w - parallax_range;
-                bg_src_rect.h = bg_surface->w / screen_ratio - parallax_range;
+                bg_src_rect.w = width - parallax_range;
+                bg_src_rect.h = width / screen_ratio - parallax_range;
             } else {
-                bg_src_rect.h = bg_surface->h - parallax_range;
-                bg_src_rect.w = bg_surface->h * screen_ratio - parallax_range;
+                bg_src_rect.h = width - parallax_range;
+                bg_src_rect.w = width * screen_ratio - parallax_range;
             }
-            background = SDL_CreateTextureFromSurface(renderer, bg_surface);
-            SDL_FreeSurface(bg_surface);
             load_async_finished = true;
         });
         t.detach();
     }
 
-    void MenuScreen::on_back(const uint64_t &now) {
+    void MenuScreen::on_focus(const uint64_t &now) {
         utils::discord::set_in_main_menu();
     }
 

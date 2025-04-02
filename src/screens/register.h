@@ -4,9 +4,9 @@
 #pragma once
 #include "core/abs.h"
 #include "core/core.h"
+#include "utils/common.h"
 
 #include <SDL_mixer.h>
-#include <utils/common.h>
 #include <queue>
 
 namespace anisette::screens {
@@ -20,13 +20,14 @@ namespace anisette::screens {
 
         void on_event(const uint64_t &now, const SDL_Event &event) override;
         void update(const uint64_t &now) override;
-        void on_back(const uint64_t &now) override;
+        void on_focus(const uint64_t &now) override;
 
     private:
         const uint8_t parallax_range = 100;
         std::atomic_bool load_async_finished = false;
 
         Mix_Chunk* click_sound = nullptr;
+        SDL_Surface* background_surface = nullptr;
         SDL_Texture* background = nullptr;
         SDL_Renderer* renderer;
         SDL_DisplayMode* display_mode = nullptr;
@@ -39,11 +40,10 @@ namespace anisette::screens {
         void on_event(const uint64_t &now, const SDL_Event &event) override {}
         ~SplashScreen() override;
         void update(const uint64_t &now) override;
-        void on_back(const uint64_t &now) override {};
+        void on_focus(const uint64_t &now) override {};
 
     private:
-        const uint64_t fade_duration = utils::system_freq; // 1s, multiply it with duration in seconds you want
-
+        const uint64_t fade_duration = utils::system_freq; // 1 second
         uint64_t action_start_time = 0;
         std::queue<std::function<bool(const uint64_t &now)>> action_hook;
 

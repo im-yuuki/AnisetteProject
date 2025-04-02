@@ -41,7 +41,8 @@ namespace anisette::screens {
         action_hook.emplace([this](const uint64_t &now) {
             const auto alpha = 255 * (now - action_start_time) / fade_duration;
             if (alpha > 255) {
-                SDL_SetTextureAlphaMod(logo, 0);
+                SDL_DestroyTexture(logo);
+                logo = nullptr;
                 // switch to menu screen
                 core::open(menu_screen);
                 return true;
@@ -64,6 +65,7 @@ namespace anisette::screens {
             action_start_time = now;
         }
         // Render the scene
+        if (!logo) return;
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, logo, nullptr, &logo_rect);
