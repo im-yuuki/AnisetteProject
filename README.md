@@ -40,11 +40,11 @@ cmake -S . --preset x64-linux-rel
 Run this command to build all targets.
 
 ```bash
-cmake --build build\x64-windows-rel --target ALL_BUILD --config Release
+cmake --build build\x64-windows-rel --target Anisette --config Release
 ```
 
 ```bash
-cmake --build build/x64-linux-rel --target ALL_BUILD --config Release
+cmake --build build/x64-linux-rel --target Anisette --config Release
 ```
 
 Go to `build/<your-platform>-rel/bin` and get the executable file along with .dll/.so files.
