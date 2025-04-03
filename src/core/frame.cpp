@@ -2,14 +2,13 @@
 // Created by Yuuki on 25/03/2025.
 //
 #include <stack>
-#include "components/background.h"
-#include "components/frametime_overlay.h"
+#include "background.h"
+#include "frametime_overlay.h"
 #include "core.h"
 #include "internal.h"
-#include "static.h"
-#include "utils/common.h"
-#include "utils/discord.h"
-#include "utils/logging.h"
+#include "common.h"
+#include "discord.h"
+#include "logging.h"
 
 constexpr int MAXIMUM_EVENT_POLL_PER_FRAME = 16;
 const static auto logger = anisette::logging::get("frame");
@@ -35,6 +34,16 @@ namespace anisette::core {
         }
         logger->debug("Back to previous screen");
         back_screen_flag = true;
+    }
+
+    void event_handler(const uint64_t &start_frame, const SDL_Event &event, abstract::Screen *screen) {
+        switch (event.type) {
+            case SDL_QUIT:
+                request_stop();
+            break;
+            default:
+                screen->on_event(start_frame, event);
+        }
     }
 
     void main_loop() {
@@ -65,13 +74,7 @@ namespace anisette::core {
             // listen for events
             for (int i = 0; i < MAXIMUM_EVENT_POLL_PER_FRAME; i++) {
                 if (!SDL_PollEvent(&event)) break;
-                switch (event.type) {
-                    case SDL_QUIT:
-                        request_stop();
-                        break;
-                    default:
-                        current_handler->on_event(start_frame, event);
-                }
+                event_handler(start_frame, event, current_handler);
             }
             // draw background
             if (background_instance) background_instance->draw(start_frame);

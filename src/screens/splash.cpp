@@ -1,11 +1,11 @@
 //
 // Created by Yuuki on 31/03/2025.
 //
-#include <SDL_image.h>
-#include "core/core.h"
-#include "register.h"
-#include "utils/common.h"
-#include "utils/logging.h"
+#include <SDL2/SDL_image.h>
+#include "core.h"
+#include "screens.h"
+#include "common.h"
+#include "logging.h"
 
 const auto logger = anisette::logging::get("splash");
 
@@ -33,6 +33,10 @@ namespace anisette::screens {
             }
             SDL_SetTextureAlphaMod(logo, alpha);
             return false;
+        });
+        // hook check if beatmap loader is ready
+        action_hook.emplace([this](const uint64_t &now) {
+            return core::beatmap_loader->is_scan_finished();
         });
         // hook check if menu screen is loaded
         action_hook.emplace([this](const uint64_t &now) {

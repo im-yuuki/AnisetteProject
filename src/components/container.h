@@ -10,6 +10,7 @@ namespace anisette::components {
     class ItemWrapper : public Container {};
     class Dropdown : public ItemWrapper {};
 
+    class Grid : public Container {};
     class VerticalBox : public Container {};
     class HorizontalBox : public Container {};
 

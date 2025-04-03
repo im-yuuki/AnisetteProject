@@ -3,7 +3,6 @@
 //
 #pragma once
 #include "core.h"
-#include "core/static.h"
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_render.h>
 

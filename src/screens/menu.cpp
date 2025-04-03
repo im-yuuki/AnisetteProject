@@ -2,17 +2,31 @@
 // Created by Yuuki on 22/03/2025.
 //
 #include <filesystem>
-#include <register.h>
-#include <utils/discord.h>
+#include "screens.h"
+#include "discord.h"
+#include "core.h"
+#include "logging.h"
 
-#include "core/core.h"
-#include "utils/logging.h"
+#include <SDL2/SDL_events.h>
 
 const auto logger = anisette::logging::get("menu");
 
 namespace anisette::screens
 {
     MenuScreen::MenuScreen(SDL_Renderer *renderer) : renderer(renderer) {
+        // add hook to play music from a random beatmap
+        action_hook.push([this](const uint64_t &now) {
+            if (!core::beatmap_loader->is_scan_finished()) return false;
+            if (core::beatmap_loader->beatmaps.empty()) {
+                logger->error("No beatmaps found");
+                return false;
+            }
+            auto beatmap = core::beatmap_loader->beatmaps[utils::randint(0, core::beatmap_loader->beatmaps.size() - 1)];
+            auto music_path = beatmap.music_path;
+            auto display_name = beatmap.artist + " - " + beatmap.title;
+            core::audio::play_music(music_path, display_name);
+            return true;
+        });
     }
 
     void MenuScreen::on_click(const uint64_t &now, const int x, const int y) {

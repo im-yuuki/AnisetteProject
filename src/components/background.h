@@ -2,8 +2,8 @@
 // Created by Yuuki on 03/04/2025.
 //
 #pragma once
-#include "core/config.h"
-#include "core/static.h"
+#include "config.h"
+#include "core.h"
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>

@@ -4,16 +4,15 @@
 #include "core.h"
 #include "internal.h"
 #include "config.h"
-#include "static.h"
-#include "utils/logging.h"
-#include "utils/discord.h"
+#include "logging.h"
+#include "discord.h"
 
 #include <csignal>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_version.h>
-#include <SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 
 const auto logger = anisette::logging::get("core");
 
@@ -27,7 +26,8 @@ namespace anisette::core
     uint64_t target_frame_time = 0;
     components::FrameTimeOverlay *frame_time_overlay = nullptr;
     components::Background *background_instance = nullptr;
-    
+    auto beatmap_loader = new data::BeatmapLoader();
+
     static std::function<abstract::Screen*(SDL_Renderer*)> register_function;
 
     void handle_interrupt(int signal) {
@@ -82,8 +82,9 @@ namespace anisette::core
         // init video and audio handlers
         if (!(audio::init() && video::init())) return false;
         // post-init task
-        logger->debug("Load background instance");
+        logger->debug("Running post-init tasks");
         background_instance = new components::Background(video::renderer);
+        beatmap_loader->scan(data::NONE, true);
         reload_config();
         open(register_function(video::renderer));
         return true;

@@ -4,7 +4,7 @@
 #include "core.h"
 #include "internal.h"
 #include "config.h"
-#include "utils/logging.h"
+#include "logging.h"
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_ttf.h>
 

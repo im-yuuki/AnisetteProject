@@ -2,7 +2,7 @@
 // Created by Yuuki on 31/03/2025.
 //
 #include "config.h"
-#include "utils/logging.h"
+#include "logging.h"
 #include <fstream>
 #include <SDL_events.h>
 #include <rapidjson/document.h>

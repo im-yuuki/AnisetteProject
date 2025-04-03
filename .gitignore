@@ -20,6 +20,6 @@ cmake-build-*/
 .vs/
 
 scripts/**.osz
-scripts/out/
+scripts/beatmaps/
 
 src/version.h

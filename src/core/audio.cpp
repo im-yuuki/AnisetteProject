@@ -4,14 +4,16 @@
 #include "core.h"
 #include "internal.h"
 #include "config.h"
-#include "utils/logging.h"
+#include "logging.h"
 #include <SDL2/SDL_mixer.h>
+#include <atomic>
 
 const auto logger = anisette::logging::get("audio");
 
 namespace anisette::core::audio
 {
     static Mix_Music *current_music = nullptr;
+    static std::atomic_bool music_halted_flag = false;
     std::string music_display_name;
     uint8_t music_volume = 0;
     uint8_t sound_volume = 0;
@@ -24,6 +26,14 @@ namespace anisette::core::audio
         }
         set_music_volume(config::music_volume);
         set_sound_volume(config::sound_volume);
+        Mix_HookMusicFinished([]() {
+            logger->debug("Music finished");
+            if (current_music != nullptr) {
+                Mix_FreeMusic(current_music);
+                current_music = nullptr;
+                music_display_name = "";
+            }
+        });
         return true;
     }
 
@@ -78,7 +88,6 @@ namespace anisette::core::audio
         current_music = Mix_LoadMUS(path.c_str());
         if (current_music == nullptr) {
             logger->error("Failed to load music file: {}", path);
-            stop_music();
             return false;
         }
         if (Mix_PlayMusic(current_music, 0)) {
@@ -110,8 +119,12 @@ namespace anisette::core::audio
     void stop_music() {
         if (current_music == nullptr) return;
         logger->debug("Stopping music: {}", music_display_name);
+        if (music_position_ms() > 0 && ) {
+            music_halted_flag = true;
+        }
         Mix_HaltMusic();
         Mix_FreeMusic(current_music);
+        current_music = nullptr;
         music_display_name = "";
     }
 }

@@ -1,4 +1,4 @@
-add_library(anisette_screens SHARED
+add_library(anisette_screens STATIC
         screens/splash.cpp
         screens/library.cpp
         screens/menu.cpp

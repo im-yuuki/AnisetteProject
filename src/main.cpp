@@ -4,7 +4,7 @@
 #include "version.h"
 #include "core/core.h"
 #include "utils/logging.h"
-#include "screens/register.h"
+#include "screens/screens.h"
 #include <iostream>
 using namespace anisette;
 

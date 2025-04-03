@@ -30,14 +30,10 @@ namespace anisette::data {
 
     class Beatmap {
     public:
-        explicit Beatmap(const std::string &filename, const std::string &dir);
-
-        [[nodiscard]]
-        AsyncLoadResult is_load_finished() const;
+        bool load(const std::string &filename, const std::string &dir);
 
         unsigned id = 0;
         std::string path;
-        std::string dir;
         std::string artist;
         std::string title;
         std::string thumbnail_path;
@@ -46,20 +42,17 @@ namespace anisette::data {
         uint8_t difficulty = 0;
         uint8_t hp_drain = 0;
         std::vector<Note> notes[6];
-    private:
-        AsyncLoadResult load_result;
     };
 
     class BeatmapLoader {
     public:
-        BeatmapLoader();
         void scan(SortStrategy sort_strategy, bool ascending = true);
-        bool BeatmapLoader::wait_for_scan_finished();
+        bool is_scan_finished();
         Beatmap* get_beatmap(int id);
-
-    private:
-        std::atomic_bool load_finished = false;
         std::unordered_map<int, int> index;
         std::vector<Beatmap> beatmaps;
+
+    private:
+        std::atomic_bool load_finished;
     };
 }

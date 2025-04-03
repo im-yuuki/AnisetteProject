@@ -2,11 +2,10 @@
 // Created by Yuuki on 22/03/2025.
 //
 #pragma once
-#include "core/static.h"
-#include "core/core.h"
-#include "utils/common.h"
+#include "core.h"
+#include "common.h"
 
-#include <SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 #include <queue>
 
 namespace anisette::screens {

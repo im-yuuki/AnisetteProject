@@ -1,4 +1,5 @@
 {
+	"$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
 	"name": "anisette",
 	"version": "1.0.0",
 	"dependencies": [
@@ -24,6 +25,10 @@
 		{
 			"name": "sdl2-ttf",
 			"version>=": "2.24.0"
+		},
+		{
+			"name": "sdl2-gfx",
+			"version>=": "1.0.4#11"
 		},
 		{
 			"name": "spdlog",

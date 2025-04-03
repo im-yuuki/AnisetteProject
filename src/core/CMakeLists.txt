@@ -1,11 +1,13 @@
 # Game core
-add_library(anisette_core SHARED
+add_library(anisette_core STATIC
         core/base.cpp
         core/video.cpp
         core/audio.cpp
         core/frame.cpp
         core/config.cpp
 )
+target_include_directories(anisette_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/core)
+
 target_link_libraries(anisette_core PUBLIC anisette_utils anisette_data)
 # link SDL2 and its extensions
 target_link_libraries(anisette_core PUBLIC
@@ -16,6 +18,3 @@ target_link_libraries(anisette_core PUBLIC
 )
 # link rapidjson
 target_link_libraries(anisette_core PUBLIC RapidJSON rapidjson)
-
-# aliases
-add_library(${PROJECT_NAME}::Core ALIAS anisette_core)

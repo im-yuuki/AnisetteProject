@@ -2,10 +2,13 @@
 // Created by Yuuki on 02/04/2025.
 //
 #include "data.h"
+#include "logging.h"
 #include <filesystem>
 #include <thread>
 
 #define BEATMAPS_ROOT_DIR "beatmaps"
+
+const auto logger = anisette::logging::get("data");
 
 namespace anisette::data
 {
@@ -14,22 +17,17 @@ namespace anisette::data
             index.clear();
             beatmaps.clear();
             load_finished = false;
-            std::vector<Beatmap> beatmap_list;
+            logger->debug("Scanning beatmaps");
             for (const auto& entry : std::filesystem::directory_iterator(BEATMAPS_ROOT_DIR)) {
                 if (!entry.is_directory()) continue;
                 for (const auto& file : std::filesystem::directory_iterator(entry.path())) {
                     if (file.path().extension() != ".json") continue;
-                    Beatmap beatmap(file.path().filename().string(), entry.path().string());
-                    beatmap_list.push_back(beatmap);
+                    Beatmap beatmap;
+                    if (!beatmap.load(file.path().filename().string(), entry.path().string())) continue;
+                    beatmaps.push_back(beatmap);
                 }
             }
-            // check if loaded, push to beatmap list
-            for (const auto& item: beatmaps) {
-                if (item.is_load_finished() == SUCCESS) {
-                    if (item.id == 0) continue;
-                    beatmaps.push_back(item);
-                }
-            }
+            logger->debug("Scanning beatmaps finished");
             if (sort_strategy != NONE) {
                 // sort
                 std::ranges::sort(beatmaps, [sort_strategy, ascending](const Beatmap &a, const Beatmap &b) {
@@ -46,16 +44,18 @@ namespace anisette::data
                         break;
                         default: break;
                     }
-                    return res ^ ascending;
+                    return res ^ !ascending;
                 });
             }
             // end
             load_finished = true;
+            logger->debug("Load beatmaps finished");
         });
         t.detach();
     }
 
-    bool BeatmapLoader::wait_for_scan_finished() {
+    bool BeatmapLoader::is_scan_finished() {
+        if (load_finished) logger->debug("Beatmap scan finished");
         return load_finished;
     }
 

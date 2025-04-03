@@ -7,7 +7,7 @@ from typing import Optional
 from random import randint
 
 WORK_DIR = "tmp/"
-OUT_DIR = "out/"
+OUT_DIR = "beatmaps/"
 
 class OsuFileSection(enumerate):
     NOT_DEFINED = -1

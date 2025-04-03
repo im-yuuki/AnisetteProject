@@ -2,9 +2,9 @@
 // Created by Yuuki on 31/03/2025.
 //
 #pragma once
-#include "components/frametime_overlay.h"
-#include "components/background.h"
-#include "utils/common.h"
+#include "frametime_overlay.h"
+#include "background.h"
+#include "common.h"
 #include <SDL2/SDL_video.h>
 #include <atomic>
 #include <cstdint>
