@@ -19,23 +19,16 @@ class OsuFileSection(enumerate):
 
 
 class Note:
-    __slots__ = ["start", "end", "channel", "hold"]
+    __slots__ = ["start", "end", "channel"]
 
     def __init__(self):
         self.start = 0
         self.end = 0
-        self.channel = 4
-        self.hold = False
-
+        self.channel = 0
 
     @property
     def __dict__(self):
-        return {
-            "start": self.start,
-            "end": self.end,
-            "channel": self.channel,
-            "hold": self.hold
-        }
+        return [self.start, self.end, self.channel]
 
 
 class NoteCollection:
@@ -55,7 +48,7 @@ class NoteCollection:
 
     def append(self, note: Note):
         self.notes.append(note)
-        if note.hold:
+        if note.end == 0:
             self.hold_note_count += 1
         else:
             self.single_note_count += 1
@@ -159,7 +152,7 @@ class MapData:
     @property
     def __dict__(self):
         return {
-            "$schema": "https://raw.githubusercontent.com/im-yuuki/AnisetteProject/master/scripts/beatmap.schema.json",
+            "$schema": "https://raw.githubusercontent.com/im-yuuki/AnisetteProject/refs/heads/sdl2/scripts/beatmap.schema.json",
             "version": 1,
             "id": self.id,
             "title": self.title,
@@ -272,7 +265,6 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
                 logging.debug(f"Single note: start {note.start}, channel {note.channel}")
             elif type & 0b10000000:
                 # hold note
-                note.hold = True
                 note.start = int(parts[2])
                 note.channel = int(int(parts[0]) * data.notes.channels / 512)
                 note.end = int(parts[5].split(":")[0])

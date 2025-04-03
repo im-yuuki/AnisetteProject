@@ -98,30 +98,28 @@
   },
   "definitions": {
     "note": {
-      "type": "object",
-      "required": ["start", "end", "channel", "hold"],
-      "properties": {
-        "start": {
+      "type": "array",
+      "description": "Note data as [start_time, end_time, original_channel]",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": [
+        {
           "type": "integer",
           "description": "Start time of note in milliseconds",
           "minimum": 0
         },
-        "end": {
+        {
           "type": "integer",
           "description": "End time for hold notes in milliseconds (0 for tap notes)",
           "minimum": 0
         },
-        "channel": {
+        {
           "type": "integer",
           "description": "Original source channel of the note",
           "minimum": 0,
           "maximum": 5
-        },
-        "hold": {
-          "type": "boolean",
-          "description": "Whether this note is a hold note"
         }
-      }
+      ]
     }
   }
 }
