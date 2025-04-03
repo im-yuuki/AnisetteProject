@@ -4,11 +4,9 @@
 #include "core.h"
 #include "internal.h"
 #include "config.h"
-#include "frametime_overlay.h"
-#include "background.h"
+#include "static.h"
 #include "utils/logging.h"
 #include "utils/discord.h"
-#include "utils/common.h"
 
 #include <csignal>
 #include <SDL2/SDL.h>
@@ -27,8 +25,8 @@ namespace anisette::core
 {
     std::atomic_bool stop_requested = false;
     uint64_t target_frame_time = 0;
-    FrameTimeOverlay *frame_time_overlay = nullptr;
-    Background *background_instance = nullptr;
+    components::FrameTimeOverlay *frame_time_overlay = nullptr;
+    components::Background *background_instance = nullptr;
     
     static std::function<abstract::Screen*(SDL_Renderer*)> register_function;
 
@@ -85,7 +83,7 @@ namespace anisette::core
         if (!(audio::init() && video::init())) return false;
         // post-init task
         logger->debug("Load background instance");
-        background_instance = new Background(video::renderer);
+        background_instance = new components::Background(video::renderer);
         reload_config();
         open(register_function(video::renderer));
         return true;
@@ -137,36 +135,36 @@ namespace anisette::core
         if (config::fps == config::VSYNC) {
             logger->debug("FPS is set to VSync mode");
             SDL_RenderSetVSync(video::renderer, true);
-            target_frame_time = utils::system_freq / 2000;
+            target_frame_time = system_freq / 2000;
         } else {
             SDL_RenderSetVSync(video::renderer, false);
             if (config::fps > 0) {
                 logger->debug("FPS: {}", config::fps);
-                target_frame_time = utils::system_freq / config::fps;
+                target_frame_time = system_freq / config::fps;
             } else if (config::fps == config::UNLIMITED) {
                 logger->warn("FPS is set to unlimited mode, can lead to high resource usage");
                 target_frame_time = 0;
             } else if (config::fps == config::DISPLAY) {
                 logger->debug("FPS is set to match display refresh rate");
-                target_frame_time = utils::system_freq / video::display_mode.refresh_rate;
+                target_frame_time = system_freq / video::display_mode.refresh_rate;
             } else if (config::fps == config::X2_DISPLAY) {
                 logger->debug("FPS is set to 2x of display refresh rate");
-                target_frame_time = utils::system_freq / video::display_mode.refresh_rate / 2;
+                target_frame_time = system_freq / video::display_mode.refresh_rate / 2;
             } else if (config::fps == config::X4_DISPLAY) {
                 logger->debug("FPS is set to 4x of display refresh rate");
-                target_frame_time = utils::system_freq / video::display_mode.refresh_rate / 4;
+                target_frame_time = system_freq / video::display_mode.refresh_rate / 4;
             } else if (config::fps == config::X8_DISPLAY) {
                 logger->debug("FPS is set to 8x of display refresh rate");
-                target_frame_time = utils::system_freq / video::display_mode.refresh_rate / 8;
+                target_frame_time = system_freq / video::display_mode.refresh_rate / 8;
             } else if (config::fps == config::HALF_DISPLAY) {
                 logger->debug("FPS is set to half of display refresh rate");
-                target_frame_time = utils::system_freq / video::display_mode.refresh_rate * 2;
+                target_frame_time = system_freq / video::display_mode.refresh_rate * 2;
             }
         }
         // frame time overlay
         if (config::show_frametime_overlay && !frame_time_overlay) {
             logger->debug("Frame time overlay enabled");
-            frame_time_overlay = new FrameTimeOverlay(video::renderer);
+            frame_time_overlay = new components::FrameTimeOverlay(video::renderer);
         } else {
             logger->debug("Frame time overlay disabled");
             delete frame_time_overlay;
@@ -187,7 +185,7 @@ namespace anisette::core
         }
 
         logger->debug("Entering main loop");
-        _main_loop();
+        main_loop();
         logger->debug("Exited main loop");
 
         quit:

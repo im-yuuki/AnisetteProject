@@ -2,10 +2,11 @@
 // Created by Yuuki on 25/03/2025.
 //
 #include <stack>
-#include "frametime_overlay.h"
-#include "background.h"
-#include "internal.h"
+#include "components/background.h"
+#include "components/frametime_overlay.h"
 #include "core.h"
+#include "internal.h"
+#include "static.h"
 #include "utils/common.h"
 #include "utils/discord.h"
 #include "utils/logging.h"
@@ -36,7 +37,7 @@ namespace anisette::core {
         back_screen_flag = true;
     }
 
-    void _main_loop() {
+    void main_loop() {
         SDL_Event event;
         abstract::Screen* current_handler = nullptr;
 
@@ -45,7 +46,7 @@ namespace anisette::core {
             // poll discord rpc
             if (start_frame > next_discord_poll) {
                 utils::discord::poll();
-                next_discord_poll = start_frame + utils::system_freq / 2;
+                next_discord_poll = start_frame + system_freq / 2;
             }
 
             if (screen_stack.empty()) {
@@ -92,7 +93,7 @@ namespace anisette::core {
             now = SDL_GetPerformanceCounter();
             if (now < target_next_frame) {
                 last_frame_time = target_next_frame - start_frame;
-                SDL_Delay((target_next_frame - now) * 1000 / utils::system_freq);
+                SDL_Delay((target_next_frame - now) * 1000 / system_freq);
             } else last_frame_time = now - start_frame;
         }
     }

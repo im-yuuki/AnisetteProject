@@ -1,16 +1,18 @@
 //
 // Created by Yuuki on 03/04/2025.
 //
-
 #pragma once
 #include "core.h"
-#include "internal.h"
+#include "core/static.h"
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_render.h>
 
 #define FRT_OVERLAY_FONT_FILE "assets/fonts/Roboto-Bold.ttf"
+#define FRT_OVERLAY_FONT_SIZE_1 16
+#define FRT_OVERLAY_FONT_SIZE_2 12
+#define FRT_OVERLAY_UPDATE_INTERVAL 50 // ms
 
-namespace anisette::core
+namespace anisette::components
 {
     class FrameTimeOverlay {
     public:
@@ -24,8 +26,8 @@ namespace anisette::core
             TTF_SetFontSize(font, font_size);
             SDL_Surface *surface = TTF_RenderText_Blended(font, text.c_str(), color);
             if (!surface) return;
-            SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-            if (!texture) {
+            SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, surface);
+            if (!text_texture) {
                 SDL_FreeSurface(surface);
                 return;
             }
@@ -33,20 +35,20 @@ namespace anisette::core
             max_width = std::max(max_width, surface->w + 10);
             max_height += surface->h;
             SDL_FreeSurface(surface);
-            SDL_RenderCopy(renderer, texture, nullptr, &rect);
-            SDL_DestroyTexture(texture);
+            SDL_RenderCopy(renderer, text_texture, nullptr, &rect);
+            SDL_DestroyTexture(text_texture);
         }
 
         void draw(const uint64_t &now) {
-            const SDL_Color *selected_color = &color;
+            const SDL_Color *selected_color = &normal_color;
 
             if (now > next_refresh) {
-                next_refresh = now + utils::system_freq / 20; // refresh every 50ms
+                next_refresh = now + core::system_freq * FRT_OVERLAY_UPDATE_INTERVAL / 1000; // refresh every 50ms
                 // calculate
-                const uint64_t ms_int_part = last_frame_time * 1000 / utils::system_freq;
-                const uint64_t ms_dec_part = last_frame_time * 1000 * 100 / utils::system_freq % 100;
+                const uint64_t ms_int_part = core::last_frame_time * 1000 / core::system_freq;
+                const uint64_t ms_dec_part = core::last_frame_time * 1000 * 100 / core::system_freq % 100;
                 uint64_t fps = 0;
-                if (last_frame_time != 0) fps = utils::system_freq / last_frame_time;
+                if (core::last_frame_time != 0) fps = core::system_freq / core::last_frame_time;
                 // render text
                 const std::string fps_text = std::to_string(fps) + "FPS";
                 std::string frame_time_text = std::to_string(ms_int_part);
@@ -69,12 +71,11 @@ namespace anisette::core
                 render_text(fps_text, 16, *selected_color, src_rect.w, src_rect.h);
                 render_text(frame_time_text, 12, *selected_color, src_rect.w, src_rect.h);
                 dst_rect = get_overlay_render_position(
-                    video::RIGHT, video::BOTTOM,
+                    core::video::RIGHT, core::video::BOTTOM,
                     src_rect.w, src_rect.h, 10, 10
                 );
             }
             // draw the texture
-            render:
             SDL_SetRenderTarget(renderer, nullptr);
             SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect);
         }
@@ -84,13 +85,13 @@ namespace anisette::core
             if (font) TTF_CloseFont(font);
         }
     private:
-        const SDL_Color color = {0, 255, 0, 255};
+        const SDL_Color normal_color = {0, 255, 0, 255};
         const SDL_Color warn_color = {255, 128, 0, 255};
         const SDL_Color danger_color = {255, 0, 0, 255};
 
         SDL_Rect src_rect { 0, 0, 100, 50};
         SDL_Rect dst_rect = get_overlay_render_position(
-            video::RIGHT, video::BOTTOM,
+            core::video::RIGHT, core::video::BOTTOM,
             src_rect.w, src_rect.h, 10, 10
             );
 
@@ -99,6 +100,4 @@ namespace anisette::core
         SDL_Texture* texture = nullptr;
         TTF_Font* font = nullptr;
     };
-
-    extern FrameTimeOverlay *frame_time_overlay;
 } // namespace anisette::core

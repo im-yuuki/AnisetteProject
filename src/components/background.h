@@ -2,23 +2,23 @@
 // Created by Yuuki on 03/04/2025.
 //
 #pragma once
-#include "core.h"
-#include "config.h"
-#include "utils/logging.h"
+#include "core/config.h"
+#include "core/static.h"
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
+#include <atomic>
 #include <cstdint>
 #include <string>
 
-#define BACKGROUND_PARALLAX_RANGE_PERCENT 90
+#define BACKGROUND_PARALLAX_RANGE_PERCENT 95
 #define BACKGROUND_SWAP_DURATION_MS 5000
 
-namespace anisette::core {
+namespace anisette::components {
     class Background {
     public:
         explicit Background(SDL_Renderer *renderer) : renderer(renderer) {
-            texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, config::render_width, config::render_height);
+            texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, core::config::render_width, core::config::render_height);
             SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
             new_texture = nullptr;
             start_time = 0;
@@ -29,7 +29,7 @@ namespace anisette::core {
         void load(const std::string &path, const uint64_t &now) {
             if (new_texture) SDL_DestroyTexture(new_texture);
             if (path.empty()) {
-                new_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, config::render_width, config::render_height);
+                new_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, core::config::render_width, core::config::render_height);
             };
             if (path != current_img_path) {
                 current_img_path = path;
@@ -40,7 +40,7 @@ namespace anisette::core {
                 SDL_SetTextureAlphaMod(new_texture, 0);
                 int width, height;
                 SDL_QueryTexture(new_texture, nullptr, nullptr, &width, &height);
-                const auto screen_ratio = static_cast<double>(config::render_width) / config::render_height;
+                const auto screen_ratio = static_cast<double>(core::config::render_width) / core::config::render_height;
                 const auto img_ratio = static_cast<double>(width) / height;
                 // calculate background rect
                 if (screen_ratio > img_ratio) {
@@ -65,7 +65,7 @@ namespace anisette::core {
             if (new_texture) {
                 // calculate alpha
                 const uint64_t delta = now > start_time ? now - start_time : 0;
-                auto alpha = 255 * delta * 1000 / BACKGROUND_SWAP_DURATION_MS / utils::system_freq;
+                auto alpha = 255 * delta * 1000 / BACKGROUND_SWAP_DURATION_MS / core::system_freq;
                 if (alpha > 255) alpha = 255;
                 SDL_SetTextureAlphaMod(new_texture, alpha);
                 // render to buffer
@@ -76,15 +76,15 @@ namespace anisette::core {
                     new_texture = nullptr;
                 }
             }
-            SDL_Rect draw_rect = {0, 0, config::render_width, config::render_height};
+            SDL_Rect draw_rect = {0, 0, core::config::render_width, core::config::render_height};
             if (enable_parallax) {
                 int mouse_x, mouse_y;
                 SDL_GetMouseState(&mouse_x, &mouse_y);
                 // calculate parallax
                 draw_rect.w = draw_rect.w * BACKGROUND_PARALLAX_RANGE_PERCENT / 100;
                 draw_rect.h = draw_rect.h * BACKGROUND_PARALLAX_RANGE_PERCENT / 100;
-                draw_rect.x = (config::render_width - draw_rect.w) * mouse_x / config::render_width;
-                draw_rect.y = (config::render_height - draw_rect.h) * mouse_y / config::render_height;
+                draw_rect.x = (core::config::render_width - draw_rect.w) * mouse_x / core::config::render_width;
+                draw_rect.y = (core::config::render_height - draw_rect.h) * mouse_y / core::config::render_height;
             }
             SDL_SetRenderTarget(renderer, nullptr);
             SDL_RenderClear(renderer);
@@ -104,6 +104,4 @@ namespace anisette::core {
         SDL_Texture *texture;
         uint64_t start_time;
     };
-
-    extern Background* background_instance;
 }

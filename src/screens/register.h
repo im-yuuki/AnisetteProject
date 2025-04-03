@@ -2,7 +2,7 @@
 // Created by Yuuki on 22/03/2025.
 //
 #pragma once
-#include "core/abs.h"
+#include "core/static.h"
 #include "core/core.h"
 #include "utils/common.h"
 
@@ -50,7 +50,7 @@ namespace anisette::screens {
         void on_focus(const uint64_t &now) override {};
 
     private:
-        const uint64_t fade_duration = utils::system_freq; // 1 second
+        const uint64_t fade_duration = core::system_freq; // 1 second
         uint64_t action_start_time = 0;
         std::queue<std::function<bool(const uint64_t &now)>> action_hook;
 

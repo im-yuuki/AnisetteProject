@@ -2,15 +2,13 @@
 // Created by Yuuki on 01/04/2025.
 //
 #pragma once
-#include <SDL2/SDL_timer.h>
 #include <cstdint>
 #include <climits>
 #include <random>
 
 namespace anisette::utils
 {
-    inline uint64_t system_freq = SDL_GetPerformanceFrequency();
-    inline std::mt19937_64 generator(SDL_GetPerformanceCounter());
+    inline std::mt19937_64 generator(std::random_device{}());
 
     inline uint8_t calc_fade_alpha(const bool reverse, const uint64_t start_point, const uint64_t now,
                                const uint64_t duration) {

@@ -15,16 +15,16 @@ namespace anisette::data
             beatmaps.clear();
             load_finished = false;
             std::vector<Beatmap> beatmap_list;
-            for (auto entry : std::filesystem::directory_iterator(BEATMAPS_ROOT_DIR)) {
+            for (const auto& entry : std::filesystem::directory_iterator(BEATMAPS_ROOT_DIR)) {
                 if (!entry.is_directory()) continue;
-                for (auto file : std::filesystem::directory_iterator(entry.path())) {
+                for (const auto& file : std::filesystem::directory_iterator(entry.path())) {
                     if (file.path().extension() != ".json") continue;
-                    Beatmap beatmap(file.path().string());
+                    Beatmap beatmap(file.path().filename().string(), entry.path().string());
                     beatmap_list.push_back(beatmap);
                 }
             }
             // check if loaded, push to beatmap list
-            for (const auto item: beatmaps) {
+            for (const auto& item: beatmaps) {
                 if (item.is_load_finished() == SUCCESS) {
                     if (item.id == 0) continue;
                     beatmaps.push_back(item);

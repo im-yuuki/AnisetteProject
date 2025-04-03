@@ -2,13 +2,12 @@
 // Created by Yuuki on 19/02/2025.
 //
 #pragma once
+#include "static.h"
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_render.h>
 #include <cstdint>
 #include <functional>
 #include <string>
-#include "abs.h"
-
-#include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_render.h>
 
 /**
  * @brief Anisette game core, the soul of this project
@@ -78,23 +77,12 @@ namespace anisette::core::video
  */
 namespace anisette::core::audio
 {
-    struct CurrentMusicInfo {
-        std::string display_name;
-        std::string path;
-        int current_position_ms = 0;
-        int total_duration_ms = 0;
-        bool paused = false;
-    };
-
     extern void set_sound_volume(uint8_t volume);
     extern void set_music_volume(uint8_t volume);
 
     [[nodiscard]]
     extern Mix_Chunk *load_sound(const std::string &path);
     extern bool play_sound(Mix_Chunk *sound, int channel = -1);
-
-    [[nodiscard]]
-    extern CurrentMusicInfo get_current_music_info();
 
     extern bool play_music(const std::string &path, const std::string &display_name = "");
     extern void pause_music();

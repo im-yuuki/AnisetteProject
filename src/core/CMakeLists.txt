@@ -6,7 +6,7 @@ add_library(anisette_core SHARED
         core/frame.cpp
         core/config.cpp
 )
-target_link_libraries(anisette_core PUBLIC anisette_utils)
+target_link_libraries(anisette_core PUBLIC anisette_utils anisette_data)
 # link SDL2 and its extensions
 target_link_libraries(anisette_core PUBLIC
         $<IF:$<TARGET_EXISTS:SDL2::SDL2-static>,SDL2::SDL2-static,SDL2::SDL2>

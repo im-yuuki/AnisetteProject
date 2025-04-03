@@ -2,6 +2,7 @@
 // Created by Yuuki on 02/04/2025.
 //
 #pragma once
+#include <atomic>
 #include <string>
 #include <cstdint>
 #include <vector>
@@ -60,6 +61,5 @@ namespace anisette::data {
         std::atomic_bool load_finished = false;
         std::unordered_map<int, int> index;
         std::vector<Beatmap> beatmaps;
-
     };
 }
