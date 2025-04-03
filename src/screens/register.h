@@ -10,6 +10,12 @@
 #include <queue>
 
 namespace anisette::screens {
+    class StageScreen final : public core::abstract::Screen {
+        void on_event(const uint64_t &now, const SDL_Event &event) override;
+        void update(const uint64_t &now) override;
+        void on_focus(const uint64_t &now) override;
+    };
+
     class MenuScreen final : public core::abstract::Screen {
     public:
         explicit MenuScreen(SDL_Renderer *renderer);

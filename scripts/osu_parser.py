@@ -208,12 +208,12 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
             elif line.startswith("PreviewTime:"):
                 data.preview_point = int(line.split(":")[1].strip())
                 logging.debug(f"Preview point: {data.preview_point}")
-            elif line.startswith("Mode:"):
-                mode: int = int(line.split(":")[1].strip())
-                logging.debug(f"Mode: {mode}")
-                if mode != 3:
-                    logging.error(f"File is not a osu!mania map.")
-                    return None
+            # elif line.startswith("Mode:"):
+            #     mode: int = int(line.split(":")[1].strip())
+            #     logging.debug(f"Mode: {mode}")
+            #     if mode != 3:
+            #         logging.error(f"File is not a osu!mania map.")
+            #         return None
 
         elif current_section == OsuFileSection.METADATA:
             if line.startswith("Title:"):
@@ -234,7 +234,7 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
                 data.hp_drain = 100 - int(float(line.split(":")[1].strip()) * 10)
                 logging.debug(f"HP drain: {data.hp_drain}")
             elif line.startswith("CircleSize:"):
-                data.notes.channels = int(line.split(":")[1].strip())
+                data.notes.channels = int(float(line.split(":")[1].strip()))
                 if data.notes.channels > 6 or data.notes.channels < 4:
                     logging.error("Only 4K, 5K and 6K beatmaps supported.")
                     return None

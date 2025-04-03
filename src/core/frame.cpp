@@ -4,7 +4,7 @@
 #include <stack>
 #include "frametime_overlay.h"
 #include "background.h"
-#include "_internal.h"
+#include "internal.h"
 #include "core.h"
 #include "utils/common.h"
 #include "utils/discord.h"

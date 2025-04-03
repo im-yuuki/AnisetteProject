@@ -2,7 +2,7 @@
 // Created by Yuuki on 09/03/2025.
 //
 #include "core.h"
-#include "_internal.h"
+#include "internal.h"
 #include "config.h"
 #include "frametime_overlay.h"
 #include "background.h"
