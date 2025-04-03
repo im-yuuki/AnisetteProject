@@ -19,4 +19,7 @@ cmake-build-*/
 .vscode/
 .vs/
 
+scripts/**.osz
+scripts/out/
+
 src/version.h

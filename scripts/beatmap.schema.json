@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Anisette Beatmap Format",
+  "type": "object",
+  "required": ["version", "id", "title", "artist", "thumbnail", "music", "preview_point", "difficulty", "hp_drain", "notes"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema document"
+    },
+    "version": {
+      "type": "integer",
+      "description": "Format version number",
+      "minimum": 1
+    },
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the beatmap"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title of the song"
+    },
+    "artist": {
+      "type": "string",
+      "description": "Name of the artist/composer"
+    },
+    "thumbnail": {
+      "type": "string",
+      "description": "Filename of the thumbnail image"
+    },
+    "music": {
+      "type": "string",
+      "description": "Filename of the music file"
+    },
+    "preview_point": {
+      "type": "integer",
+      "description": "Time in milliseconds where the preview should start"
+    },
+    "difficulty": {
+      "type": "integer",
+      "description": "Difficulty rating (0-100)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "hp_drain": {
+      "type": "integer",
+      "description": "HP drain rate (0-100)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "notes": {
+      "type": "object",
+      "required": ["single_note_count", "hold_note_count", "channel_0", "channel_1", "channel_2", "channel_3", "channel_4", "channel_5"],
+      "properties": {
+        "single_note_count": {
+          "type": "integer",
+          "description": "Total count of single notes",
+          "minimum": 0
+        },
+        "hold_note_count": {
+          "type": "integer",
+          "description": "Total count of hold notes",
+          "minimum": 0
+        },
+        "channel_0": {
+          "type": "array",
+          "description": "Notes for channel 0 (leftmost)",
+          "items": {"$ref": "#/definitions/note"}
+        },
+        "channel_1": {
+          "type": "array",
+          "description": "Notes for channel 1",
+          "items": {"$ref": "#/definitions/note"}
+        },
+        "channel_2": {
+          "type": "array",
+          "description": "Notes for channel 2",
+          "items": {"$ref": "#/definitions/note"}
+        },
+        "channel_3": {
+          "type": "array",
+          "description": "Notes for channel 3",
+          "items": {"$ref": "#/definitions/note"}
+        },
+        "channel_4": {
+          "type": "array",
+          "description": "Notes for channel 4",
+          "items": {"$ref": "#/definitions/note"}
+        },
+        "channel_5": {
+          "type": "array",
+          "description": "Notes for channel 5 (rightmost)",
+          "items": {"$ref": "#/definitions/note"}
+        }
+      }
+    }
+  },
+  "definitions": {
+    "note": {
+      "type": "object",
+      "required": ["start", "end", "channel", "hold"],
+      "properties": {
+        "start": {
+          "type": "integer",
+          "description": "Start time of note in milliseconds",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "description": "End time for hold notes in milliseconds (0 for tap notes)",
+          "minimum": 0
+        },
+        "channel": {
+          "type": "integer",
+          "description": "Original source channel of the note",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "hold": {
+          "type": "boolean",
+          "description": "Whether this note is a hold note"
+        }
+      }
+    }
+  }
+}

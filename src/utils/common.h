@@ -4,6 +4,7 @@
 #pragma once
 #include <SDL2/SDL_timer.h>
 #include <cstdint>
+#include <climits>
 #include <random>
 
 namespace anisette::utils
