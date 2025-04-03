@@ -16,7 +16,7 @@ const auto logger = anisette::logging::get("beatmap");
 
 namespace anisette::data
 {
-    Beatmap::Beatmap(const std::string &file, const std::string &dir) : path(path) {
+    Beatmap::Beatmap(const std::string &filename, const std::string &dir) : path(dir + '/' + filename), dir(dir) {
         load_result = NOT_FINISHED;
         std::thread t ([this]() {
             std::ifstream file(this->path);

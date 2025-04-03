@@ -12,7 +12,7 @@
 #include <string>
 
 #define BACKGROUND_PARALLAX_RANGE_PERCENT 90
-#define BACKGROUND_SWAP_DURATION_MS 1000
+#define BACKGROUND_SWAP_DURATION_MS 5000
 
 namespace anisette::core {
     class Background {
@@ -65,7 +65,7 @@ namespace anisette::core {
             if (new_texture) {
                 // calculate alpha
                 const uint64_t delta = now > start_time ? now - start_time : 0;
-                auto alpha = 255 * delta / utils::system_freq;
+                auto alpha = 255 * delta * 1000 / BACKGROUND_SWAP_DURATION_MS / utils::system_freq;
                 if (alpha > 255) alpha = 255;
                 SDL_SetTextureAlphaMod(new_texture, alpha);
                 // render to buffer

@@ -4,7 +4,7 @@
 
 #pragma once
 #include "core.h"
-#include "_internal.h"
+#include "internal.h"
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_render.h>
 

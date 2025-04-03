@@ -29,11 +29,14 @@ namespace anisette::data {
 
     class Beatmap {
     public:
-        explicit Beatmap(const std::string &path);
+        explicit Beatmap(const std::string &filename, const std::string &dir);
+
+        [[nodiscard]]
         AsyncLoadResult is_load_finished() const;
 
         unsigned id = 0;
         std::string path;
+        std::string dir;
         std::string artist;
         std::string title;
         std::string thumbnail_path;

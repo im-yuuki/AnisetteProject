@@ -3,10 +3,6 @@
 	"version": "1.0.0",
 	"dependencies": [
 		{
-			"name": "discord-game-sdk",
-			"version>=": "3.2.1"
-		},
-		{
 			"name": "sdl2",
 			"version>=": "2.32.2"
 		},
@@ -36,6 +32,10 @@
 		{
 			"name": "rapidjson",
 			"version>=": "2025-02-26"
+		},
+		{
+			"name": "discord-game-sdk",
+			"version>=": "3.2.1"
 		}
 	]
 }

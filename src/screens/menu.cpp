@@ -1,8 +1,6 @@
 //
 // Created by Yuuki on 22/03/2025.
 //
-
-#include <core/_internal.h>
 #include <filesystem>
 #include <register.h>
 #include <utils/discord.h>
@@ -18,7 +16,15 @@ namespace anisette::screens
     }
 
     void MenuScreen::on_click(const uint64_t &now, const int x, const int y) {
-
+        // choose a random background
+        if (default_backgrounds.empty()) {
+            logger->error("No background found");
+            return;
+        }
+        const auto random_index = utils::randint(0, default_backgrounds.size() - 1);
+        logger->debug("Load background: {}", default_backgrounds[random_index]);
+        core::load_background(default_backgrounds[random_index], now);
+        core::toggle_background_parallax(true);
     }
 
     void MenuScreen::update(const uint64_t &now) {
