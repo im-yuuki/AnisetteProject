@@ -18,7 +18,7 @@ namespace anisette::screens {
         void load_async();
         bool is_load_async_finished();
 
-        void on_click(const int x, const int y);
+        void on_click(const uint64_t &now, const int x, const int y);
         void on_event(const uint64_t &now, const SDL_Event &event) override;
         void update(const uint64_t &now) override;
         void on_focus(const uint64_t &now) override;
@@ -27,15 +27,12 @@ namespace anisette::screens {
         uint64_t action_start_time = 0;
         std::queue<std::function<bool(const uint64_t &now)>> action_hook;
 
-        const uint8_t parallax_range = 120;
         std::atomic_bool load_async_finished = false;
 
         Mix_Chunk* click_sound = nullptr;
-        SDL_Surface* background_surface = nullptr;
-        SDL_Texture* background = nullptr;
         SDL_Renderer* renderer;
-        SDL_DisplayMode* display_mode = nullptr;
-        SDL_Rect bg_src_rect {0, 0, 0, 0};
+
+        std::vector<std::string> default_backgrounds;
     };
 
     class SplashScreen final : public core::abstract::Screen {

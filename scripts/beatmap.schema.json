@@ -99,9 +99,9 @@
   "definitions": {
     "note": {
       "type": "array",
-      "description": "Note data as [start_time, end_time, original_channel]",
-      "minItems": 3,
-      "maxItems": 3,
+      "description": "Note data as [start_time, end_time]",
+      "minItems": 2,
+      "maxItems": 2,
       "items": [
         {
           "type": "integer",
@@ -112,12 +112,6 @@
           "type": "integer",
           "description": "End time for hold notes in milliseconds (0 for tap notes)",
           "minimum": 0
-        },
-        {
-          "type": "integer",
-          "description": "Original source channel of the note",
-          "minimum": 0,
-          "maximum": 5
         }
       ]
     }

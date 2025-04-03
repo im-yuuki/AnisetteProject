@@ -25,7 +25,8 @@ namespace anisette::screens {
         // hook fade in action
         action_start_time = SDL_GetPerformanceCounter();
         action_hook.emplace([this](const uint64_t &now) {
-            const auto alpha = 255 * (now - action_start_time) / fade_duration;
+            const auto delta = now > action_start_time ? now - action_start_time : 0;
+            const auto alpha = 255 * delta / fade_duration;
             if (alpha > 255) {
                 SDL_SetTextureAlphaMod(logo, 255);
                 return true;
@@ -39,7 +40,8 @@ namespace anisette::screens {
         });
         // hook fade out action + switch to menu screen
         action_hook.emplace([this](const uint64_t &now) {
-            const auto alpha = 255 * (now - action_start_time) / fade_duration;
+            const auto delta = now > action_start_time ? now - action_start_time : 0;
+            const auto alpha = 255 * delta / fade_duration;
             if (alpha > 255) {
                 SDL_DestroyTexture(logo);
                 logo = nullptr;
@@ -52,7 +54,6 @@ namespace anisette::screens {
         });
         // hook quit action (if stack go back to this screen)
         action_hook.emplace([this](const uint64_t &now) {
-            SDL_SetTextureAlphaMod(logo, 255);
             core::request_stop();
             return false;
         });

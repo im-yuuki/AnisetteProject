@@ -4,7 +4,6 @@
 
 #pragma once
 #include <SDL2/SDL_events.h>
-#include <SDL_render.h>
 
 namespace anisette::core::abstract {
     class Screen {

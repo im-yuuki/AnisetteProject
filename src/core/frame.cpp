@@ -2,9 +2,11 @@
 // Created by Yuuki on 25/03/2025.
 //
 #include <stack>
-#include <utils/common.h>
+#include "frametime_overlay.h"
+#include "background.h"
 #include "_internal.h"
 #include "core.h"
+#include "utils/common.h"
 #include "utils/discord.h"
 #include "utils/logging.h"
 
@@ -63,14 +65,17 @@ namespace anisette::core {
             for (int i = 0; i < MAXIMUM_EVENT_POLL_PER_FRAME; i++) {
                 if (!SDL_PollEvent(&event)) break;
                 switch (event.type) {
-                    case SDL_QUIT: request_stop();
-                    break;
-                    default: current_handler->on_event(start_frame, event);
+                    case SDL_QUIT:
+                        request_stop();
+                        break;
+                    default:
+                        current_handler->on_event(start_frame, event);
                 }
             }
-            // update screen
-            SDL_SetRenderTarget(video::renderer, nullptr);
-            current_handler->update(start_frame);
+            // draw background
+            if (background_instance) background_instance->draw(start_frame);
+            // pass control to the current screen
+            if (current_handler) current_handler->update(start_frame);
             // draw frame time overlay
             if (frame_time_overlay) frame_time_overlay->draw(start_frame);
             // render

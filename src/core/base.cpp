@@ -4,16 +4,18 @@
 #include "core.h"
 #include "_internal.h"
 #include "config.h"
+#include "frametime_overlay.h"
+#include "background.h"
 #include "utils/logging.h"
 #include "utils/discord.h"
+#include "utils/common.h"
 
+#include <csignal>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_version.h>
 #include <SDL_mixer.h>
-#include <csignal>
-#include <utils/common.h>
 
 const auto logger = anisette::logging::get("core");
 
@@ -26,6 +28,7 @@ namespace anisette::core
     std::atomic_bool stop_requested = false;
     uint64_t target_frame_time = 0;
     FrameTimeOverlay *frame_time_overlay = nullptr;
+    Background *background_instance = nullptr;
     
     static std::function<abstract::Screen*(SDL_Renderer*)> register_function;
 
@@ -81,6 +84,8 @@ namespace anisette::core
         // init video and audio handlers
         if (!(audio::init() && video::init())) return false;
         // post-init task
+        logger->debug("Load background instance");
+        background_instance = new Background(video::renderer);
         reload_config();
         open(register_function(video::renderer));
         return true;
@@ -93,6 +98,8 @@ namespace anisette::core
         logger->info("Shutting down");
         // stop discord rpc
         utils::discord::shutdown();
+        // free background instance
+        delete background_instance;
         // quit handlers
         audio::cleanup();
         video::cleanup();
@@ -107,9 +114,25 @@ namespace anisette::core
         config::save();
     }
 
+    void load_background(const std::string &path, const uint64_t &now) {
+        if (background_instance) {
+            background_instance->load(path, now);
+        } else {
+            logger->error("Background instance is not initialized");
+        }
+    }
+
+    void toggle_background_parallax(const bool enable) {
+        if (background_instance) {
+            background_instance->enable_parallax = enable;
+        } else {
+            logger->error("Background instance is not initialized");
+        }
+    }
+
     void reload_config() {
         assert(video::renderer);
-        const auto display_mode = video::get_display_mode();
+        // const auto display_mode = video::get_display_mode();
         // reload fps value
         if (config::fps == config::VSYNC) {
             logger->debug("FPS is set to VSync mode");
@@ -125,19 +148,19 @@ namespace anisette::core
                 target_frame_time = 0;
             } else if (config::fps == config::DISPLAY) {
                 logger->debug("FPS is set to match display refresh rate");
-                target_frame_time = utils::system_freq / display_mode->refresh_rate;
+                target_frame_time = utils::system_freq / video::display_mode.refresh_rate;
             } else if (config::fps == config::X2_DISPLAY) {
                 logger->debug("FPS is set to 2x of display refresh rate");
-                target_frame_time = utils::system_freq / display_mode->refresh_rate / 2;
+                target_frame_time = utils::system_freq / video::display_mode.refresh_rate / 2;
             } else if (config::fps == config::X4_DISPLAY) {
                 logger->debug("FPS is set to 4x of display refresh rate");
-                target_frame_time = utils::system_freq / display_mode->refresh_rate / 4;
+                target_frame_time = utils::system_freq / video::display_mode.refresh_rate / 4;
             } else if (config::fps == config::X8_DISPLAY) {
                 logger->debug("FPS is set to 8x of display refresh rate");
-                target_frame_time = utils::system_freq / display_mode->refresh_rate / 8;
+                target_frame_time = utils::system_freq / video::display_mode.refresh_rate / 8;
             } else if (config::fps == config::HALF_DISPLAY) {
                 logger->debug("FPS is set to half of display refresh rate");
-                target_frame_time = utils::system_freq / display_mode->refresh_rate * 2;
+                target_frame_time = utils::system_freq / video::display_mode.refresh_rate * 2;
             }
         }
         // frame time overlay

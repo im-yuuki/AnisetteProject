@@ -4,6 +4,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in ${CMAKE_CURRENT_SOURCE_D
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include(utils/CMakeLists.txt)
 include(core/CMakeLists.txt)
+include(data/CMakeLists.txt)
 include(screens/CMakeLists.txt)
 
 # Main executable

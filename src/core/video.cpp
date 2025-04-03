@@ -13,8 +13,7 @@ namespace anisette::core::video
 {
     SDL_Window *window = nullptr;
     SDL_Renderer *renderer = nullptr;
-
-    static SDL_DisplayMode display_mode {};
+    SDL_DisplayMode display_mode {};
 
     bool init() {
         // Initialize
@@ -56,10 +55,6 @@ namespace anisette::core::video
 
     void cleanup() {
         SDL_DestroyWindow(window);
-    }
-
-    SDL_DisplayMode* get_display_mode() {
-        return &display_mode;
     }
 
     SDL_Rect get_overlay_render_position(const RenderPositionX position_x, const RenderPositionY position_y,

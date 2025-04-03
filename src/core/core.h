@@ -7,7 +7,8 @@
 #include <string>
 #include "abs.h"
 
-#include <SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_render.h>
 
 /**
  * @brief Anisette game core, the soul of this project
@@ -55,6 +56,9 @@ namespace anisette::core
      * @param reg_fn
      */
     extern void register_first_screen(const std::function<abstract::Screen*(SDL_Renderer*)> &reg_fn);
+
+    extern void load_background(const std::string &path, const uint64_t &now);
+    extern void toggle_background_parallax(bool enable);
 } // namespace anisette::core
 
 
@@ -68,12 +72,7 @@ namespace anisette::core::video
 
     [[nodiscard]]
     extern SDL_Rect get_overlay_render_position(RenderPositionX position_x, RenderPositionY position_y, int width, int height, int margin_x, int margin_y);
-
-    [[nodiscard]]
-    extern SDL_DisplayMode* get_display_mode();
-} // namespace anisette::core::video
-
-
+}
 /**
  * @brief Handler for audio output
  */

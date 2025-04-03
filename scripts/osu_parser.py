@@ -28,7 +28,7 @@ class Note:
 
     @property
     def __dict__(self):
-        return [self.start, self.end, self.channel]
+        return [self.start, self.end]
 
 
 class NoteCollection:

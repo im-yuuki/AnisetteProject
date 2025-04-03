@@ -4,6 +4,7 @@ project(Anisette VERSION 1.0.0 LANGUAGES CXX)
 # force c++20 standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(BUILD_SHARED_LIBS OFF)
 
 # support source code in UTF-8
 if(MSVC)
