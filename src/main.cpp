@@ -1,6 +1,8 @@
 //
 // Created by Yuuki on 19/02/2025.
 //
+#define SDL_MAIN_HANDLED
+
 #include "version.h"
 #include "core/core.h"
 #include "utils/logging.h"

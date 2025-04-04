@@ -7,6 +7,7 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_ttf.h>
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -84,12 +85,13 @@ namespace anisette::core::video
 {
     extern SDL_Renderer *renderer;
     extern SDL_DisplayMode display_mode;
+    extern SDL_Rect render_rect;
+
+    extern TTF_Font *primary_font;
+    extern TTF_Font *secondary_font;
 
     enum RenderPositionX { LEFT, CENTER, RIGHT };
     enum RenderPositionY { TOP, MIDDLE, BOTTOM };
-
-    [[nodiscard]]
-    extern SDL_Rect get_overlay_render_position(RenderPositionX position_x, RenderPositionY position_y, int width, int height, int margin_x, int margin_y);
 }
 /**
  * @brief Handler for audio output
@@ -121,4 +123,8 @@ namespace anisette::core::audio
     extern void pause_music();
     extern void resume_music();
     extern void stop_music();
+
+    // for quick launch sound
+    void play_click_sound();
+    void play_hit_sound();
 } // namespace anisette::core::audio

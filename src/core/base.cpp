@@ -130,8 +130,6 @@ namespace anisette::core
     }
 
     void reload_config() {
-        assert(video::renderer);
-        // const auto display_mode = video::get_display_mode();
         // reload fps value
         if (config::fps == config::VSYNC) {
             logger->info("FPS is set to VSync mode");

@@ -110,6 +110,7 @@ namespace anisette::core::config
         rapidjson::Document::AllocatorType &allocator = doc.GetAllocator();
         doc.AddMember("render_width", render_width, allocator);
         doc.AddMember("render_height", render_height, allocator);
+        doc.AddMember("display_mode", display_mode, allocator);
         doc.AddMember("fps", fps, allocator);
         doc.AddMember("sound_volume", sound_volume, allocator);
         doc.AddMember("music_volume", music_volume, allocator);

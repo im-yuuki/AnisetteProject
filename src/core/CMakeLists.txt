@@ -15,6 +15,7 @@ target_link_libraries(anisette_core PUBLIC
         $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image-static>,SDL2_image::SDL2_image-static,SDL2_image::SDL2_image>
         $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf-static>,SDL2_ttf::SDL2_ttf-static,SDL2_ttf::SDL2_ttf>
         $<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer-static>,SDL2_mixer::SDL2_mixer-static,SDL2_mixer::SDL2_mixer>
+        SDL2::SDL2_gfx
 )
 # link rapidjson
 target_link_libraries(anisette_core PUBLIC RapidJSON rapidjson)

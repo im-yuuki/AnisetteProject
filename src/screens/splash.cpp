@@ -3,6 +3,7 @@
 //
 #include <SDL2/SDL_image.h>
 #include "core.h"
+#include "config.h"
 #include "screens.h"
 #include "common.h"
 #include "logging.h"
@@ -11,7 +12,10 @@ const auto logger = anisette::logging::get("splash");
 
 namespace anisette::screens {
     SplashScreen::SplashScreen(SDL_Renderer *renderer) : renderer(renderer) {
-        logo_rect = get_overlay_render_position(core::video::CENTER, core::video::MIDDLE, 600, 200, 0, 0);
+        logo_rect.w = 600;
+        logo_rect.h = 200;
+        logo_rect.x = (core::video::render_rect.w - logo_rect.w) / 2;
+        logo_rect.y = (core::video::render_rect.h - logo_rect.h) / 2;
         logo = IMG_LoadTexture(renderer, "assets/logo.png");
         if (!logo) {
             logger->error("Failed to load logo texture: {}", SDL_GetError());

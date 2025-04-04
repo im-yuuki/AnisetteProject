@@ -2,7 +2,6 @@
 // Created by Yuuki on 03/04/2025.
 //
 #pragma once
-#include "config.h"
 #include "core.h"
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_render.h>
@@ -11,14 +10,14 @@
 #include <cstdint>
 #include <string>
 
-#define BACKGROUND_PARALLAX_RANGE_PERCENT 95
-#define BACKGROUND_SWAP_DURATION_MS 5000
+#define BACKGROUND_PARALLAX_RANGE_PERCENT 98
+#define BACKGROUND_SWAP_DURATION_MS 3000
 
 namespace anisette::components {
     class Background {
     public:
         explicit Background(SDL_Renderer *renderer) : renderer(renderer) {
-            texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, core::config::render_width, core::config::render_height);
+            texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, core::video::render_rect.w, core::video::render_rect.h);
             SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
             new_texture = nullptr;
             start_time = 0;
@@ -29,7 +28,7 @@ namespace anisette::components {
         void load(const std::string &path, const uint64_t &now) {
             if (new_texture) SDL_DestroyTexture(new_texture);
             if (path.empty()) {
-                new_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, core::config::render_width, core::config::render_height);
+                new_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, core::video::render_rect.w, core::video::render_rect.h);
             };
             if (path != current_img_path) {
                 current_img_path = path;
@@ -40,7 +39,7 @@ namespace anisette::components {
                 SDL_SetTextureAlphaMod(new_texture, 0);
                 int width, height;
                 SDL_QueryTexture(new_texture, nullptr, nullptr, &width, &height);
-                const auto screen_ratio = static_cast<double>(core::config::render_width) / core::config::render_height;
+                const auto screen_ratio = static_cast<double>(core::video::render_rect.w) / core::video::render_rect.h;
                 const auto img_ratio = static_cast<double>(width) / height;
                 // calculate background rect
                 if (screen_ratio > img_ratio) {
@@ -76,15 +75,15 @@ namespace anisette::components {
                     new_texture = nullptr;
                 }
             }
-            SDL_Rect draw_rect = {0, 0, core::config::render_width, core::config::render_height};
+            SDL_Rect draw_rect = {0, 0, core::video::render_rect.w, core::video::render_rect.h};
             if (enable_parallax) {
                 int mouse_x, mouse_y;
                 SDL_GetMouseState(&mouse_x, &mouse_y);
                 // calculate parallax
                 draw_rect.w = draw_rect.w * BACKGROUND_PARALLAX_RANGE_PERCENT / 100;
                 draw_rect.h = draw_rect.h * BACKGROUND_PARALLAX_RANGE_PERCENT / 100;
-                draw_rect.x = (core::config::render_width - draw_rect.w) * mouse_x / core::config::render_width;
-                draw_rect.y = (core::config::render_height - draw_rect.h) * mouse_y / core::config::render_height;
+                draw_rect.x = (core::video::render_rect.w - draw_rect.w) * mouse_x / core::video::render_rect.w;
+                draw_rect.y = (core::video::render_rect.h - draw_rect.h) * mouse_y / core::video::render_rect.h;
             }
             SDL_SetRenderTarget(renderer, nullptr);
             SDL_RenderClear(renderer);

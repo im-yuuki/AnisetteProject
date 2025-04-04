@@ -6,17 +6,26 @@
 #include "config.h"
 #include "logging.h"
 #include <SDL2/SDL_render.h>
-#include <SDL2/SDL_ttf.h>
+
+#define PRIMARY_FONT_PATH "assets/fonts/Roboto-Bold.ttf"
+#define SECONDARY_FONT_PATH "assets/fonts/Roboto-Regular.ttf"
 
 const auto logger = anisette::logging::get("video");
 namespace anisette::core::video
 {
+    SDL_Rect render_rect {0, 0, 0, 0};
     SDL_Window *window = nullptr;
     SDL_Renderer *renderer = nullptr;
     SDL_DisplayMode display_mode {};
 
+    TTF_Font *primary_font = nullptr;
+    TTF_Font *secondary_font = nullptr;
+
     bool init() {
         // Initialize
+        render_rect.w = config::render_width;
+        render_rect.h = config::render_height;
+
         logger->debug("Initializing main window");
         uint32_t flags = SDL_WINDOW_OPENGL;
         if (config::display_mode == config::WINDOWED) {
@@ -28,7 +37,7 @@ namespace anisette::core::video
         window = SDL_CreateWindow(
             "Anisette",
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-            config::render_width, config::render_height, flags
+            render_rect.w, render_rect.h, flags
             );
         if (!window) {
             logger->error("Initialize main window failed: {}", SDL_GetError());
@@ -50,44 +59,19 @@ namespace anisette::core::video
             logger->error("Set renderer blend mode failed: {}", SDL_GetError());
             return false;
         }
+        // load system font
+        primary_font = TTF_OpenFont(PRIMARY_FONT_PATH, 14);
+        secondary_font = TTF_OpenFont(SECONDARY_FONT_PATH, 14);
+        if (!primary_font || !secondary_font) {
+            logger->error("Failed to load font: {}", TTF_GetError());
+            return false;
+        }
         return true;
     }
 
     void cleanup() {
+        TTF_CloseFont(primary_font);
+        TTF_CloseFont(secondary_font);
         SDL_DestroyWindow(window);
-    }
-
-    SDL_Rect get_overlay_render_position(const RenderPositionX position_x, const RenderPositionY position_y,
-                                         const int width, const int height, const int margin_x, const int margin_y) {
-        auto ans = SDL_Rect{};
-        ans.w = width;
-        ans.h = height;
-        switch (position_x) {
-            case LEFT:
-                ans.x = margin_x;
-                break;
-            case CENTER:
-                ans.x = (config::render_width - width) / 2;
-                break;
-            case RIGHT:
-                ans.x = config::render_width - width - margin_x;
-                break;
-            default:
-                ans.x = 0;
-        }
-        switch (position_y) {
-            case TOP:
-                ans.y = margin_y;
-                break;
-            case MIDDLE:
-                ans.y = (config::render_height - height) / 2;
-                break;
-            case BOTTOM:
-                ans.y = config::render_height - height - margin_y;
-                break;
-            default:
-                ans.y = 0;
-        }
-        return ans;
     }
 }

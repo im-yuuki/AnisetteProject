@@ -6,7 +6,6 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_render.h>
 
-#define FRT_OVERLAY_FONT_FILE "assets/fonts/Roboto-Bold.ttf"
 #define FRT_OVERLAY_FONT_SIZE_1 16
 #define FRT_OVERLAY_FONT_SIZE_2 12
 #define FRT_OVERLAY_UPDATE_INTERVAL 50 // ms
@@ -18,12 +17,11 @@ namespace anisette::components
         explicit FrameTimeOverlay(SDL_Renderer *renderer) : renderer(renderer) {
             texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, src_rect.w, src_rect.h);
             SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-            font = TTF_OpenFont(FRT_OVERLAY_FONT_FILE, 16);
         };
 
         void render_text(const std::string &text, const int font_size, const SDL_Color &color, int &max_width, int &max_height) const {
-            TTF_SetFontSize(font, font_size);
-            SDL_Surface *surface = TTF_RenderText_Blended(font, text.c_str(), color);
+            TTF_SetFontSize(core::video::primary_font, font_size);
+            SDL_Surface *surface = TTF_RenderText_Blended(core::video::primary_font, text.c_str(), color);
             if (!surface) return;
             SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, surface);
             if (!text_texture) {
@@ -69,10 +67,14 @@ namespace anisette::components
                 // render the text
                 render_text(fps_text, 16, *selected_color, src_rect.w, src_rect.h);
                 render_text(frame_time_text, 12, *selected_color, src_rect.w, src_rect.h);
-                dst_rect = get_overlay_render_position(
-                    core::video::RIGHT, core::video::BOTTOM,
-                    src_rect.w, src_rect.h, 10, 10
-                );
+                // dst_rect = get_overlay_render_position(
+                //     core::video::RIGHT, core::video::BOTTOM,
+                //     src_rect.w, src_rect.h, 10, 10
+                // );
+                dst_rect.w = src_rect.w;
+                dst_rect.h = src_rect.h;
+                dst_rect.x = core::video::render_rect.w - src_rect.w - 10;
+                dst_rect.y = core::video::render_rect.h - src_rect.h - 10;
             }
             // draw the texture
             SDL_SetRenderTarget(renderer, nullptr);
@@ -81,22 +83,18 @@ namespace anisette::components
 
         ~FrameTimeOverlay() {
             if (texture) SDL_DestroyTexture(texture);
-            if (font) TTF_CloseFont(font);
         }
+
     private:
         const SDL_Color normal_color = {0, 255, 0, 255};
         const SDL_Color warn_color = {255, 128, 0, 255};
         const SDL_Color danger_color = {255, 0, 0, 255};
 
         SDL_Rect src_rect { 0, 0, 100, 50};
-        SDL_Rect dst_rect = get_overlay_render_position(
-            core::video::RIGHT, core::video::BOTTOM,
-            src_rect.w, src_rect.h, 10, 10
-            );
+        SDL_Rect dst_rect {};
 
         uint64_t next_refresh = 0;
         SDL_Renderer* renderer = nullptr;
         SDL_Texture* texture = nullptr;
-        TTF_Font* font = nullptr;
     };
-} // namespace anisette::core
+}

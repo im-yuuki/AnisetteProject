@@ -2,10 +2,10 @@
 // Created by Yuuki on 22/03/2025.
 //
 #pragma once
-#include "core.h"
 #include "common.h"
+#include "core.h"
 
-#include <SDL2/SDL_mixer.h>
+#include <container.h>
 #include <queue>
 
 namespace anisette::screens {
@@ -18,26 +18,23 @@ namespace anisette::screens {
     class MenuScreen final : public core::abstract::Screen {
     public:
         explicit MenuScreen(SDL_Renderer *renderer);
-        ~MenuScreen() override;
+        ~MenuScreen() override = default;
 
         void load_async();
         bool is_load_async_finished();
 
-        void on_click(const uint64_t &now, const int x, const int y);
+        void on_click(const uint64_t &now, int x, int y);
         void on_event(const uint64_t &now, const SDL_Event &event) override;
         void update(const uint64_t &now) override;
         void on_focus(const uint64_t &now) override;
         bool play_random_music();
 
     private:
+        components::Grid grid;
         uint64_t action_start_time = 0;
         std::queue<std::function<bool(const uint64_t &now)>> action_hook;
-
-        std::atomic_bool load_async_finished = false;
-
-        Mix_Chunk* click_sound = nullptr;
+        std::atomic_bool load_async_finshed = false;
         SDL_Renderer* renderer;
-
         std::vector<std::string> default_backgrounds;
     };
 

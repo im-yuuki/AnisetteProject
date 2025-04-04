@@ -21,6 +21,19 @@ namespace anisette::core::audio
     std::string music_path;
     int music_duration_ms = 0;
 
+
+    // frequently used sound
+    Mix_Chunk *click_sound = nullptr;
+    Mix_Chunk *hit_sound = nullptr;
+
+    void play_click_sound() {
+        play_sound(click_sound);
+    }
+
+    void play_hit_sound() {
+        play_sound(hit_sound);
+    }
+
     uint8_t music_volume() {
         return Mix_VolumeMusic(-1);
     };
@@ -49,6 +62,9 @@ namespace anisette::core::audio
             logger->error("Failed to open audio device");
             return false;
         }
+        click_sound = Mix_LoadWAV("assets/sound/click.wav");
+        hit_sound = Mix_LoadWAV("assets/sound/hitsound.wav");
+
         set_music_volume(config::music_volume);
         set_sound_volume(config::sound_volume);
 
@@ -56,29 +72,33 @@ namespace anisette::core::audio
             logger->debug("Music finished");
             if (music_halted_flag) {
                 music_halted_flag = false;
-                return;
             } else {
-                logger->debug("Pushing music finished without halting event");
                 SDL_PushEvent(new SDL_Event {.type = MUSIC_FINISHED_EVENT_ID});
             }
-            music_display_name = "";
-            music_path = "";
         });
 
         return true;
     }
 
     void cleanup() {
+        // save state
+        config::music_volume = music_volume();
+        config::sound_volume = sound_volume();
+
+        Mix_FreeChunk(click_sound);
+        Mix_FreeChunk(hit_sound);
         Mix_CloseAudio();
     }
 
     void set_music_volume(uint8_t volume) {
         if (volume > MIX_MAX_VOLUME) volume = MIX_MAX_VOLUME;
+        logger->debug("Setting music volume to {}", volume);
         Mix_VolumeMusic(volume);
     }
 
     void set_sound_volume(uint8_t volume) {
         if (volume > MIX_MAX_VOLUME) volume = MIX_MAX_VOLUME;
+        logger->debug("Setting sound volume to {}", volume);
         Mix_Volume(-1, volume);
     }
 
@@ -102,7 +122,6 @@ namespace anisette::core::audio
 
     bool play_music(const std::string &path, const std::string &display_name) {
         if (path.empty()) return false;
-        if (music_path == path) return false;
         stop_music();
         current_music = Mix_LoadMUS(path.c_str());
         if (current_music == nullptr) {
