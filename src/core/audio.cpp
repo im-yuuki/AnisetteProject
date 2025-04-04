@@ -14,9 +14,34 @@ namespace anisette::core::audio
 {
     static Mix_Music *current_music = nullptr;
     static std::atomic_bool music_halted_flag = false;
+    uint32_t MUSIC_FINISHED_EVENT_ID = SDL_RegisterEvents(1);
+
+    // metadata for current music
     std::string music_display_name;
-    uint8_t music_volume = 0;
-    uint8_t sound_volume = 0;
+    std::string music_path;
+    int music_duration_ms = 0;
+
+    uint8_t music_volume() {
+        return Mix_VolumeMusic(-1);
+    };
+    uint8_t sound_volume() {
+        return Mix_Volume(-1, -1);
+    }
+
+    bool is_paused() {
+        return Mix_PausedMusic();
+    }
+
+    int music_position_ms() {
+        if (current_music == nullptr)
+            return 0;
+        const int position = Mix_GetMusicPosition(current_music);
+        if (position == -1) {
+            logger->error("Failed to get music position: {}", SDL_GetError());
+            return 0;
+        }
+        return position * 1000;
+    }
 
     bool init() {
         logger->debug("Opening audio device");
@@ -26,14 +51,20 @@ namespace anisette::core::audio
         }
         set_music_volume(config::music_volume);
         set_sound_volume(config::sound_volume);
+
         Mix_HookMusicFinished([]() {
             logger->debug("Music finished");
-            if (current_music != nullptr) {
-                Mix_FreeMusic(current_music);
-                current_music = nullptr;
-                music_display_name = "";
+            if (music_halted_flag) {
+                music_halted_flag = false;
+                return;
+            } else {
+                logger->debug("Pushing music finished without halting event");
+                SDL_PushEvent(new SDL_Event {.type = MUSIC_FINISHED_EVENT_ID});
             }
+            music_display_name = "";
+            music_path = "";
         });
+
         return true;
     }
 
@@ -43,13 +74,11 @@ namespace anisette::core::audio
 
     void set_music_volume(uint8_t volume) {
         if (volume > MIX_MAX_VOLUME) volume = MIX_MAX_VOLUME;
-        music_volume = volume;
         Mix_VolumeMusic(volume);
     }
 
     void set_sound_volume(uint8_t volume) {
         if (volume > MIX_MAX_VOLUME) volume = MIX_MAX_VOLUME;
-        sound_volume = volume;
         Mix_Volume(-1, volume);
     }
 
@@ -71,19 +100,9 @@ namespace anisette::core::audio
         return true;
     }
 
-    int music_position_ms() {
-        if (current_music == nullptr)
-            return 0;
-        const int position = Mix_GetMusicPosition(current_music);
-        if (position == -1) {
-            logger->error("Failed to get music position: {}", SDL_GetError());
-            return 0;
-        }
-        return position * 1000;
-    }
-
     bool play_music(const std::string &path, const std::string &display_name) {
         if (path.empty()) return false;
+        if (music_path == path) return false;
         stop_music();
         current_music = Mix_LoadMUS(path.c_str());
         if (current_music == nullptr) {
@@ -95,11 +114,15 @@ namespace anisette::core::audio
             stop_music();
             return false;
         }
+        // fetch music metadata
         if (display_name.empty()) {
             music_display_name = Mix_GetMusicTitle(current_music);
         } else {
             music_display_name = display_name;
         }
+        music_path = path;
+        music_duration_ms = Mix_MusicDuration(current_music) * 1000;
+        music_halted_flag = false;
         logger->debug("Playing music: {}", music_display_name);
         return true;
     }
@@ -119,12 +142,14 @@ namespace anisette::core::audio
     void stop_music() {
         if (current_music == nullptr) return;
         logger->debug("Stopping music: {}", music_display_name);
-        if (music_position_ms() > 0 && ) {
+        const auto current_position = Mix_GetMusicPosition(current_music) * 1000;
+        if (current_position > 0 && current_position < music_duration_ms) {
             music_halted_flag = true;
         }
         Mix_HaltMusic();
         Mix_FreeMusic(current_music);
         current_music = nullptr;
         music_display_name = "";
+        music_path = "";
     }
 }

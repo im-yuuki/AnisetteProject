@@ -96,13 +96,19 @@ namespace anisette::core::video
  */
 namespace anisette::core::audio
 {
-    extern uint8_t music_volume;
-    extern uint8_t sound_volume;
+    extern uint32_t MUSIC_FINISHED_EVENT_ID;
     extern std::string music_display_name;
     extern std::string music_path;
-    extern int music_position_ms();
     extern int music_duration_ms;
-    extern bool is_paused;
+
+    [[nodiscard]]
+    extern int music_position_ms();
+    [[nodiscard]]
+    extern uint8_t music_volume();
+    [[nodiscard]]
+    extern uint8_t sound_volume();
+    [[nodiscard]]
+    extern bool is_paused();
 
     extern void set_sound_volume(uint8_t volume);
     extern void set_music_volume(uint8_t volume);

@@ -27,6 +27,7 @@ namespace anisette::screens {
         void on_event(const uint64_t &now, const SDL_Event &event) override;
         void update(const uint64_t &now) override;
         void on_focus(const uint64_t &now) override;
+        bool play_random_music();
 
     private:
         uint64_t action_start_time = 0;

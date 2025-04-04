@@ -41,8 +41,7 @@ namespace anisette::core {
             case SDL_QUIT:
                 request_stop();
             break;
-            default:
-                screen->on_event(start_frame, event);
+            default: screen->on_event(start_frame, event);
         }
     }
 

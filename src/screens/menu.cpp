@@ -16,17 +16,21 @@ namespace anisette::screens
     MenuScreen::MenuScreen(SDL_Renderer *renderer) : renderer(renderer) {
         // add hook to play music from a random beatmap
         action_hook.push([this](const uint64_t &now) {
-            if (!core::beatmap_loader->is_scan_finished()) return false;
-            if (core::beatmap_loader->beatmaps.empty()) {
-                logger->error("No beatmaps found");
-                return false;
-            }
-            auto beatmap = core::beatmap_loader->beatmaps[utils::randint(0, core::beatmap_loader->beatmaps.size() - 1)];
-            auto music_path = beatmap.music_path;
-            auto display_name = beatmap.artist + " - " + beatmap.title;
-            core::audio::play_music(music_path, display_name);
-            return true;
+            return play_random_music();
         });
+    }
+
+    bool MenuScreen::play_random_music() {
+        if (core::beatmap_loader->beatmaps.empty()) {
+            logger->error("No beatmaps found");
+            return false;
+        }
+        logger->debug("Play random music");
+        const auto beatmap = core::beatmap_loader->beatmaps[utils::randint(0, core::beatmap_loader->beatmaps.size() - 1)];
+        const auto music_path = beatmap.music_path;
+        const auto display_name = beatmap.artist + " - " + beatmap.title;
+        core::audio::play_music(music_path, display_name);
+        return true;
     }
 
     void MenuScreen::on_click(const uint64_t &now, const int x, const int y) {
@@ -44,6 +48,9 @@ namespace anisette::screens
     }
 
     void MenuScreen::on_event(const uint64_t &now, const SDL_Event &event) {
+        if (event.type == core::audio::MUSIC_FINISHED_EVENT_ID) {
+            play_random_music();
+        }
         switch (event.type) {
             case SDL_MOUSEBUTTONDOWN:
                 core::audio::play_sound(click_sound, 1);

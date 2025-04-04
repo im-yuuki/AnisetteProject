@@ -4,7 +4,7 @@
 #include "config.h"
 #include "logging.h"
 #include <fstream>
-#include <SDL_events.h>
+#include <SDL2/SDL_events.h>
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/ostreamwrapper.h>
@@ -16,16 +16,16 @@ const auto logger = anisette::logging::get("loader");
 
 namespace anisette::core::config
 {
-     bool is_fallback = true;
+    bool is_fallback = true;
     // default values
-     int render_width = 1600;
-     int render_height = 900;
-     FPS_VALUE fps = X2_DISPLAY;
-     DISPLAY_MODE display_mode = EXCLUSIVE;
-     uint8_t sound_volume = 128;
-     uint8_t music_volume = 128;
-     bool show_frametime_overlay = true;
-     bool enable_discord_rpc = true;
+    int render_width = 1600;
+    int render_height = 900;
+    FPS_VALUE fps = X2_DISPLAY;
+    DISPLAY_MODE display_mode = EXCLUSIVE;
+    uint8_t sound_volume = 128;
+    uint8_t music_volume = 128;
+    bool show_frametime_overlay = true;
+    bool enable_discord_rpc = true;
 
     bool load() {
         // load config file

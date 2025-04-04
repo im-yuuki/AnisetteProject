@@ -68,17 +68,17 @@ namespace anisette::core
             return false;
         }
         // register event filter
-        SDL_SetEventFilter([](void *userdata, SDL_Event *event) {
-            switch (event->type) {
-                case SDL_QUIT:
-                case SDL_MOUSEBUTTONDOWN:
-                case SDL_MOUSEBUTTONUP:
-                    return 1;
-
-                default:
-                    return 0;
-            }
-        }, nullptr);
+        // SDL_SetEventFilter([](void *userdata, SDL_Event *event) {
+        //     switch (event->type) {
+        //         case SDL_QUIT:
+        //         case SDL_MOUSEBUTTONDOWN:
+        //         case SDL_MOUSEBUTTONUP:
+        //             return 1;
+        //
+        //         default:
+        //             return 0;
+        //     }
+        // }, nullptr);
         // init video and audio handlers
         if (!(audio::init() && video::init())) return false;
         // post-init task
@@ -134,40 +134,40 @@ namespace anisette::core
         // const auto display_mode = video::get_display_mode();
         // reload fps value
         if (config::fps == config::VSYNC) {
-            logger->debug("FPS is set to VSync mode");
+            logger->info("FPS is set to VSync mode");
             SDL_RenderSetVSync(video::renderer, true);
             target_frame_time = system_freq / 2000;
         } else {
             SDL_RenderSetVSync(video::renderer, false);
             if (config::fps > 0) {
-                logger->debug("FPS: {}", config::fps);
+                logger->info("FPS: {}", config::fps);
                 target_frame_time = system_freq / config::fps;
             } else if (config::fps == config::UNLIMITED) {
                 logger->warn("FPS is set to unlimited mode, can lead to high resource usage");
                 target_frame_time = 0;
             } else if (config::fps == config::DISPLAY) {
-                logger->debug("FPS is set to match display refresh rate");
+                logger->info("FPS is set to match display refresh rate");
                 target_frame_time = system_freq / video::display_mode.refresh_rate;
             } else if (config::fps == config::X2_DISPLAY) {
-                logger->debug("FPS is set to 2x of display refresh rate");
+                logger->info("FPS is set to 2x of display refresh rate");
                 target_frame_time = system_freq / video::display_mode.refresh_rate / 2;
             } else if (config::fps == config::X4_DISPLAY) {
-                logger->debug("FPS is set to 4x of display refresh rate");
+                logger->info("FPS is set to 4x of display refresh rate");
                 target_frame_time = system_freq / video::display_mode.refresh_rate / 4;
             } else if (config::fps == config::X8_DISPLAY) {
-                logger->debug("FPS is set to 8x of display refresh rate");
+                logger->info("FPS is set to 8x of display refresh rate");
                 target_frame_time = system_freq / video::display_mode.refresh_rate / 8;
             } else if (config::fps == config::HALF_DISPLAY) {
-                logger->debug("FPS is set to half of display refresh rate");
+                logger->info("FPS is set to half of display refresh rate");
                 target_frame_time = system_freq / video::display_mode.refresh_rate * 2;
             }
         }
         // frame time overlay
         if (config::show_frametime_overlay && !frame_time_overlay) {
-            logger->debug("Frame time overlay enabled");
+            logger->info("Frame time overlay enabled");
             frame_time_overlay = new components::FrameTimeOverlay(video::renderer);
         } else {
-            logger->debug("Frame time overlay disabled");
+            logger->info("Frame time overlay disabled");
             delete frame_time_overlay;
             frame_time_overlay = nullptr;
         }
