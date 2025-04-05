@@ -3,6 +3,7 @@
 //
 #pragma once
 #include "item.h"
+#include "common.h"
 
 #include <SDL2/SDL_render.h>
 #include <ranges>
@@ -37,14 +38,9 @@ namespace anisette::components {
         void draw(SDL_Renderer *renderer, const SDL_Rect draw_rect, const uint8_t alpha = 255) override {
             if (hidden) return;
             int x, y;
-            bool hovered = false;
             SDL_GetMouseState(&x, &y);
-            // check if mouse is inside the item rect
-            if (x >= draw_rect.x && x <= draw_rect.x + draw_rect.w && y >= draw_rect.y && y <= draw_rect.y + draw_rect.h) {
-                hovered = true;
-            }
             item->alpha = alpha;
-            item->draw(renderer, draw_rect, hovered);
+            item->draw(renderer, draw_rect, utils::check_point_in_rect(x, y, draw_rect));
         }
 
         void set_hidden(const bool state) override {

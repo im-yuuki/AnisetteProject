@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <climits>
 #include <random>
+#include <SDL2/SDL_rect.h>
 
 namespace anisette::utils
 {
@@ -23,5 +24,9 @@ namespace anisette::utils
     inline int randint(const int min = INT_MIN, const int max = INT_MAX) {
         std::uniform_int_distribution distribution(min, max);
         return distribution(generator);
+    }
+
+    inline bool check_point_in_rect(const int x, const int y, const SDL_Rect &rect) {
+        return x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
     }
 } // namespace anisette::utils

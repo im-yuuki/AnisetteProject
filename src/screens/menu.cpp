@@ -21,7 +21,7 @@ namespace anisette::screens
         auto logo = new Image("assets/logo.png");
         auto play_btn = new TextButton("Play!", 24, {255, 255, 255, 255}, {0, 0, 0, 128}, {100, 100, 100, 255});
         auto settings_btn = new TextButton("Settings", 20, {255, 255, 255, 255}, {0, 0, 0, 128}, {100, 100, 100, 255});
-        auto quit_btn = new TextButton("Exit", 20, {255, 255, 255, 255}, {0, 0, 0, 128}, {100, 100, 100, 255});
+        quit_btn = new TextButton("Exit", 20, {255, 255, 255, 255}, {0, 0, 0, 128}, {100, 100, 100, 255});
         auto vbox = new VerticalBox(2, 2);
         vbox->add_item(new ItemWrapper(logo), 60);
         vbox->add_item(new ItemWrapper(play_btn), 0);
@@ -50,7 +50,12 @@ namespace anisette::screens
         return true;
     }
 
-    void MenuScreen::on_click(const uint64_t &now, const int x, const int y) {
+    void MenuScreen::on_click(const uint64_t &now, const int x, const int y) const {
+        if (utils::check_point_in_rect(x, y, quit_btn->last_area)) {
+            logger->debug("Clicked quit button");
+            core::request_stop();
+            return;
+        }
     }
 
     void MenuScreen::update(const uint64_t &now) {

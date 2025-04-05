@@ -23,13 +23,14 @@ namespace anisette::screens {
         void load_async();
         bool is_load_async_finished();
 
-        void on_click(const uint64_t &now, int x, int y);
+        void on_click(const uint64_t &now, int x, int y) const;
         void on_event(const uint64_t &now, const SDL_Event &event) override;
         void update(const uint64_t &now) override;
         void on_focus(const uint64_t &now) override;
         bool play_random_music();
 
     private:
+        components::TextButton *quit_btn;
         components::Grid grid {2};
         uint64_t action_start_time = 0;
         std::queue<std::function<bool(const uint64_t &now)>> action_hook;
