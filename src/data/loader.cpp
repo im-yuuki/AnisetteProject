@@ -17,6 +17,11 @@ namespace anisette::data
             index.clear();
             beatmaps.clear();
             load_finished = false;
+            if (!std::filesystem::exists(BEATMAPS_ROOT_DIR)) {
+                logger->error("Beatmaps root directory not found");
+                load_finished = true;
+                return;
+            }
             logger->debug("Scanning beatmaps");
             for (const auto& entry : std::filesystem::directory_iterator(BEATMAPS_ROOT_DIR)) {
                 if (!entry.is_directory()) continue;

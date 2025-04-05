@@ -30,7 +30,7 @@ namespace anisette::screens {
         bool play_random_music();
 
     private:
-        components::Grid grid;
+        components::Grid grid {2};
         uint64_t action_start_time = 0;
         std::queue<std::function<bool(const uint64_t &now)>> action_hook;
         std::atomic_bool load_async_finshed = false;

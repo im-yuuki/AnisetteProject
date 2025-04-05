@@ -10,7 +10,8 @@
 #include "discord.h"
 #include "logging.h"
 
-constexpr int MAXIMUM_EVENT_POLL_PER_FRAME = 16;
+#define MAXIMUM_EVENT_POLL_PER_FRAME 16
+
 const static auto logger = anisette::logging::get("frame");
 
 namespace anisette::core {
@@ -75,6 +76,10 @@ namespace anisette::core {
                 if (!SDL_PollEvent(&event)) break;
                 event_handler(start_frame, event, current_handler);
             }
+            // clear screen
+            SDL_SetRenderTarget(video::renderer, nullptr);
+            SDL_SetRenderDrawColor(video::renderer, 0, 0, 0, 255);
+            SDL_RenderClear(video::renderer);
             // draw background
             if (background_instance) background_instance->draw(start_frame);
             // pass control to the current screen

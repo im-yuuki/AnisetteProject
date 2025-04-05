@@ -13,15 +13,28 @@ namespace anisette::components {
     class Container {
     public:
         virtual ~Container() = default;
-        virtual void draw(SDL_Renderer *renderer, SDL_Rect draw_rect) = 0;
+        virtual void draw(SDL_Renderer *renderer, SDL_Rect draw_rect, uint8_t alpha = 255) = 0;
+        virtual void set_hidden(const bool state) = 0;
+
+        // DO NOT MODIFY THIS VALUE DIRECTLY
         bool hidden = false;
+    protected:
+        SDL_Color fill_color = {0, 0, 0, 0};
+    };
+
+    class BlankContainer final : public Container {
+        // a container with... nothing, to use as flexbox dynamic space
+        void draw(SDL_Renderer *renderer, SDL_Rect draw_rect, uint8_t alpha = 255) override {}
+        void set_hidden(const bool state) override {
+            hidden = state;
+        }
     };
 
     class ItemWrapper final : public Container {
     public:
-        explicit ItemWrapper(Item *item) : item(item) {}
+        explicit ItemWrapper(Item *item) : Container(), item(item) {}
 
-        void draw(SDL_Renderer *renderer, const SDL_Rect draw_rect) override {
+        void draw(SDL_Renderer *renderer, const SDL_Rect draw_rect, const uint8_t alpha = 255) override {
             if (hidden) return;
             int x, y;
             bool hovered = false;
@@ -30,7 +43,13 @@ namespace anisette::components {
             if (x >= draw_rect.x && x <= draw_rect.x + draw_rect.w && y >= draw_rect.y && y <= draw_rect.y + draw_rect.h) {
                 hovered = true;
             }
-            item->draw(renderer, draw_rect, hovered, 255);
+            item->alpha = alpha;
+            item->draw(renderer, draw_rect, hovered);
+        }
+
+        void set_hidden(const bool state) override {
+            item->last_area = {-1, -1, 0, 0};
+            hidden = state;
         }
 
         ~ItemWrapper() override {
@@ -38,223 +57,258 @@ namespace anisette::components {
         }
     private:
         Item *item;
-        const int current_zoom = 0;
     };
 
     struct GridChildProperties {
-        typedef uint8_t Flag;
-        static constexpr Flag POSITION_FREEFORM = 0;
-        // 2 first bit store x position
-        static constexpr Flag POSITION_X_LEFT   = 0b00000001;
-        static constexpr Flag POSITION_X_RIGHT  = 0b00000010;
-        static constexpr Flag POSITION_X_CENTER = 0b00000011;
-        // 2 next bit store y position
-        static constexpr Flag POSITION_Y_TOP    = 0b00000100;
-        static constexpr Flag POSITION_Y_BOTTOM = 0b00001000;
-        static constexpr Flag POSITION_Y_MIDDLE = 0b00001100;
-        //
-        static constexpr Flag CHILD_W_DYNAMIC   = 0b00010000;
-        static constexpr Flag CHILD_H_DYNAMIC   = 0b00100000;
-        // bit 6 make width of child draw rect relative to parent size
-        // if set, children's target size will be overrided
-        static constexpr Flag CHILD_W_RELATIVE  = 0b01000000;
-        // the same for height on bit 7
-        static constexpr Flag CHILD_H_RELATIVE  = 0b10000000;
+        enum PositionX { LEFT, CENTER, RIGHT };
+        enum PositionY { TOP, MIDDLE, BOTTOM };
+        PositionX x = CENTER;
+        PositionY y = MIDDLE;
+        uint8_t width_perc = 0, height_perc = 0;
 
-        Flag flags = POSITION_FREEFORM;
-        int x = 0, y = 0, width = 0, height = 0;
+        GridChildProperties() = default;
+        GridChildProperties(const PositionX position_x, const PositionY position_y, const int width, const int height) {
+            x = position_x;
+            y = position_y;
+            width_perc = width;
+            height_perc = height;
+        }
     };
 
     class Grid final : public Container {
     public:
-        explicit Grid(const int padding = 0) : padding(padding) {}
-
-        /**
-         * @brief Add a child container to the grid
-         *
-         * Note that if you set CHILD_W_RELATIVE or CHILD_H_RELATIVE in flags, you must set width and height parameters
-         * with values between 0 and 100 as percentages (%) of the parent size.
-         *
-         * @param child
-         * @param flags
-         * @param width
-         * @param height
-         * @param place_x
-         * @param place_y
-         */
-
-        void add_child(Container *child, const GridChildProperties::Flag flags = GridChildProperties::POSITION_FREEFORM,
-            const int width = 0, const int height = 0, const int place_x = 0, const int place_y = 0) {
-            GridChildProperties child_properties;
-            child_properties.flags = flags;
-            child_properties.x = place_x;
-            child_properties.y = place_y;
-            child_properties.width = width;
-            child_properties.height = height;
-            children.emplace_back(child, child_properties);
+        explicit Grid(const uint8_t padding = 0, const SDL_Color fill_color = {0, 0, 0, 0}) : padding(padding) {
+            this->fill_color = fill_color;
         }
 
-        void draw(SDL_Renderer *renderer, SDL_Rect draw_rect) override {
+        Grid* add_child(Container *child, const GridChildProperties::PositionX x, const GridChildProperties::PositionY y, const uint8_t width_perc = 0, const uint8_t height_perc = 0) {
+            GridChildProperties child_properties {x, y, width_perc, height_perc};
+            children.emplace_back(child, child_properties);
+            return this;
+        }
+
+        void draw(SDL_Renderer *renderer, SDL_Rect draw_rect, const uint8_t alpha) override {
+            int base_size = draw_rect.w < draw_rect.h ? draw_rect.w : draw_rect.h;
             // recalculate the parent rect for padding
-            draw_rect.x += padding;
-            draw_rect.y += padding;
-            draw_rect.w -= padding;
-            draw_rect.h -= padding;
-            if (draw_rect.x < 0 || draw_rect.y < 0 || draw_rect.w <= 0 || draw_rect.h <= 0)
-                return;
+            if (padding > 0) {
+                draw_rect.x += base_size * padding / 200;
+                draw_rect.y += base_size * padding / 200;
+                draw_rect.w -= base_size * padding / 100;
+                draw_rect.h -= base_size * padding / 100;
+                base_size = draw_rect.w < draw_rect.h ? draw_rect.w : draw_rect.h;
+            }
+            // check for invalid rect
+            if (draw_rect.w <= 0 || draw_rect.h <= 0) return;
+
             for (const auto [item, properties]: children) {
                 if (item->hidden) continue;
                 SDL_Rect item_rect{};
-                // calculate width
-                if (properties.flags & GridChildProperties::POSITION_FREEFORM) {}
-                if (properties.flags & GridChildProperties::CHILD_W_RELATIVE) {
-                    item_rect.w = properties.width * draw_rect.w / 100;
-                    if (item_rect.w < 0)
-                        item_rect.w = 0;
-                } else {
-                    item_rect.w = properties.width;
-                }
-                // calculate height
-                if (properties.flags & GridChildProperties::CHILD_H_RELATIVE) {
-                    item_rect.h = properties.height * draw_rect.h / 100;
-                    if (item_rect.h < 0)
-                        item_rect.h = 0;
-                } else {
-                    item_rect.h = properties.height;
-                }
+                // calculate size
+                item_rect.w = properties.width_perc == 255 ? draw_rect.w : properties.width_perc * base_size / 100;
+                item_rect.h = properties.height_perc == 255 ? draw_rect.h : properties.height_perc * base_size / 100;
 
                 // calculate position
-                switch (properties.flags & GridChildProperties::POSITION_X_CENTER) {
-                    case GridChildProperties::POSITION_X_LEFT:
+                switch (properties.x) {
+                    case GridChildProperties::LEFT:
                         item_rect.x = draw_rect.x;
                         break;
-                    case GridChildProperties::POSITION_X_RIGHT:
+                    case GridChildProperties::RIGHT:
                         item_rect.x = draw_rect.x + draw_rect.w - item_rect.w;
                         break;
-                    case GridChildProperties::POSITION_X_CENTER:
-                        item_rect.x = draw_rect.x + (draw_rect.w - item_rect.w) / 2;
-                        break;
+
                     default:
-                        item_rect.x = properties.x;
+                    case GridChildProperties::CENTER:
+                        item_rect.x = draw_rect.x + (draw_rect.w - item_rect.w) / 2;
                 }
-                switch (properties.flags & GridChildProperties::POSITION_Y_MIDDLE) {
-                    case GridChildProperties::POSITION_Y_TOP:
+                switch (properties.y) {
+                    case GridChildProperties::TOP:
                         item_rect.y = draw_rect.y;
                         break;
-                    case GridChildProperties::POSITION_Y_BOTTOM:
+                    case GridChildProperties::BOTTOM:
                         item_rect.y = draw_rect.y + draw_rect.h - item_rect.h;
                         break;
-                    case GridChildProperties::POSITION_Y_MIDDLE:
-                        item_rect.y = draw_rect.y + (draw_rect.h - item_rect.h) / 2;
-                        break;
+
                     default:
-                        item_rect.y = properties.y;
+                    case GridChildProperties::MIDDLE:
+                        item_rect.y = draw_rect.y + (draw_rect.h - item_rect.h) / 2;
                 }
                 // ensure item rect is inside the parent rect
-                // if (item_rect.x < draw_rect.x) item_rect.x = draw_rect.x;
-                // if (item_rect.y < draw_rect.y) item_rect.y = draw_rect.y;
-                // if (item_rect.w < draw_rect.w) item_rect.w = draw_rect.w;
-                // if (item_rect.h < draw_rect.h) item_rect.h = draw_rect.h;
+                if (item_rect.x < draw_rect.x) item_rect.x = draw_rect.x;
+                if (item_rect.y < draw_rect.y) item_rect.y = draw_rect.y;
+                if (item_rect.w > draw_rect.w) item_rect.w = draw_rect.w;
+                if (item_rect.h > draw_rect.h) item_rect.h = draw_rect.h;
                 // draw the item
-                item->draw(renderer, item_rect);
+                item->draw(renderer, item_rect, alpha);
             }
+        }
+
+        void set_hidden(const bool state) override {
+            for (const auto &item: children | std::views::keys) {
+                item->set_hidden(state);
+            }
+            hidden = state;
+        }
+
+        ~Grid() override {
+            for (const auto &item: children | std::views::keys) delete item;
         }
 
         std::vector<std::pair<Container*, GridChildProperties>> children;
     private:
-        const int padding;
+        const uint8_t padding;
+
     };
 
     class FlexContainer : public Container {
     public:
-        explicit FlexContainer(const int padding = 0, const int spacing = 10) : padding(padding), spacing(spacing) {}
+        // padding and spacing are percentages of the smallest dimension of the parent rect
+        explicit FlexContainer(const int padding = 0, const int spacing = 1) : padding(padding), spacing(spacing) {}
 
-        void add_item(Container *item, int fixed_size_percent = -1) {
-            children.emplace_back(item, fixed_size_percent);
+        FlexContainer* add_item(Container *item, uint8_t fixed_size_perc = 0) {
+            children.emplace_back(item, fixed_size_perc);
+            return this;
         }
 
-        std::vector<std::pair<Container*, int>> children;
+        void set_hidden(const bool state) override {
+            for (const auto &item: children | std::views::keys) {
+                item->set_hidden(state);
+            }
+            hidden = state;
+        }
+
+        ~FlexContainer() override {
+            for (const auto &item: children | std::views::keys) delete item;
+        }
+
+        std::vector<std::pair<Container*, uint8_t>> children;
     protected:
         const int padding, spacing; // pixels
     };
 
     class VerticalBox final : public FlexContainer {
-        void draw(SDL_Renderer *renderer, SDL_Rect draw_rect) override {
-            draw_rect.x += padding;
-            draw_rect.y += padding;
-            draw_rect.w -= padding;
-            draw_rect.h -= padding;
-            if (draw_rect.x < 0 || draw_rect.y < 0 || draw_rect.w <= 0 || draw_rect.h <= 0) return;
-            int fixed_height = 0, dynamic_item_count = 0;
-            for (const auto &[item, fixed_size_percent]: children) {
+    public:
+        explicit VerticalBox(const int padding = 0, const int spacing = 1) : FlexContainer(padding, spacing) {}
+
+        void draw(SDL_Renderer *renderer, SDL_Rect draw_rect, const uint8_t alpha = 255) override {
+            if (hidden) return;
+            // draw background color
+            if (fill_color.r || fill_color.g || fill_color.b || fill_color.a) {
+                SDL_SetRenderTarget(renderer, nullptr);
+                SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                SDL_RenderFillRect(renderer, &draw_rect);
+            }
+
+            // resize parent rect for padding
+            if (padding > 0) {
+                const int padding_px = (draw_rect.w < draw_rect.h ? draw_rect.w : draw_rect.h) * padding / 200;
+                draw_rect.x += padding_px;
+                draw_rect.y += padding_px;
+                draw_rect.w -= padding_px * 2;
+                draw_rect.h -= padding_px * 2;
+            }
+            // check for invalid rect
+            if (draw_rect.w <= 0 || draw_rect.h <= 0) return;
+
+            // count total size of fixed height items
+            const int base_size = draw_rect.h;
+            int fixed_height_perc = 0, dynamic_item_count = 0;
+            for (int i = 0; i < children.size(); i++) {
+                const auto &[item, h_percent] = children[i];
                 if (item->hidden) continue;
-                if (fixed_size_percent > 0) fixed_height += fixed_size_percent * draw_rect.h / 100;
+                if (i > 0) fixed_height_perc += spacing;
+                if (h_percent != 0) fixed_height_perc += h_percent;
                 else dynamic_item_count++;
-                fixed_height += spacing;
             }
-            fixed_height -= spacing;
-            int dynamic_item_height = 0, y = 0;
+            int dynamic_item_px = 0, y = draw_rect.y;
             if (dynamic_item_count == 0) {
-                y = (draw_rect.y - fixed_height) / 2;
-                dynamic_item_height = 0;
+                y += (100 - fixed_height_perc) * base_size / 200;
             } else {
-                dynamic_item_height = (draw_rect.h - fixed_height) / dynamic_item_count;
-                y = draw_rect.y;
+                fixed_height_perc += spacing * dynamic_item_count;
+                dynamic_item_px = (100 - fixed_height_perc) * base_size / 100 / dynamic_item_count;
+                // show no dynamic item if its size is negative
+                if (dynamic_item_px < 0) dynamic_item_px = 0;
             }
-            for (const auto &[item, fixed_size_percent]: children) {
+            for (const auto &[item, h_percent]: children) {
                 if (item->hidden) continue;
                 SDL_Rect item_rect {draw_rect.x, y, draw_rect.w, 0};
-                if (fixed_size_percent > 0) item_rect.h = fixed_size_percent * draw_rect.h / 100;
-                else item_rect.h = dynamic_item_height;
-                y = y + item_rect.h + spacing;
+                // child height calculation
+                if (h_percent != 0) item_rect.h = h_percent * base_size / 100;
+                else if (dynamic_item_px == 0) continue;
+                else item_rect.h = dynamic_item_px;
+                // y for next item
+                y = y + item_rect.h + spacing * base_size / 100;
                 // ensure item rect is inside the parent rect
-                // if (item_rect.x < draw_rect.x) item_rect.x = draw_rect.x;
-                // if (item_rect.y < draw_rect.y) item_rect.y = draw_rect.y;
-                // if (item_rect.w < draw_rect.w) item_rect.w = draw_rect.w;
-                // if (item_rect.h < draw_rect.h) item_rect.h = draw_rect.h;
-                // draw the item
-                item->draw(renderer, item_rect);
+                if (item_rect.x < draw_rect.x) item_rect.x = draw_rect.x;
+                if (item_rect.y < draw_rect.y) item_rect.y = draw_rect.y;
+                if (item_rect.w > draw_rect.w) item_rect.w = draw_rect.w;
+                if (item_rect.h > draw_rect.h) item_rect.h = draw_rect.h;
+                // draw item
+                item->draw(renderer, item_rect, alpha);
             }
         }
     };
 
     class HorizontalBox final : public FlexContainer {
     public:
-        void draw(SDL_Renderer *renderer, SDL_Rect draw_rect) override {
-            draw_rect.x += padding;
-            draw_rect.y += padding;
-            draw_rect.w -= padding;
-            draw_rect.h -= padding;
-            if (draw_rect.x < 0 || draw_rect.y < 0 || draw_rect.w <= 0 || draw_rect.h <= 0) return;
-            int fixed_width = 0, dynamic_item_count = 0;
-            for (const auto &[item, fixed_size_percent]: children) {
+        explicit HorizontalBox(const int padding = 0, const int spacing = 1) : FlexContainer(padding, spacing) {}
+
+        void draw(SDL_Renderer *renderer, SDL_Rect draw_rect, const uint8_t alpha = 255) override {
+            if (hidden) return;
+            // draw background color
+            if (fill_color.r || fill_color.g || fill_color.b || fill_color.a) {
+                SDL_SetRenderTarget(renderer, nullptr);
+                SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                SDL_RenderFillRect(renderer, &draw_rect);
+            }
+
+            // resize parent rect for padding
+            if (padding > 0) {
+                const int padding_px = (draw_rect.w < draw_rect.h ? draw_rect.w : draw_rect.h) * padding / 200;
+                draw_rect.x += padding_px;
+                draw_rect.y += padding_px;
+                draw_rect.w -= padding_px * 2;
+                draw_rect.h -= padding_px * 2;
+            }
+            // check for invalid rect
+            if (draw_rect.w <= 0 || draw_rect.h <= 0) return;
+
+            // count total size of fixed width items
+            const int base_size = draw_rect.w;
+            int fixed_width_perc = 0, dynamic_item_count = 0;
+            for (int i = 0; i < children.size(); i++) {
+                const auto &[item, w_percent] = children[i];
                 if (item->hidden) continue;
-                if (fixed_size_percent > 0) fixed_width += fixed_size_percent * draw_rect.w / 100;
+                if (i > 0) fixed_width_perc += spacing;
+                if (w_percent != 0) fixed_width_perc += w_percent;
                 else dynamic_item_count++;
-                fixed_width += spacing;
             }
-            fixed_width -= spacing;
-            int dynamic_item_width = 0, x = 0;
+            int dynamic_item_px = 0, x = draw_rect.x;
             if (dynamic_item_count == 0) {
-                x = (draw_rect.x - fixed_width) / 2;
-                dynamic_item_width = 0;
+                x += (100 - fixed_width_perc) * base_size / 200;
             } else {
-                dynamic_item_width = (draw_rect.w - fixed_width) / dynamic_item_count;
-                x = draw_rect.x;
+                fixed_width_perc += spacing * dynamic_item_count;
+                dynamic_item_px = (100 - fixed_width_perc) * base_size / 100 / dynamic_item_count;
+                // show no dynamic item if its size is negative
+                if (dynamic_item_px < 0) dynamic_item_px = 0;
             }
-            for (const auto &[item, fixed_size_percent]: children) {
+            for (const auto &[item, w_percent]: children) {
                 if (item->hidden) continue;
                 SDL_Rect item_rect {x, draw_rect.y, 0, draw_rect.h};
-                if (fixed_size_percent > 0) item_rect.w = fixed_size_percent * draw_rect.w / 100;
-                else item_rect.w = dynamic_item_width;
-                x = x + item_rect.w + spacing;
+                // child width calculation
+                if (w_percent != 0) item_rect.w = w_percent * base_size / 100;
+                else if (dynamic_item_px == 0) continue;
+                else item_rect.w = dynamic_item_px;
+                // x for next item
+                x = x + item_rect.w + spacing * base_size / 100;
                 // ensure item rect is inside the parent rect
-                // if (item_rect.x < draw_rect.x) item_rect.x = draw_rect.x;
-                // if (item_rect.y < draw_rect.y) item_rect.y = draw_rect.y;
-                // if (item_rect.w < draw_rect.w) item_rect.w = draw_rect.w;
-                // if (item_rect.h < draw_rect.h) item_rect.h = draw_rect.h;
-                // draw the item
-                item->draw(renderer, item_rect);
+                if (item_rect.x < draw_rect.x) item_rect.x = draw_rect.x;
+                if (item_rect.y < draw_rect.y) item_rect.y = draw_rect.y;
+                if (item_rect.w > draw_rect.w) item_rect.w = draw_rect.w;
+                if (item_rect.h > draw_rect.h) item_rect.h = draw_rect.h;
+                // draw item
+                item->draw(renderer, item_rect, alpha);
             }
         }
     };

@@ -3,7 +3,6 @@
 //
 #include <SDL2/SDL_image.h>
 #include "core.h"
-#include "config.h"
 #include "screens.h"
 #include "common.h"
 #include "logging.h"

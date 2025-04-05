@@ -92,13 +92,13 @@ namespace anisette::core::audio
 
     void set_music_volume(uint8_t volume) {
         if (volume > MIX_MAX_VOLUME) volume = MIX_MAX_VOLUME;
-        logger->debug("Setting music volume to {}", volume);
+        // logger->debug("Setting music volume to {}", volume);
         Mix_VolumeMusic(volume);
     }
 
     void set_sound_volume(uint8_t volume) {
         if (volume > MIX_MAX_VOLUME) volume = MIX_MAX_VOLUME;
-        logger->debug("Setting sound volume to {}", volume);
+        // logger->debug("Setting sound volume to {}", volume);
         Mix_Volume(-1, volume);
     }
 

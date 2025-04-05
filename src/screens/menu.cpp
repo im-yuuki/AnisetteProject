@@ -20,11 +20,14 @@ namespace anisette::screens
         // add elements to the grid
         auto test_button = new TextButton("Test", 20, {255, 255, 255, 255}, {255, 0, 0, 255}, {100, 100, 100, 255});
         auto test_button2 = new IconButton("assets/icons/app.png", {255, 0, 0, 255}, {100, 100, 100, 255});
-        grid.add_child(new ItemWrapper(test_button), GridChildProperties::POSITION_X_LEFT | GridChildProperties::POSITION_Y_TOP, 50, 50, 0, 0);
-        grid.add_child(new ItemWrapper(test_button2), GridChildProperties::POSITION_X_CENTER | GridChildProperties::POSITION_Y_MIDDLE, 200, 200, 0, 0);
+        auto vbox = new VerticalBox(2, 2);
+        vbox->add_item(new ItemWrapper(test_button), 20);
+        vbox->add_item(new ItemWrapper(test_button2), 70);
+        grid.add_child(vbox, GridChildProperties::CENTER, GridChildProperties::MIDDLE, 50, 50);
         // add hook to play music from a random beatmap
         action_hook.emplace([this](const uint64_t &now) {
-            return play_random_music();
+            play_random_music();
+            return true;
         });
     }
 
@@ -48,7 +51,7 @@ namespace anisette::screens
         if (!load_async_finshed) return;
 
         // draw the grid
-        grid.draw(renderer, core::video::render_rect);
+        grid.draw(renderer, core::video::render_rect, 255);
 
         // run action hooks
         if (!action_hook.empty()) if (action_hook.front()(now)) {
