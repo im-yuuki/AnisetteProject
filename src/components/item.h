@@ -60,6 +60,8 @@ namespace anisette::components {
             if (last_hover_state != hovered) {
                 last_hover_state = hovered;
                 SDL_SetRenderTarget(renderer, texture);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+                SDL_RenderClear(renderer);
                 // draw background
                 int r = background.r, g = background.g, b = background.b, a = background.a;
                 if (hovered) {
@@ -128,6 +130,8 @@ namespace anisette::components {
             if (last_hover_state != hovered) {
                 last_hover_state = hovered;
                 SDL_SetRenderTarget(renderer, texture);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+                SDL_RenderClear(renderer);
                 // draw background
                 int r = background.r, g = background.g, b = background.b, a = background.a;
                 if (hovered) {
@@ -207,6 +211,7 @@ namespace anisette::components {
             texture = nullptr;
             init_finished = false;
         }
+
     private:
         std::string text;
         SDL_Color foreground;
@@ -217,44 +222,31 @@ namespace anisette::components {
     public:
         explicit Image(const std::string &path) : path(path) {}
 
-        void draw(SDL_Renderer *renderer, const SDL_Rect area, const bool hovered) override {
+        void draw(SDL_Renderer *renderer, SDL_Rect area, const bool hovered) override {
             if (!init_finished) {
                 texture = IMG_LoadTexture(renderer, path.c_str());
                 if (!texture) return;
                 SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+                SDL_QueryTexture(texture, nullptr, nullptr, &img_w, &img_h);
                 init_finished = true;
             }
-
             if (!texture) return;
-
-            if (last_area.w != area.w || last_area.h != area.h) {
-                int img_width, img_height;
-                SDL_QueryTexture(texture, nullptr, nullptr, &img_width, &img_height);
-                // calculate rect
-                const double area_ratio = static_cast<double>(area.w) / area.h;
-                const double icon_ratio = static_cast<double>(img_width) / img_height;
-                if (area_ratio > icon_ratio) {
-                    // stretch to fit width
-                    img_rect.w = img_width;
-                    img_rect.h = img_width / area_ratio;
-                    img_rect.x = 0;
-                    img_rect.y = abs(img_height - img_rect.h) / 2;
-                } else {
-                    // stretch to fit height
-                    img_rect.w = img_height * area_ratio;
-                    img_rect.h = img_height;
-                    img_rect.x = abs(img_height - img_rect.w) / 2;
-                    img_rect.y = 0;
-                }
+            const double area_ratio = static_cast<double>(area.w) / area.h;
+            const double img_ratio = static_cast<double>(img_w) / img_h;
+            if (img_ratio > area_ratio) {
+                area.y += (area.y - img_h * area.w / img_w) / 2;
+                area.h = img_h * area.w / img_w;
+            } else {
+                area.x += (area.w - img_w * area.h / img_h) / 2;
+                area.w = img_w * area.h / img_h;
             }
-
             SDL_SetTextureAlphaMod(texture, alpha);
             SDL_SetRenderTarget(renderer, nullptr);
-            SDL_RenderCopy(renderer, texture, &img_rect, &area);
+            SDL_RenderCopy(renderer, texture, nullptr, &area);
             last_area = area;
         }
     private:
         const std::string path;
-        SDL_Rect img_rect {0, 0, 0, 0};
+        int img_w = 0, img_h = 0;
     };
 }

@@ -18,12 +18,18 @@ namespace anisette::screens
     MenuScreen::MenuScreen(SDL_Renderer *renderer) : renderer(renderer) {
         using namespace components;
         // add elements to the grid
-        auto test_button = new TextButton("Test", 20, {255, 255, 255, 255}, {255, 0, 0, 255}, {100, 100, 100, 255});
-        auto test_button2 = new IconButton("assets/icons/app.png", {255, 0, 0, 255}, {100, 100, 100, 255});
+        auto logo = new Image("assets/logo.png");
+        auto play_btn = new TextButton("Play!", 24, {255, 255, 255, 255}, {0, 0, 0, 128}, {100, 100, 100, 255});
+        auto settings_btn = new TextButton("Settings", 20, {255, 255, 255, 255}, {0, 0, 0, 128}, {100, 100, 100, 255});
+        auto quit_btn = new TextButton("Exit", 20, {255, 255, 255, 255}, {0, 0, 0, 128}, {100, 100, 100, 255});
         auto vbox = new VerticalBox(2, 2);
-        vbox->add_item(new ItemWrapper(test_button), 20);
-        vbox->add_item(new ItemWrapper(test_button2), 70);
-        grid.add_child(vbox, GridChildProperties::CENTER, GridChildProperties::MIDDLE, 50, 50);
+        vbox->add_item(new ItemWrapper(logo), 60);
+        vbox->add_item(new ItemWrapper(play_btn), 0);
+        auto hbox = new HorizontalBox(0, 2);
+        hbox->add_item(new ItemWrapper(settings_btn), 0);
+        hbox->add_item(new ItemWrapper(quit_btn), 0);
+        vbox->add_item(hbox, 0);
+        grid.add_child(vbox, GridChildProperties::CENTER, GridChildProperties::MIDDLE, 80, 50);
         // add hook to play music from a random beatmap
         action_hook.emplace([this](const uint64_t &now) {
             play_random_music();

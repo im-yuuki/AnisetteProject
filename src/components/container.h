@@ -212,14 +212,16 @@ namespace anisette::components {
 
             // count total size of fixed height items
             const int base_size = draw_rect.h;
-            int fixed_height_perc = 0, dynamic_item_count = 0;
-            for (int i = 0; i < children.size(); i++) {
-                const auto &[item, h_percent] = children[i];
+            int item_count = 0, fixed_height_perc = 0, dynamic_item_count = 0;
+            for (const auto &[item, h_percent] : children) {
                 if (item->hidden) continue;
-                if (i > 0) fixed_height_perc += spacing;
+                item_count++;
                 if (h_percent != 0) fixed_height_perc += h_percent;
                 else dynamic_item_count++;
+                fixed_height_perc += spacing;
             }
+            if (item_count > 0) fixed_height_perc -= spacing;
+            // calculate dynamic item size
             int dynamic_item_px = 0, y = draw_rect.y;
             if (dynamic_item_count == 0) {
                 y += (100 - fixed_height_perc) * base_size / 200;
@@ -276,14 +278,16 @@ namespace anisette::components {
 
             // count total size of fixed width items
             const int base_size = draw_rect.w;
-            int fixed_width_perc = 0, dynamic_item_count = 0;
-            for (int i = 0; i < children.size(); i++) {
-                const auto &[item, w_percent] = children[i];
+            int item_count = 0, fixed_width_perc = 0, dynamic_item_count = 0;
+            for (const auto &[item, w_percent] : children) {
                 if (item->hidden) continue;
-                if (i > 0) fixed_width_perc += spacing;
+                item_count ++;
                 if (w_percent != 0) fixed_width_perc += w_percent;
                 else dynamic_item_count++;
+                fixed_width_perc += spacing;
             }
+            if (item_count > 0) fixed_width_perc -= spacing;
+            // calculate dynamic item size
             int dynamic_item_px = 0, x = draw_rect.x;
             if (dynamic_item_count == 0) {
                 x += (100 - fixed_width_perc) * base_size / 200;
