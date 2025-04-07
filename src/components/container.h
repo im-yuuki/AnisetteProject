@@ -19,8 +19,37 @@ namespace anisette::components {
 
         // DO NOT MODIFY THIS VALUE DIRECTLY
         bool hidden = false;
+        bool fill_rounded_corners = false;
         SDL_Color fill_color = {0, 0, 0, 0};
         virtual void hide_draw_rect() {};
+    };
+
+    class ContainerWrapper final : public Container {
+    public:
+        ~ContainerWrapper() override {};
+
+        void draw(SDL_Renderer *renderer, const SDL_Rect draw_rect, const uint8_t alpha) override {
+            if (back_container) back_container->draw(renderer, draw_rect, alpha);
+        };
+
+        void set_hidden(const bool state) override {
+            if (back_container) back_container->set_hidden(state);
+        };
+
+        void hide_draw_rect() override {
+            if (back_container) back_container->hide_draw_rect();
+        };
+
+        void set_back_container(Container *container) {
+            back_container = container;
+        }
+
+        void delete_back_container() {
+            delete back_container;
+            back_container = nullptr;
+        }
+    private:
+        Container *back_container = nullptr;
     };
 
     class BlankContainer final : public Container {
@@ -39,9 +68,15 @@ namespace anisette::components {
             if (hidden) return;
             if (fill_color.r || fill_color.g || fill_color.b || fill_color.a) {
                 SDL_SetRenderTarget(renderer, nullptr);
-                SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
-                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-                SDL_RenderFillRect(renderer, &draw_rect);
+                if (fill_rounded_corners) {
+                    roundedBoxRGBA(renderer,
+                        draw_rect.x, draw_rect.y, draw_rect.x + draw_rect.w, draw_rect.y + draw_rect.h,
+                        ROUNDED_RECTANGLE_RADIUS, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                } else {
+                    SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                    SDL_RenderFillRect(renderer, &draw_rect);
+                }
             }
             int x, y;
             SDL_GetMouseState(&x, &y);
@@ -99,11 +134,16 @@ namespace anisette::components {
             // draw background color
             if (fill_color.r || fill_color.g || fill_color.b || fill_color.a) {
                 SDL_SetRenderTarget(renderer, nullptr);
-                SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
-                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-                SDL_RenderFillRect(renderer, &draw_rect);
+                if (fill_rounded_corners) {
+                    roundedBoxRGBA(renderer,
+                        draw_rect.x, draw_rect.y, draw_rect.x + draw_rect.w, draw_rect.y + draw_rect.h,
+                        ROUNDED_RECTANGLE_RADIUS, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                } else {
+                    SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                    SDL_RenderFillRect(renderer, &draw_rect);
+                }
             }
-
             // recalculate the parent rect for padding
             int base_size = draw_rect.w < draw_rect.h ? draw_rect.w : draw_rect.h;
             if (padding > 0) {
@@ -217,11 +257,16 @@ namespace anisette::components {
             // draw background color
             if (fill_color.r || fill_color.g || fill_color.b || fill_color.a) {
                 SDL_SetRenderTarget(renderer, nullptr);
-                SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
-                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-                SDL_RenderFillRect(renderer, &draw_rect);
+                if (fill_rounded_corners) {
+                    roundedBoxRGBA(renderer,
+                        draw_rect.x, draw_rect.y, draw_rect.x + draw_rect.w, draw_rect.y + draw_rect.h,
+                        ROUNDED_RECTANGLE_RADIUS, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                } else {
+                    SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                    SDL_RenderFillRect(renderer, &draw_rect);
+                }
             }
-
             // resize parent rect for padding
             if (padding > 0) {
                 const int padding_px = (draw_rect.w < draw_rect.h ? draw_rect.w : draw_rect.h) * padding / 200;
@@ -282,11 +327,16 @@ namespace anisette::components {
             // draw background color
             if (fill_color.r || fill_color.g || fill_color.b || fill_color.a) {
                 SDL_SetRenderTarget(renderer, nullptr);
-                SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
-                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-                SDL_RenderFillRect(renderer, &draw_rect);
+                if (fill_rounded_corners) {
+                    roundedBoxRGBA(renderer,
+                        draw_rect.x, draw_rect.y, draw_rect.x + draw_rect.w, draw_rect.y + draw_rect.h,
+                        ROUNDED_RECTANGLE_RADIUS, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                } else {
+                    SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                    SDL_RenderFillRect(renderer, &draw_rect);
+                }
             }
-
             // resize parent rect for padding
             if (padding > 0) {
                 const int padding_px = (draw_rect.w < draw_rect.h ? draw_rect.w : draw_rect.h) * padding / 200;

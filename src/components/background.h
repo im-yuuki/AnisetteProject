@@ -5,13 +5,12 @@
 #include "core.h"
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_render.h>
-#include <SDL2/SDL_timer.h>
 #include <atomic>
 #include <cstdint>
 #include <string>
 
 #define BACKGROUND_PARALLAX_RANGE_PERCENT 98
-#define BACKGROUND_SWAP_DURATION_MS 3000
+#define BACKGROUND_SWAP_DURATION_MS 5000
 
 namespace anisette::components {
     class Background {
@@ -55,7 +54,7 @@ namespace anisette::components {
                     bg_rect.x = abs(width - bg_rect.w) / 2;
                     bg_rect.y = 0;
                 }
-                start_time = SDL_GetPerformanceCounter();
+                start_time = now;
             }
         }
 
@@ -64,7 +63,7 @@ namespace anisette::components {
             if (new_texture) {
                 // calculate alpha
                 const uint64_t delta = now > start_time ? now - start_time : 0;
-                auto alpha = 255 * delta * 1000 / BACKGROUND_SWAP_DURATION_MS / core::system_freq;
+                auto alpha = 255 * delta / (core::system_freq * BACKGROUND_SWAP_DURATION_MS / 1000);
                 if (alpha > 255) alpha = 255;
                 SDL_SetTextureAlphaMod(new_texture, alpha);
                 // render to buffer

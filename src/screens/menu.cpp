@@ -70,6 +70,8 @@ namespace anisette::screens
         grid.add_child(vbox, GridChildProperties::CENTER, GridChildProperties::MIDDLE, 80, 50);
         grid.add_child(music_control, GridChildProperties::RIGHT, GridChildProperties::TOP, 70, 4);
         grid.add_child(volume_overlay, GridChildProperties::LEFT, GridChildProperties::BOTTOM, 70, 3);
+        // action hook
+        action_start_time = SDL_GetPerformanceCounter();
         // add hook to play music from a random beatmap
         action_hook.emplace([this](const uint64_t &now) {
             play_random_music();
@@ -97,16 +99,45 @@ namespace anisette::screens
         }
     }
 
-    void MenuScreen::on_click(const uint64_t &now, const int x, const int y) const {
+    void MenuScreen::on_click(const uint64_t &now, const int x, const int y) {
         if (utils::check_point_in_rect(x, y, play_btn->last_area)) {
             logger->debug("Clicked play button");
             if (core::beatmap_loader->beatmaps.empty()) logger->warn("No beatmaps found");
-            else core::open(new LibraryScreen(renderer));
+            // hook fade out + switch to library screen
+            else {
+                if (action_hook.empty()) action_start_time = now;
+                action_hook.emplace([this](const uint64_t &action_now) {
+                    const auto delta = action_now > action_start_time ? action_now - action_start_time : 0;
+                    const auto alpha = 255 * delta / fade_duration;
+                    if (alpha > 255) {
+                        screen_dim_alpha = 255;
+                        logger->debug("Fade out finished");
+                        core::open(new LibraryScreen(renderer));
+                        return true;
+                    }
+                    screen_dim_alpha = alpha;
+                    return false;
+                });
+            }
         } else if (utils::check_point_in_rect(x, y, settings_btn->last_area)) {
-            logger->debug("Clicked settings button");
+            logger->warn("Settings screen is not implemented");
+
         } else if (utils::check_point_in_rect(x, y, quit_btn->last_area)) {
             logger->debug("Clicked quit button");
-            core::request_stop();
+            if (action_hook.empty()) action_start_time = now;
+            action_hook.emplace([this](const uint64_t &action_now) {
+                const auto delta = action_now > action_start_time ? action_now - action_start_time : 0;
+                const auto alpha = 255 * delta / fade_duration;
+                if (alpha > 255) {
+                    screen_dim_alpha = 255;
+                    logger->debug("Fade out finished");
+                    core::request_stop();
+                    return true;
+                }
+                screen_dim_alpha = alpha;
+                return false;
+            });
+
         } else if (utils::check_point_in_rect(x, y, music_play_btn->last_area)) {
             logger->debug("Clicked play music button");
             if (core::audio::music_path.empty()) {
@@ -121,15 +152,18 @@ namespace anisette::screens
             core::audio::pause_music();
             music_play_btn_wrapper->set_hidden(false);
             music_pause_btn_wrapper->set_hidden(true);
+
         } else if (utils::check_point_in_rect(x, y, music_stop_btn->last_area)) {
             logger->debug("Clicked stop music button");
             core::audio::stop_music();
             music_play_btn_wrapper->set_hidden(false);
             music_pause_btn_wrapper->set_hidden(true);
             now_playing_text->change_text("");
+
         } else if (utils::check_point_in_rect(x, y, music_next_btn->last_area)) {
             logger->debug("Clicked next music button");
             play_random_music();
+
         } else if (utils::check_point_in_rect(x, y, music_prev_btn->last_area)) {
             logger->debug("Clicked previous music button");
             core::audio::seek_music(0);
@@ -146,7 +180,15 @@ namespace anisette::screens
         if (volume_overlay_hide_time != 0 && now > volume_overlay_hide_time) volume_overlay->set_hidden(true);
 
         // draw the grid
-        grid.draw(renderer, core::video::render_rect, 255);
+        if (screen_dim_alpha < 255) grid.draw(renderer, core::video::render_rect, 255);
+
+        // dim screen
+        if (screen_dim_alpha > 0) {
+            SDL_SetRenderTarget(renderer, nullptr);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, screen_dim_alpha);
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+            SDL_RenderFillRect(renderer, &core::video::render_rect);
+        }
 
         // run action hooks
         if (!action_hook.empty()) if (action_hook.front()(now)) {
@@ -158,7 +200,7 @@ namespace anisette::screens
     void MenuScreen::on_event(const uint64_t &now, const SDL_Event &event) {
         if (event.type == core::audio::MUSIC_FINISHED_EVENT_ID) {
             play_random_music();
-        } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+        } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_KEYDOWN) {
             core::audio::play_click_sound();
         } else if (event.type == SDL_MOUSEBUTTONUP) {
             int mouse_x, mouse_y;
@@ -242,8 +284,22 @@ namespace anisette::screens
         core::load_background(default_backgrounds[random_index], now);
         core::toggle_background_parallax(true);
         // reload music state
-        music_play_btn_wrapper->set_hidden(core::audio::is_paused());
-        music_pause_btn_wrapper->set_hidden(!core::audio::is_paused());
+        const bool is_paused = core::audio::is_paused();
+        music_play_btn_wrapper->set_hidden(is_paused);
+        music_pause_btn_wrapper->set_hidden(!is_paused);
         now_playing_text->change_text(core::audio::music_display_name);
+        // push fade in action
+        if (action_hook.empty()) action_start_time = now;
+        action_hook.emplace([this](const uint64_t &action_now) {
+            const auto delta = action_now > action_start_time ? action_now - action_start_time : 0;
+            const auto alpha = 255 * delta / fade_duration;
+            if (alpha > 255) {
+                screen_dim_alpha = 0;
+                logger->debug("Fade in finished");
+                return true;
+            }
+            screen_dim_alpha = 255 - alpha;
+            return false;
+        });
     }
 } // namespace anisette::screens

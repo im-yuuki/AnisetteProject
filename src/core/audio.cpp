@@ -12,15 +12,16 @@ const auto logger = anisette::logging::get("audio");
 
 namespace anisette::core::audio
 {
+    uint32_t MUSIC_FINISHED_EVENT_ID = SDL_RegisterEvents(1);
+
     static Mix_Music *current_music = nullptr;
     static std::atomic_bool music_halted_flag = false;
-    uint32_t MUSIC_FINISHED_EVENT_ID = SDL_RegisterEvents(1);
+    static std::atomic_bool music_paused = true;
 
     // metadata for current music
     std::string music_display_name;
     std::string music_path;
     int music_duration_ms = 0;
-
 
     // frequently used sound
     Mix_Chunk *click_sound = nullptr;
@@ -42,7 +43,7 @@ namespace anisette::core::audio
     }
 
     bool is_paused() {
-        return Mix_PausedMusic();
+        return music_paused;
     }
 
     int music_position_ms() {
@@ -141,6 +142,8 @@ namespace anisette::core::audio
         music_path = path;
         music_duration_ms = Mix_MusicDuration(current_music) * 1000;
         logger->debug("Playing music: {}", music_display_name);
+        music_halted_flag = false;
+        music_paused = false;
         return true;
     }
 
@@ -148,12 +151,14 @@ namespace anisette::core::audio
         if (current_music == nullptr) return;
         logger->debug("Pausing music: {}", music_display_name);
         Mix_PauseMusic();
+        music_paused = true;
     }
 
     void resume_music() {
         if (current_music == nullptr) return;
         logger->debug("Resuming music: {}", music_display_name);
         Mix_ResumeMusic();
+        music_paused = false;
     }
 
     void stop_music() {
@@ -168,6 +173,7 @@ namespace anisette::core::audio
         current_music = nullptr;
         music_display_name = "";
         music_path = "";
+        music_paused = true;
     }
 
     void seek_music(int position_ms) {
@@ -175,5 +181,6 @@ namespace anisette::core::audio
         if (position_ms < 0 || position_ms > music_duration_ms) return;
         logger->debug("Seeking music: {} to {}ms", music_display_name, position_ms);
         Mix_SetMusicPosition(static_cast<double>(position_ms) / 1000);
+        if (music_paused) resume_music();
     }
 }

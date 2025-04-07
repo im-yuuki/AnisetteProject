@@ -49,7 +49,7 @@ namespace anisette::data
                         break;
                         default: break;
                     }
-                    return res ^ !ascending;
+                    return res ^ ascending;
                 });
             }
             // end

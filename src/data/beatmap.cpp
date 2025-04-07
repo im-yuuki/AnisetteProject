@@ -17,16 +17,16 @@ namespace anisette::data
 {
     bool Beatmap::load(const std::string &filename, const std::string &dir) {
         path = dir + '/' + filename;
-        logger->debug("Loading beatmap {}", this->path);
+        logger->debug("Loading beatmap {}", filename);
         std::ifstream file(this->path);
         if (!file.is_open()) {
-            logger->error("Failed to open beatmap file: {}", this->path);
+            logger->error("Failed to open beatmap file: {}", filename);
             return false;
         }
         rapidjson::IStreamWrapper wrapper(file);
         rapidjson::Document doc;
         if (doc.ParseStream(wrapper).HasParseError()) {
-            logger->error("Failed to parse beatmap file: {}", this->path);
+            logger->error("Failed to parse beatmap file: {}", filename);
             file.close();
             return false;
         }
@@ -37,7 +37,7 @@ namespace anisette::data
             && doc["version"].IsInt()
             && doc["version"].GetInt() == SCHEMA_VERSION;
         if (!flow) {
-            logger->error("Beatmap file is not valid: {}", this->path);
+            logger->error("Beatmap file is not valid: {}", filename);
             return false;
         }
         try {
@@ -90,7 +90,7 @@ namespace anisette::data
                 notes[5].push_back({start, end});
             }
         } catch (const std::exception &e) {
-            logger->error("Failed to load beatmap file: {}", e.what());
+            logger->error("Failed to load beatmap file {}: {}", filename, e.what());
             file.close();
             return false;
         }

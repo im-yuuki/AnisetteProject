@@ -184,8 +184,8 @@ namespace anisette::components {
         void draw(SDL_Renderer *renderer, const SDL_Rect area, const bool hovered) override {
             if (!init_finished) {
                 SDL_DestroyTexture(texture);
-                TTF_SetFontSize(core::video::secondary_font, font_size);
-                const auto surface = TTF_RenderText_Blended(core::video::secondary_font, text.c_str(), foreground);
+                TTF_SetFontSize(font, font_size);
+                const auto surface = TTF_RenderText_Blended(font, text.c_str(), foreground);
                 if (!surface) return;
                 texture = SDL_CreateTextureFromSurface(renderer, surface);
                 SDL_FreeSurface(surface);
@@ -212,6 +212,7 @@ namespace anisette::components {
             init_finished = false;
         }
 
+        TTF_Font *font = core::video::secondary_font;
     private:
         std::string text;
         SDL_Color foreground;

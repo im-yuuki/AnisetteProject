@@ -84,7 +84,7 @@ namespace anisette::core
         // post-init task
         logger->debug("Running post-init tasks");
         background_instance = new components::Background(video::renderer);
-        beatmap_loader->scan(data::NONE, true);
+        beatmap_loader->scan(data::BY_DIFFICULTY, true);
         reload_config();
         open(register_function(video::renderer));
         return true;

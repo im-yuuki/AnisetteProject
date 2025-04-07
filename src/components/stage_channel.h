@@ -19,10 +19,7 @@ namespace anisette::components
     constexpr SDL_Color KEY_COLOR       = {160, 160, 160, 100};
     constexpr SDL_Color KEY_HOLD_COLOR  = {235, 0, 85, 255};
     constexpr SDL_Color KEY_TEXT_COLOR  = {255, 255, 255, 255};
-    // constexpr SDL_Color KEY_HOLD_PERFECT_COLOR = {0, 168, 107, 255}; // green (#00A86B)
-    // constexpr SDL_Color KEY_HOLD_GOOD_COLOR    = {0, 103, 165, 255}; // blue (#0067A5)
-    // constexpr SDL_Color KEY_HOLD_OK_COLOR      = {255, 191, 0, 255}; // yellow (#FFBF00)
-    // constexpr SDL_Color KEY_HOLD_FAIL_COLOR    = {240, 73, 35, 255}; // red (#F04923)
+
 
     class StageChannel final : public Container {
         struct NoteDisplayData {

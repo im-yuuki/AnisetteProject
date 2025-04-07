@@ -4,12 +4,13 @@ import zipfile
 import logging
 import shutil
 from typing import Optional
+from enum import IntEnum
 from random import randint
 
 WORK_DIR = "tmp/"
 OUT_DIR = "beatmaps/"
 
-class OsuFileSection(enumerate):
+class OsuFileSection(IntEnum):
     NOT_DEFINED = -1
     GENERAL = 0
     METADATA = 1
@@ -49,9 +50,9 @@ class NoteCollection:
     def append(self, note: Note):
         self.notes.append(note)
         if note.end == 0:
-            self.hold_note_count += 1
-        else:
             self.single_note_count += 1
+        else:
+            self.hold_note_count += 1
 
     def build(self) -> bool:
         if self.channels < 4 or self.channels > 6:
@@ -227,11 +228,14 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
                 logging.debug(f"Beatmap ID: {data.id}")
 
         elif current_section == OsuFileSection.DIFFICULTY:
+            # i have no idea
             if line.startswith("OverallDifficulty:"):
-                data.difficulty = 100 - int(float(line.split(":")[1].strip()) * 10)
+                data.difficulty = int(float(line.split(":")[1].strip()) * 10) - 50
+                if data.difficulty < 10: data.difficulty = 10
                 logging.debug(f"Overall difficulty: {data.difficulty}")
             elif line.startswith("HPDrainRate:"):
-                data.hp_drain = 100 - int(float(line.split(":")[1].strip()) * 10)
+                data.hp_drain = int(float(line.split(":")[1].strip()) * 10) - 50
+                if data.hp_drain < 10: data.hp_drain = 10
                 logging.debug(f"HP drain: {data.hp_drain}")
             elif line.startswith("CircleSize:"):
                 data.notes.channels = int(float(line.split(":")[1].strip()))
@@ -255,20 +259,24 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
             if len(parts) < 6:
                 continue
             note = Note()
-            type: int = int(parts[3])
+            _type: int = int(parts[3])
             
-            if type & 0b00000001:
+            if _type & 0b00000001:
                 # single note
                 note.start = int(parts[2])
                 note.channel = int(int(parts[0]) * data.notes.channels / 512)
                 data.notes.append(note)
                 logging.debug(f"Single note: start {note.start}, channel {note.channel}")
-            elif type & 0b10000000:
+            elif _type & 0b10000000:
                 # hold note
                 note.start = int(parts[2])
                 note.channel = int(int(parts[0]) * data.notes.channels / 512)
-                note.end = int(parts[5].split(":")[0])
-                data.notes.append(note)
+                end_str = parts[5]
+                if ":" in end_str:
+                    note.end = int(end_str.split(":")[0])
+                else:
+                    note.end = int(end_str)
+                    data.notes.append(note)
                 logging.debug(f"Hold note: start {note.start}, end {note.end}, channel {note.channel}")
 
     f.close()
@@ -276,10 +284,10 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
     return data
     
 
-def extract_osz_file(file_name: str) -> str:
+def extract_osz_file(file_name: str) -> Optional[str]:
     if not os.path.exists(file_name):
         logging.error(f"File {file_name} does not exist.")
-        return
+        return None
     dir_name = WORK_DIR + file_name[:-4] + "/"
     logging.info(f"Creating directory [{dir_name}]")
     os.makedirs(dir_name, exist_ok=True)
