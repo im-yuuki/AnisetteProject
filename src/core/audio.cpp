@@ -70,11 +70,10 @@ namespace anisette::core::audio
 
         Mix_HookMusicFinished([]() {
             logger->debug("Music finished");
-            if (music_halted_flag) {
-                music_halted_flag = false;
-            } else {
+            if (!music_halted_flag) {
                 SDL_PushEvent(new SDL_Event {.type = MUSIC_FINISHED_EVENT_ID});
             }
+            music_halted_flag = false;
         });
 
         return true;
@@ -122,7 +121,9 @@ namespace anisette::core::audio
 
     bool play_music(const std::string &path, const std::string &display_name) {
         if (path.empty()) return false;
-        stop_music();
+        Mix_HaltMusic();
+        Mix_FreeMusic(current_music);
+        music_halted_flag = true;
         current_music = Mix_LoadMUS(path.c_str());
         if (current_music == nullptr) {
             logger->error("Failed to load music file: {}", path);
@@ -130,7 +131,7 @@ namespace anisette::core::audio
         }
         if (Mix_PlayMusic(current_music, 0)) {
             logger->error("Failed to play music: {}", SDL_GetError());
-            stop_music();
+            Mix_FreeMusic(current_music);
             return false;
         }
         // fetch music metadata
@@ -141,7 +142,6 @@ namespace anisette::core::audio
         }
         music_path = path;
         music_duration_ms = Mix_MusicDuration(current_music) * 1000;
-        music_halted_flag = false;
         logger->debug("Playing music: {}", music_display_name);
         return true;
     }
@@ -170,5 +170,12 @@ namespace anisette::core::audio
         current_music = nullptr;
         music_display_name = "";
         music_path = "";
+    }
+
+    void seek_music(int position_ms) {
+        if (current_music == nullptr) return;
+        if (position_ms < 0 || position_ms > music_duration_ms) return;
+        logger->debug("Seeking music: {} to {}ms", music_display_name, position_ms);
+        Mix_SetMusicPosition(static_cast<double>(position_ms) / 1000);
     }
 }

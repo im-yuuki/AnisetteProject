@@ -183,7 +183,7 @@ namespace anisette::core
             goto quit;
         }
 
-        logger->debug("Entering main loop");
+        logger->info("Entering main loop");
         main_loop();
         logger->debug("Exited main loop");
 

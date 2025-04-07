@@ -2,7 +2,6 @@
 // Created by Yuuki on 22/03/2025.
 //
 #pragma once
-#include "common.h"
 #include "core.h"
 
 #include <container.h>
@@ -27,11 +26,15 @@ namespace anisette::screens {
         void on_event(const uint64_t &now, const SDL_Event &event) override;
         void update(const uint64_t &now) override;
         void on_focus(const uint64_t &now) override;
-        bool play_random_music();
+        void play_random_music() const;
 
     private:
-        components::TextButton *quit_btn;
+        components::TextButton *play_btn, *settings_btn, *quit_btn;
+        components::IconButton *music_play_btn, *music_pause_btn, *music_stop_btn, *music_next_btn, *music_prev_btn;
+        components::Text *now_playing_text;
+        components::ItemWrapper *music_play_btn_wrapper, *music_pause_btn_wrapper;
         components::Grid grid {2};
+
         uint64_t action_start_time = 0;
         std::queue<std::function<bool(const uint64_t &now)>> action_hook;
         std::atomic_bool load_async_finshed = false;

@@ -22,7 +22,7 @@ namespace anisette::data
                 load_finished = true;
                 return;
             }
-            logger->debug("Scanning beatmaps");
+            logger->info("Scanning beatmaps");
             for (const auto& entry : std::filesystem::directory_iterator(BEATMAPS_ROOT_DIR)) {
                 if (!entry.is_directory()) continue;
                 for (const auto& file : std::filesystem::directory_iterator(entry.path())) {
@@ -54,13 +54,12 @@ namespace anisette::data
             }
             // end
             load_finished = true;
-            logger->debug("Load beatmaps finished");
+            logger->info("Load beatmaps finished");
         });
         t.detach();
     }
 
     bool BeatmapLoader::is_scan_finished() {
-        if (load_finished) logger->debug("Beatmap scan finished");
         return load_finished;
     }
 

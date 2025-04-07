@@ -123,6 +123,7 @@ namespace anisette::core::audio
     extern void pause_music();
     extern void resume_music();
     extern void stop_music();
+    extern void seek_music(int position_ms);
 
     // for quick launch sound
     void play_click_sound();
