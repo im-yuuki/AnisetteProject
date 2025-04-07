@@ -24,8 +24,7 @@ namespace anisette::data {
     } SortStrategy;
 
     struct Note {
-        unsigned start;
-       	unsigned end;
+        int start, end;
     };
 
     class Beatmap {

@@ -47,7 +47,7 @@ namespace anisette::utils::discord
     /**
      * @brief Set the Discord presence status to browsing library mode
      */
-    void set_browsing_libary();
+    void set_browsing_library();
 
     /**
      * @brief Set the Discord presence status to playing a song

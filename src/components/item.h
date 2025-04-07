@@ -9,7 +9,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
-#define ROUNDED_RECTANGLE_RADIUS 5
+#define ROUNDED_RECTANGLE_RADIUS 10
 
 namespace anisette::components {
     class Item {
@@ -72,8 +72,7 @@ namespace anisette::components {
                     b = hover_background.b;
                     a = hover_background.a;
                 }
-                // width and height -2 to have border inside
-                roundedBoxRGBA(renderer, 0, 0, area.w - 2, area.h - 2, ROUNDED_RECTANGLE_RADIUS, r, g, b, a);
+                roundedBoxRGBA(renderer, 0, 0, area.w, area.h, ROUNDED_RECTANGLE_RADIUS, r, g, b, a);
                 // draw text
                 if (!text_texture) return;
                 const SDL_Rect text_rect {(area.w - text_w) / 2, (area.h - text_h) / 2, text_w, text_h};
@@ -141,7 +140,7 @@ namespace anisette::components {
                     b = hover_background.b;
                     a = hover_background.a;
                 }
-                roundedBoxRGBA(renderer, 0, 0,  area.w - 2, area.h - 2, ROUNDED_RECTANGLE_RADIUS, r, g, b, a);
+                roundedBoxRGBA(renderer, 0, 0,  area.w, area.h, ROUNDED_RECTANGLE_RADIUS, r, g, b, a);
                 // draw icon
                 if (!icon) return;
                 const double area_ratio = static_cast<double>(area.w) / area.h;
@@ -182,7 +181,7 @@ namespace anisette::components {
     public:
         Text(const std::string &text, const int size, const SDL_Color foreground) : text(text), foreground(foreground), font_size(size) {}
 
-        void draw(SDL_Renderer *renderer, SDL_Rect area, const bool hovered) override {
+        void draw(SDL_Renderer *renderer, const SDL_Rect area, const bool hovered) override {
             if (!init_finished) {
                 SDL_DestroyTexture(texture);
                 TTF_SetFontSize(core::video::secondary_font, font_size);
@@ -196,16 +195,11 @@ namespace anisette::components {
                 init_finished = true;
             }
             if (!texture) return;
-            if (text_w < area.w) {
-                area.w = text_w;
-            }
-            if (text_h < area.h) {
-                area.y += (area.h - text_h) / 2;
-                area.h = text_h;
-            }
+            const SDL_Rect src_rect {0, 0, text_w > area.w ? area.w : text_w, text_h > area.h ? area.h : text_h};
+            const SDL_Rect text_rect {area.x + (area.w - src_rect.w) / 2, area.y + (area.h - src_rect.h) / 2, src_rect.w, src_rect.h};
             SDL_SetTextureAlphaMod(texture, alpha);
             SDL_SetRenderTarget(renderer, nullptr);
-            SDL_RenderCopy(renderer, texture, nullptr, &area);
+            SDL_RenderCopy(renderer, texture, &src_rect, &text_rect);
         }
 
         ~Text() override {
@@ -267,10 +261,12 @@ namespace anisette::components {
 
         void draw(SDL_Renderer *renderer, const SDL_Rect area, const bool hovered) override {
             // draw background
-            roundedBoxRGBA(renderer, area.x, area.y, area.x + area.w - 2, area.y + area.h - 2, ROUNDED_RECTANGLE_RADIUS, background.r, background.g, background.b, background.a);
+            roundedBoxRGBA(renderer, area.x, area.y, area.x + area.w, area.y + area.h, ROUNDED_RECTANGLE_RADIUS, background.r, background.g, background.b, background.a);
             // draw progress
-            const int progress_w = area.w * value / base;
-            roundedBoxRGBA(renderer, area.x, area.y, area.x + progress_w - 2, area.y + area.h - 2, ROUNDED_RECTANGLE_RADIUS, foreground.r, foreground.g, foreground.b, foreground.a);
+            if (value == 0) return;
+            int progress_w = area.w * value / base;
+            if (progress_w > area.w) progress_w = area.w;
+            roundedBoxRGBA(renderer, area.x, area.y, area.x + progress_w, area.y + area.h, ROUNDED_RECTANGLE_RADIUS, foreground.r, foreground.g, foreground.b, foreground.a);
         }
     };
 }

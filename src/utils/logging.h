@@ -22,7 +22,7 @@ namespace anisette::logging
      *
      * @note This function must be called before any other logging function.
      */
-    void init();
+    extern void init();
 
     /**
      * @brief Get the logger instance by name
@@ -31,15 +31,5 @@ namespace anisette::logging
      * @return Logger instance
      */
     [[nodiscard]]
-    std::shared_ptr<spdlog::logger> get(const std::string &name);
-
-    /**
-     * @brief Register a callback function for logging messages
-     *
-     * This function registers a callback function that will be called for each warning log message.
-     * Used to display warning notification in the user interface.
-     *
-     * @param function Callback function
-     */
-    void register_callback(const std::function<void(const spdlog::details::log_msg &)> &function);
+    extern std::shared_ptr<spdlog::logger> get(const std::string &name);
 }

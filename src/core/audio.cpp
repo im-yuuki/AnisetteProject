@@ -70,10 +70,10 @@ namespace anisette::core::audio
 
         Mix_HookMusicFinished([]() {
             logger->debug("Music finished");
-            if (!music_halted_flag) {
-                SDL_PushEvent(new SDL_Event {.type = MUSIC_FINISHED_EVENT_ID});
-            }
+            const bool push_event = !music_halted_flag;
             music_halted_flag = false;
+            stop_music();
+            if (push_event) SDL_PushEvent(new SDL_Event {.type = MUSIC_FINISHED_EVENT_ID});
         });
 
         return true;
@@ -121,9 +121,7 @@ namespace anisette::core::audio
 
     bool play_music(const std::string &path, const std::string &display_name) {
         if (path.empty()) return false;
-        Mix_HaltMusic();
-        Mix_FreeMusic(current_music);
-        music_halted_flag = true;
+        stop_music();
         current_music = Mix_LoadMUS(path.c_str());
         if (current_music == nullptr) {
             logger->error("Failed to load music file: {}", path);

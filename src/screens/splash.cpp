@@ -10,7 +10,8 @@
 const auto logger = anisette::logging::get("splash");
 
 namespace anisette::screens {
-    SplashScreen::SplashScreen(SDL_Renderer *renderer) : renderer(renderer) {
+    SplashScreen::SplashScreen(SDL_Renderer *renderer) {
+        this->renderer = renderer;
         logo_rect.w = 600;
         logo_rect.h = 200;
         logo_rect.x = (core::video::render_rect.w - logo_rect.w) / 2;

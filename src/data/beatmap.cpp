@@ -27,6 +27,7 @@ namespace anisette::data
         rapidjson::Document doc;
         if (doc.ParseStream(wrapper).HasParseError()) {
             logger->error("Failed to parse beatmap file: {}", this->path);
+            file.close();
             return false;
         }
         bool flow = doc.HasMember("$schema")
@@ -59,39 +60,41 @@ namespace anisette::data
             auto channel_5 = note_section["channel_5"].GetArray();
 
             for (auto &note : channel_0) {
-                auto start = note[0].GetUint();
-                auto end = note[1].GetUint();
+                auto start = note[0].GetInt();
+                auto end = note[1].GetInt();
                 notes[0].push_back({start, end});
             }
             for (auto &note : channel_1) {
-                auto start = note[0].GetUint();
-                auto end = note[1].GetUint();
+                auto start = note[0].GetInt();
+                auto end = note[1].GetInt();
                 notes[1].push_back({start, end});
             }
             for (auto &note : channel_2) {
-                auto start = note[0].GetUint();
-                auto end = note[1].GetUint();
+                auto start = note[0].GetInt();
+                auto end = note[1].GetInt();
                 notes[2].push_back({start, end});
             }
             for (auto &note : channel_3) {
-                auto start = note[0].GetUint();
-                auto end = note[1].GetUint();
+                auto start = note[0].GetInt();
+                auto end = note[1].GetInt();
                 notes[3].push_back({start, end});
             }
             for (auto &note : channel_4) {
-                auto start = note[0].GetUint();
-                auto end = note[1].GetUint();
+                auto start = note[0].GetInt();
+                auto end = note[1].GetInt();
                 notes[4].push_back({start, end});
             }
             for (auto &note : channel_5) {
-                auto start = note[0].GetUint();
-                auto end = note[1].GetUint();
+                auto start = note[0].GetInt();
+                auto end = note[1].GetInt();
                 notes[5].push_back({start, end});
             }
         } catch (const std::exception &e) {
             logger->error("Failed to load beatmap file: {}", e.what());
+            file.close();
             return false;
         }
+        file.close();
         return true;
     }
 }

@@ -40,6 +40,7 @@ namespace anisette::core::config
         rapidjson::Document doc;
         if (doc.ParseStream(wrapper).HasParseError()) {
             logger->warn("Failed to parse config file at line {}", doc.GetErrorOffset());
+            config_file.close();
             return false;
         }
         for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
@@ -86,6 +87,7 @@ namespace anisette::core::config
             }
         }
         is_fallback = false;
+        config_file.close();
         return true;
     }
 

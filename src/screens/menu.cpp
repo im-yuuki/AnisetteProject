@@ -9,23 +9,21 @@
 #include "logging.h"
 #include "screens.h"
 
-#define VOLUME_CHANGE_STEP 8
+#define VOLUME_CHANGE_STEP 4
 
 const auto logger = anisette::logging::get("menu");
-constexpr SDL_Color BTN_TEXT_COLOR = {255, 255, 255, 255};
-constexpr SDL_Color BTN_BG_COLOR = {0, 0, 0, 128};
-constexpr SDL_Color BTN_HOVER_COLOR = {235, 0, 85, 255};
-constexpr SDL_Color BTN_DISABLED_COLOR = {0, 0, 0, 255};
 
 namespace anisette::screens
 {
-    MenuScreen::MenuScreen(SDL_Renderer *renderer) : renderer(renderer) {
+    MenuScreen::MenuScreen(SDL_Renderer *renderer) {
         using namespace components;
+        this->renderer = renderer;
 
         // create buttons
-        play_btn = new TextButton("Play!", 24, BTN_TEXT_COLOR, BTN_BG_COLOR, BTN_HOVER_COLOR);
-        settings_btn = new TextButton("Settings", 20, BTN_TEXT_COLOR, BTN_BG_COLOR, BTN_HOVER_COLOR);
-        quit_btn = new TextButton("Exit", 20, BTN_TEXT_COLOR, BTN_BG_COLOR, BTN_HOVER_COLOR);
+        play_btn        = new TextButton("Play!", 24, BTN_TEXT_COLOR, BTN_BG_COLOR, BTN_HOVER_COLOR);
+        settings_btn    = new TextButton("Settings", 20, BTN_TEXT_COLOR, BTN_BG_COLOR, BTN_HOVER_COLOR);
+        quit_btn        = new TextButton("Exit", 20, BTN_TEXT_COLOR, BTN_BG_COLOR, BTN_HOVER_COLOR);
+
         const auto vbox = new VerticalBox(2, 2);
         vbox->add_item(new ItemWrapper(new Image("assets/logo.png")), 60);
         vbox->add_item(new ItemWrapper(play_btn), 0);
@@ -34,25 +32,44 @@ namespace anisette::screens
 
         // music control
         now_playing_text = new Text("", 24, BTN_TEXT_COLOR);
-        music_play_btn = new IconButton("assets/icons/play.png", BTN_BG_COLOR, BTN_HOVER_COLOR);
-        music_pause_btn = new IconButton("assets/icons/pause.png", BTN_BG_COLOR, BTN_HOVER_COLOR);
-        music_stop_btn = new IconButton("assets/icons/stop.png", BTN_BG_COLOR, BTN_HOVER_COLOR);
-        music_next_btn = new IconButton("assets/icons/next.png", BTN_BG_COLOR, BTN_HOVER_COLOR);
-        music_prev_btn = new IconButton("assets/icons/previous.png", BTN_BG_COLOR, BTN_HOVER_COLOR);
+        music_play_btn   = new IconButton("assets/icons/play.png", BTN_BG_COLOR, BTN_HOVER_COLOR);
+        music_pause_btn  = new IconButton("assets/icons/pause.png", BTN_BG_COLOR, BTN_HOVER_COLOR);
+        music_stop_btn   = new IconButton("assets/icons/stop.png", BTN_BG_COLOR, BTN_HOVER_COLOR);
+        music_next_btn   = new IconButton("assets/icons/next.png", BTN_BG_COLOR, BTN_HOVER_COLOR);
+        music_prev_btn   = new IconButton("assets/icons/previous.png", BTN_BG_COLOR, BTN_HOVER_COLOR);
 
-        music_play_btn_wrapper = new ItemWrapper(music_play_btn);
+        music_play_btn_wrapper  = new ItemWrapper(music_play_btn);
         music_pause_btn_wrapper = new ItemWrapper(music_pause_btn);
 
         const auto music_control = new HorizontalBox(0, 2);
-        music_control->add_item(new ItemWrapper(now_playing_text), 50);
+        music_control->add_item(new ItemWrapper(now_playing_text), 70);
         music_control->add_item(new ItemWrapper(music_prev_btn), 0);
         music_control->add_item(music_play_btn_wrapper, 0);
         music_control->add_item(music_pause_btn_wrapper, 0);
         music_control->add_item(new ItemWrapper(music_next_btn), 0);
         music_control->add_item(new ItemWrapper(music_stop_btn), 0);
+        // volume overlay
+        volume_mute_icon = new ItemWrapper(new Image("assets/icons/vol_mute.png"));
+        volume_low_icon  = new ItemWrapper(new Image("assets/icons/vol_low.png"));
+        volume_high_icon = new ItemWrapper(new Image("assets/icons/vol_high.png"));
+        volume_text      = new Text("", 20, BTN_TEXT_COLOR);
+        volume_bar       = new ProgressBar(128, {235, 0, 85, 255}, {255, 255, 255, 128});
+        volume_mute_icon->set_hidden(true);
+        volume_mute_icon->set_hidden(true);
+        volume_high_icon->set_hidden(true);
+
+        volume_overlay = new HorizontalBox(0, 2);
+        volume_overlay->fill_color = BTN_BG_COLOR;
+        volume_overlay->add_item(volume_mute_icon, 0);
+        volume_overlay->add_item(volume_low_icon, 0);
+        volume_overlay->add_item(volume_high_icon, 0);
+        volume_overlay->add_item(new ItemWrapper(volume_text), 0);
+        volume_overlay->add_item(new ItemWrapper(volume_bar), 85);
+        volume_overlay->set_hidden(true);
         // add elements to the grid
         grid.add_child(vbox, GridChildProperties::CENTER, GridChildProperties::MIDDLE, 80, 50);
         grid.add_child(music_control, GridChildProperties::RIGHT, GridChildProperties::TOP, 70, 4);
+        grid.add_child(volume_overlay, GridChildProperties::LEFT, GridChildProperties::BOTTOM, 70, 3);
         // add hook to play music from a random beatmap
         action_hook.emplace([this](const uint64_t &now) {
             play_random_music();
@@ -68,7 +85,7 @@ namespace anisette::screens
         logger->debug("Play random music");
         const auto beatmap = core::beatmap_loader->beatmaps[utils::randint(0, core::beatmap_loader->beatmaps.size() - 1)];
         const auto music_path = beatmap.music_path;
-        const auto display_name = beatmap.artist + " - " + beatmap.title;
+        const auto display_name = beatmap.title + " - " + beatmap.artist;
         if (core::audio::play_music(music_path, display_name)) {
             now_playing_text->change_text(display_name);
             music_play_btn_wrapper->set_hidden(true);
@@ -83,10 +100,8 @@ namespace anisette::screens
     void MenuScreen::on_click(const uint64_t &now, const int x, const int y) const {
         if (utils::check_point_in_rect(x, y, play_btn->last_area)) {
             logger->debug("Clicked play button");
-            if (core::beatmap_loader->beatmaps.empty()) {
-                logger->warn("No beatmaps found");
-                return;
-            }
+            if (core::beatmap_loader->beatmaps.empty()) logger->warn("No beatmaps found");
+            else core::open(new LibraryScreen(renderer));
         } else if (utils::check_point_in_rect(x, y, settings_btn->last_area)) {
             logger->debug("Clicked settings button");
         } else if (utils::check_point_in_rect(x, y, quit_btn->last_area)) {
@@ -127,6 +142,9 @@ namespace anisette::screens
     void MenuScreen::update(const uint64_t &now) {
         if (!load_async_finshed) return;
 
+        // if volume changes, show overlay
+        if (volume_overlay_hide_time != 0 && now > volume_overlay_hide_time) volume_overlay->set_hidden(true);
+
         // draw the grid
         grid.draw(renderer, core::video::render_rect, 255);
 
@@ -140,26 +158,41 @@ namespace anisette::screens
     void MenuScreen::on_event(const uint64_t &now, const SDL_Event &event) {
         if (event.type == core::audio::MUSIC_FINISHED_EVENT_ID) {
             play_random_music();
-        }
-        switch (event.type) {
-            case SDL_MOUSEBUTTONDOWN:
-                core::audio::play_click_sound();
-                return;
-            case SDL_MOUSEBUTTONUP:
-                int mouse_x, mouse_y;
-                SDL_GetMouseState(&mouse_x, &mouse_y);
-                on_click(now, mouse_x, mouse_y);
-                return;
-            case SDL_MOUSEWHEEL:
-                if (event.wheel.y > 0) {
-                    // increase music volume
-                    core::audio::set_music_volume(core::audio::music_volume() + VOLUME_CHANGE_STEP);
-                } else if (event.wheel.y < 0) {
-                    // decrease music volume
-                    core::audio::set_music_volume(core::audio::music_volume() > VOLUME_CHANGE_STEP ? core::audio::music_volume() - VOLUME_CHANGE_STEP : 0);
-                }
-            default:
-                break;
+        } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+            core::audio::play_click_sound();
+        } else if (event.type == SDL_MOUSEBUTTONUP) {
+            int mouse_x, mouse_y;
+            SDL_GetMouseState(&mouse_x, &mouse_y);
+            on_click(now, mouse_x, mouse_y);
+        } else if (event.type == SDL_MOUSEWHEEL) {
+            uint8_t new_volume = core::audio::music_volume();
+            if (event.wheel.y > 0) {
+                // increase music volume
+                new_volume += VOLUME_CHANGE_STEP;
+                if (new_volume > 128) new_volume = 128;
+            } else if (event.wheel.y < 0) {
+                // decrease music volume
+                if (new_volume > VOLUME_CHANGE_STEP) new_volume -= VOLUME_CHANGE_STEP;
+                else new_volume = 0;
+            }
+            core::audio::set_music_volume(new_volume);
+            if (new_volume == 0) {
+                volume_mute_icon->set_hidden(false);
+                volume_low_icon->set_hidden(true);
+                volume_high_icon->set_hidden(true);
+            } else if (new_volume < 64) {
+                volume_mute_icon->set_hidden(true);
+                volume_low_icon->set_hidden(false);
+                volume_high_icon->set_hidden(true);
+            } else {
+                volume_mute_icon->set_hidden(true);
+                volume_low_icon->set_hidden(true);
+                volume_high_icon->set_hidden(false);
+            }
+            volume_text->change_text(std::to_string(new_volume));
+            volume_bar->value = new_volume;
+            volume_overlay->set_hidden(false);
+            volume_overlay_hide_time = now + core::system_freq * 3; // hide after 3 seconds
         }
     }
 
@@ -208,5 +241,9 @@ namespace anisette::screens
         logger->debug("Load background: {}", default_backgrounds[random_index]);
         core::load_background(default_backgrounds[random_index], now);
         core::toggle_background_parallax(true);
+        // reload music state
+        music_play_btn_wrapper->set_hidden(core::audio::is_paused());
+        music_pause_btn_wrapper->set_hidden(!core::audio::is_paused());
+        now_playing_text->change_text(core::audio::music_display_name);
     }
 } // namespace anisette::screens

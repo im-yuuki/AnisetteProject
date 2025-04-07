@@ -19,6 +19,8 @@ namespace anisette::core::abstract {
         virtual void on_event(const uint64_t &now, const SDL_Event &event) = 0;
         virtual void on_focus(const uint64_t &now) = 0;
         virtual void update(const uint64_t &now) = 0;
+    protected:
+        SDL_Renderer *renderer = nullptr;
     };
 } // namespace anisette::core::abstract
 

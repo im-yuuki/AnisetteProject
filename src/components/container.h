@@ -19,16 +19,16 @@ namespace anisette::components {
 
         // DO NOT MODIFY THIS VALUE DIRECTLY
         bool hidden = false;
-    protected:
         SDL_Color fill_color = {0, 0, 0, 0};
+        virtual void hide_draw_rect() {};
     };
 
     class BlankContainer final : public Container {
+    public:
+        BlankContainer() {};
         // a container with... nothing, to use as flexbox dynamic space
         void draw(SDL_Renderer *renderer, SDL_Rect draw_rect, uint8_t alpha = 255) override {}
-        void set_hidden(const bool state) override {
-            hidden = state;
-        }
+        void set_hidden(const bool state) override { hidden = state; }
     };
 
     class ItemWrapper final : public Container {
@@ -37,6 +37,12 @@ namespace anisette::components {
 
         void draw(SDL_Renderer *renderer, const SDL_Rect draw_rect, const uint8_t alpha = 255) override {
             if (hidden) return;
+            if (fill_color.r || fill_color.g || fill_color.b || fill_color.a) {
+                SDL_SetRenderTarget(renderer, nullptr);
+                SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                SDL_RenderFillRect(renderer, &draw_rect);
+            }
             int x, y;
             SDL_GetMouseState(&x, &y);
             item->alpha = alpha;
@@ -50,6 +56,11 @@ namespace anisette::components {
 
         ~ItemWrapper() override {
             delete item;
+        }
+
+        void hide_draw_rect() override {
+            item->last_area = {-1, -1, 0, 0};
+            hidden = true;
         }
     private:
         Item *item;
@@ -84,8 +95,17 @@ namespace anisette::components {
         }
 
         void draw(SDL_Renderer *renderer, SDL_Rect draw_rect, const uint8_t alpha) override {
-            int base_size = draw_rect.w < draw_rect.h ? draw_rect.w : draw_rect.h;
+            if (hidden) return;
+            // draw background color
+            if (fill_color.r || fill_color.g || fill_color.b || fill_color.a) {
+                SDL_SetRenderTarget(renderer, nullptr);
+                SDL_SetRenderDrawColor(renderer, fill_color.r, fill_color.g, fill_color.b, fill_color.a);
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                SDL_RenderFillRect(renderer, &draw_rect);
+            }
+
             // recalculate the parent rect for padding
+            int base_size = draw_rect.w < draw_rect.h ? draw_rect.w : draw_rect.h;
             if (padding > 0) {
                 draw_rect.x += base_size * padding / 200;
                 draw_rect.y += base_size * padding / 200;
@@ -139,14 +159,19 @@ namespace anisette::components {
         }
 
         void set_hidden(const bool state) override {
-            for (const auto &item: children | std::views::keys) {
-                item->set_hidden(state);
-            }
             hidden = state;
         }
 
+        void hide_draw_rect() override {
+            for (const auto &item: children | std::views::keys) {
+                item->hide_draw_rect();
+            }
+        }
+
         ~Grid() override {
-            for (const auto &item: children | std::views::keys) delete item;
+            for (const auto &item: children | std::views::keys) {
+                delete item;
+            }
         }
 
         std::vector<std::pair<Container*, GridChildProperties>> children;
@@ -166,9 +191,6 @@ namespace anisette::components {
         }
 
         void set_hidden(const bool state) override {
-            for (const auto &item: children | std::views::keys) {
-                item->set_hidden(state);
-            }
             hidden = state;
         }
 
@@ -178,7 +200,12 @@ namespace anisette::components {
 
         std::vector<std::pair<Container*, uint8_t>> children;
     protected:
-        const int padding, spacing; // pixels
+        const int padding, spacing;
+        void hide_draw_rect() override {
+            for (const auto &item: children | std::views::keys) {
+                item->hide_draw_rect();
+            }
+        }
     };
 
     class VerticalBox final : public FlexContainer {
@@ -222,7 +249,6 @@ namespace anisette::components {
             if (dynamic_item_count == 0) {
                 y += (100 - fixed_height_perc) * base_size / 200;
             } else {
-                fixed_height_perc += spacing * dynamic_item_count;
                 dynamic_item_px = (100 - fixed_height_perc) * base_size / 100 / dynamic_item_count;
                 // show no dynamic item if its size is negative
                 if (dynamic_item_px < 0) dynamic_item_px = 0;
@@ -288,7 +314,6 @@ namespace anisette::components {
             if (dynamic_item_count == 0) {
                 x += (100 - fixed_width_perc) * base_size / 200;
             } else {
-                fixed_width_perc += spacing * dynamic_item_count;
                 dynamic_item_px = (100 - fixed_width_perc) * base_size / 100 / dynamic_item_count;
                 // show no dynamic item if its size is negative
                 if (dynamic_item_px < 0) dynamic_item_px = 0;

@@ -208,12 +208,12 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
             elif line.startswith("PreviewTime:"):
                 data.preview_point = int(line.split(":")[1].strip())
                 logging.debug(f"Preview point: {data.preview_point}")
-            # elif line.startswith("Mode:"):
-            #     mode: int = int(line.split(":")[1].strip())
-            #     logging.debug(f"Mode: {mode}")
-            #     if mode != 3:
-            #         logging.error(f"File is not a osu!mania map.")
-            #         return None
+            elif line.startswith("Mode:"):
+                mode: int = int(line.split(":")[1].strip())
+                logging.debug(f"Mode: {mode}")
+                if mode != 3:
+                    logging.error(f"File is not a osu!mania map.")
+                    return None
 
         elif current_section == OsuFileSection.METADATA:
             if line.startswith("Title:"):
