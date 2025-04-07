@@ -31,6 +31,33 @@ class Note:
     def __dict__(self):
         return [self.start, self.end]
 
+class ChannelStorage:
+    def __init__(self):
+        self.notes = []
+        self.next = 0
+        self.single_note_count = 0
+        self.hold_note_count = 0
+
+    def append(self, note: Note):
+        if note.end != 0 and note.end <= note.start:
+            return
+        if note.start <= self.next:
+            return
+        self.notes.append(note)
+        self.next += 1
+        if note.end == 0:
+            self.next = note.start
+            self.single_note_count += 1
+        else:
+            self.next = note.end
+            self.hold_note_count += 1
+
+    def __getitem__(self, index: int) -> Note:
+        return self.notes[index]
+
+    def __len__(self) -> int:
+        return len(self.notes)
+
 
 class NoteCollection:
     def __init__(self):
@@ -40,26 +67,21 @@ class NoteCollection:
         self.hold_note_count = 0
 
         # just keep only 6 channels in the output
-        self.channel_0 = []
-        self.channel_1 = []
-        self.channel_2 = []
-        self.channel_3 = []
-        self.channel_4 = []
-        self.channel_5 = []
+        self.channel_0 = ChannelStorage()
+        self.channel_1 = ChannelStorage()
+        self.channel_2 = ChannelStorage()
+        self.channel_3 = ChannelStorage()
+        self.channel_4 = ChannelStorage()
+        self.channel_5 = ChannelStorage()
 
     def append(self, note: Note):
         self.notes.append(note)
-        if note.end == 0:
-            self.single_note_count += 1
-        else:
-            self.hold_note_count += 1
 
     def build(self) -> bool:
         if self.channels < 4 or self.channels > 6:
             logging.error(f"Invalid original channel count: {self.channels}")
             return False
-        logging.debug(f"Single note count: {self.single_note_count}")
-        logging.debug(f"Hold note count: {self.hold_note_count}")
+        logging.info(f"List contains {len(self.notes)} notes.")
         
         if self.channels == 4:
             # original channel 1 will random go to channel 1 or 2
@@ -115,13 +137,19 @@ class NoteCollection:
                 elif note.channel == 5:
                     self.channel_5.append(note)
 
-        # sort the notes by start time
-        self.channel_0.sort(key=lambda x: x.start)
-        self.channel_1.sort(key=lambda x: x.start)
-        self.channel_2.sort(key=lambda x: x.start)
-        self.channel_3.sort(key=lambda x: x.start)
-        self.channel_4.sort(key=lambda x: x.start)
-        self.channel_5.sort(key=lambda x: x.start)
+        # recount the notes
+        self.single_note_count = (self.channel_0.single_note_count
+                                  + self.channel_1.single_note_count
+                                  + self.channel_2.single_note_count
+                                  + self.channel_3.single_note_count
+                                  + self.channel_4.single_note_count
+                                  + self.channel_5.single_note_count)
+        self.hold_note_count = (self.channel_0.hold_note_count
+                                + self.channel_1.hold_note_count
+                                + self.channel_2.hold_note_count
+                                + self.channel_3.hold_note_count
+                                + self.channel_4.hold_note_count
+                                + self.channel_5.hold_note_count)
 
         return True
     
@@ -140,15 +168,16 @@ class NoteCollection:
 
 
 class MapData:
-    id: int = 0
-    title: str = ""
-    artist: str = ""
-    thumbnail: str = ""
-    music: str = ""
-    preview_point: int = 0
-    difficulty: int = 10
-    hp_drain: int = 10
-    notes: NoteCollection = NoteCollection()
+    def __init__(self):
+        self.id: int = 0
+        self.title: str = ""
+        self.artist: str = ""
+        self.thumbnail: str = ""
+        self.music: str = ""
+        self.preview_point: int = 0
+        self.difficulty: int = 10
+        self.hp_drain: int = 10
+        self.notes: NoteCollection = NoteCollection()
 
     @property
     def __dict__(self):
@@ -166,7 +195,6 @@ class MapData:
             "notes": self.notes.__dict__,
         }
 
-
     def export_json(self, file_path: str) -> None:
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(self.__dict__, f, indent=2, ensure_ascii=False)
@@ -180,8 +208,11 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
     f = open(file_path, "r", encoding="utf-8")
     current_section = OsuFileSection.NOT_DEFINED
     data = MapData()
-    for line in f.readlines():
-        line = line.strip()
+    lines = f.readlines()
+    f.close()
+    logging.info(f"File has {len(lines)} lines.")
+    for _line in lines:
+        line = _line.strip()
         if line.startswith("//") or line == "":
             continue
         # switch section
@@ -215,6 +246,7 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
                 if mode != 3:
                     logging.error(f"File is not a osu!mania map.")
                     return None
+            continue
 
         elif current_section == OsuFileSection.METADATA:
             if line.startswith("Title:"):
@@ -226,6 +258,7 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
             elif line.startswith("BeatmapID:"):
                 data.id = int(line.split(":")[1].strip())
                 logging.debug(f"Beatmap ID: {data.id}")
+            continue
 
         elif current_section == OsuFileSection.DIFFICULTY:
             # i have no idea
@@ -243,6 +276,7 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
                     logging.error("Only 4K, 5K and 6K beatmaps supported.")
                     return None
                 logging.debug(f"Column count: {data.notes.channels}")
+            continue
 
         elif current_section == OsuFileSection.EVENTS:
             if line.startswith("0,0"):
@@ -251,36 +285,39 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
                 if data.thumbnail.startswith('"') and data.thumbnail.endswith('"'):
                     data.thumbnail = data.thumbnail[1:-1]
                 logging.debug(f"Thumbnail: {data.thumbnail}")
+            continue
 
         elif current_section == OsuFileSection.HIT_OBJECTS:
+            if data.notes.channels > 6 or data.notes.channels < 4:
+                logging.error("Invalid channel count.")
+                return None
             # x,y,time,type,hitSound,endTime:hitSample
             # we just need x, time, type, and endTime
             parts = line.split(",")
-            if len(parts) < 6:
-                continue
+            if len(parts) < 6: continue
             note = Note()
             _type: int = int(parts[3])
             
-            if _type & 0b00000001:
+            if _type & 0b10000000 == 0b10000000:
+                # hold note
+                note.start = int(parts[2])
+                note.channel = int(int(parts[0]) * data.notes.channels / 512)
+                note.end = int(parts[5].split(":")[0])
+                data.notes.append(note)
+                # logging.debug(f"Hold note: start {note.start}, end {note.end}, channel {note.channel}")
+            elif _type & 0b00000001 == 0b00000001:
                 # single note
                 note.start = int(parts[2])
                 note.channel = int(int(parts[0]) * data.notes.channels / 512)
                 data.notes.append(note)
-                logging.debug(f"Single note: start {note.start}, channel {note.channel}")
-            elif _type & 0b10000000:
-                # hold note
-                note.start = int(parts[2])
-                note.channel = int(int(parts[0]) * data.notes.channels / 512)
-                end_str = parts[5]
-                if ":" in end_str:
-                    note.end = int(end_str.split(":")[0])
-                else:
-                    note.end = int(end_str)
-                    data.notes.append(note)
-                logging.debug(f"Hold note: start {note.start}, end {note.end}, channel {note.channel}")
+                # logging.debug(f"Single note: start {note.start}, channel {note.channel}")
+            continue
 
-    f.close()
+
     logging.info(f"File parsed successfully.")
+    if not data.notes.build():
+        logging.error("Failed to build note collection.")
+        return None
     return data
     
 
@@ -308,10 +345,7 @@ def handle_osz_file(file_name: str) -> None:
             file_path = os.path.join(extracted_dir, file)
             logging.info(f"Processing OSU file: {file_path}")
             out = handle_osu_file(file_path)
-            if out is None:
-                continue
-            if not out.notes.build():
-                continue
+            if out is None: continue
             out.export_json(_out_dir + str(out.id) + ".json")
             # copy thumbnail and music file
             if out.thumbnail != "":

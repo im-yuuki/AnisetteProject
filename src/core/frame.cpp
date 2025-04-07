@@ -87,7 +87,9 @@ namespace anisette::core {
             // draw frame time overlay
             if (frame_time_overlay) frame_time_overlay->draw(start_frame);
             // render
+            SDL_RenderFlush(video::renderer);
             SDL_RenderPresent(video::renderer);
+            SDL_RenderFlush(video::renderer);
 
             // check if requested to back to previous screen
             if (back_screen_flag) {

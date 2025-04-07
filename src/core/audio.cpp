@@ -15,8 +15,6 @@ namespace anisette::core::audio
     uint32_t MUSIC_FINISHED_EVENT_ID = SDL_RegisterEvents(1);
 
     static Mix_Music *current_music = nullptr;
-    static std::atomic_bool music_halted_flag = false;
-    static std::atomic_bool music_paused = true;
 
     // metadata for current music
     std::string music_display_name;
@@ -28,22 +26,25 @@ namespace anisette::core::audio
     Mix_Chunk *hit_sound = nullptr;
 
     void play_click_sound() {
-        play_sound(click_sound);
+        // allocate channel 1 to click sound
+        play_sound(click_sound, 1);
     }
 
     void play_hit_sound() {
-        play_sound(hit_sound);
+        // allocate channel 2 to hit sound
+        play_sound(hit_sound, 2);
     }
 
     uint8_t music_volume() {
         return Mix_VolumeMusic(-1);
     };
+
     uint8_t sound_volume() {
         return Mix_Volume(-1, -1);
     }
 
     bool is_paused() {
-        return music_paused;
+        return Mix_PausedMusic();
     }
 
     int music_position_ms() {
@@ -71,10 +72,7 @@ namespace anisette::core::audio
 
         Mix_HookMusicFinished([]() {
             logger->debug("Music finished");
-            const bool push_event = !music_halted_flag;
-            music_halted_flag = false;
-            stop_music();
-            if (push_event) SDL_PushEvent(new SDL_Event {.type = MUSIC_FINISHED_EVENT_ID});
+            SDL_PushEvent(new SDL_Event {.type = MUSIC_FINISHED_EVENT_ID});
         });
 
         return true;
@@ -87,6 +85,7 @@ namespace anisette::core::audio
 
         Mix_FreeChunk(click_sound);
         Mix_FreeChunk(hit_sound);
+        Mix_FreeMusic(current_music);
         Mix_CloseAudio();
     }
 
@@ -142,8 +141,6 @@ namespace anisette::core::audio
         music_path = path;
         music_duration_ms = Mix_MusicDuration(current_music) * 1000;
         logger->debug("Playing music: {}", music_display_name);
-        music_halted_flag = false;
-        music_paused = false;
         return true;
     }
 
@@ -151,29 +148,21 @@ namespace anisette::core::audio
         if (current_music == nullptr) return;
         logger->debug("Pausing music: {}", music_display_name);
         Mix_PauseMusic();
-        music_paused = true;
     }
 
     void resume_music() {
         if (current_music == nullptr) return;
         logger->debug("Resuming music: {}", music_display_name);
         Mix_ResumeMusic();
-        music_paused = false;
     }
 
     void stop_music() {
         if (current_music == nullptr) return;
         logger->debug("Stopping music: {}", music_display_name);
-        const auto current_position = Mix_GetMusicPosition(current_music) * 1000;
-        if (current_position > 0 && current_position < music_duration_ms) {
-            music_halted_flag = true;
-        }
-        Mix_HaltMusic();
         Mix_FreeMusic(current_music);
         current_music = nullptr;
         music_display_name = "";
         music_path = "";
-        music_paused = true;
     }
 
     void seek_music(int position_ms) {
@@ -181,6 +170,6 @@ namespace anisette::core::audio
         if (position_ms < 0 || position_ms > music_duration_ms) return;
         logger->debug("Seeking music: {} to {}ms", music_display_name, position_ms);
         Mix_SetMusicPosition(static_cast<double>(position_ms) / 1000);
-        if (music_paused) resume_music();
+        if (is_paused()) resume_music();
     }
 }

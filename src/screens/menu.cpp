@@ -174,6 +174,11 @@ namespace anisette::screens
     }
 
     void MenuScreen::update(const uint64_t &now) {
+        // run action hooks
+        if (!action_hook.empty()) if (action_hook.front()(now)) {
+            action_hook.pop();
+            action_start_time = now;
+        }
         if (!load_async_finshed) return;
 
         // if volume changes, show overlay
@@ -189,18 +194,12 @@ namespace anisette::screens
             SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
             SDL_RenderFillRect(renderer, &core::video::render_rect);
         }
-
-        // run action hooks
-        if (!action_hook.empty()) if (action_hook.front()(now)) {
-            action_hook.pop();
-            action_start_time = now;
-        }
     }
 
     void MenuScreen::on_event(const uint64_t &now, const SDL_Event &event) {
         if (event.type == core::audio::MUSIC_FINISHED_EVENT_ID) {
             play_random_music();
-        } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_KEYDOWN) {
+        } else if (event.type == SDL_MOUSEBUTTONDOWN) {
             core::audio::play_click_sound();
         } else if (event.type == SDL_MOUSEBUTTONUP) {
             int mouse_x, mouse_y;
@@ -284,9 +283,8 @@ namespace anisette::screens
         core::load_background(default_backgrounds[random_index], now);
         core::toggle_background_parallax(true);
         // reload music state
-        const bool is_paused = core::audio::is_paused();
-        music_play_btn_wrapper->set_hidden(is_paused);
-        music_pause_btn_wrapper->set_hidden(!is_paused);
+        music_play_btn_wrapper->set_hidden(false);
+        music_pause_btn_wrapper->set_hidden(true);
         now_playing_text->change_text(core::audio::music_display_name);
         // push fade in action
         if (action_hook.empty()) action_start_time = now;

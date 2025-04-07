@@ -37,6 +37,8 @@ namespace anisette::data {
         std::string title;
         std::string thumbnail_path;
         std::string music_path;
+        int single_note_count = 0;
+        int hold_note_count = 0;
         unsigned preview_point = 0;
         uint8_t difficulty = 0;
         uint8_t hp_drain = 0;

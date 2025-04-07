@@ -76,18 +76,18 @@ namespace anisette::utils::discord
         presence.GetAssets().SetSmallText("Browsing");
     }
 
-    void set_playing_song(const char *song, const char* difficulty) {
+    void set_playing_song(const std::string &song, const std::string &artist) {
         logger->debug("Set Discord presence to playing song");
-        presence.SetState(song);
-        presence.SetDetails(difficulty);
+        presence.SetState(song.c_str());
+        presence.SetDetails(artist.c_str());
         presence.GetAssets().SetSmallImage("play");
         presence.GetAssets().SetSmallText("Playing");
     }
 
-    void set_spectate_song(const char *song, const char *difficulty) {
+    void set_spectate_song(const std::string &song, const std::string &artist) {
         logger->debug("Set Discord presence to spectating songs");
-        presence.SetState(song);
-        presence.SetDetails(difficulty);
+        presence.SetState(song.c_str());
+        presence.SetDetails(artist.c_str());
         presence.GetAssets().SetSmallImage("spectate");
         presence.GetAssets().SetSmallText("Spectating");
     }

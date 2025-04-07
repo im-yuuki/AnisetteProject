@@ -15,19 +15,14 @@ constexpr static SDL_Color diff_color[COLOR_RANGE] = {
     {255, 191, 0, 255}, // yellow (#FFBF00)
     {240, 73, 35, 255}, // red (#F04923)
 };
-constexpr static int diff_color_bound[COLOR_RANGE] = {0, 20, 40, 60};
+constexpr static int diff_color_bound[COLOR_RANGE] = {0, 15, 25, 35};
 
 namespace anisette::screens
 {
     components::Container* create_beatmap_info_view(const data::Beatmap* beatmap) {
         using namespace anisette::components;
         if (!beatmap) return nullptr;
-        const uint64_t note_count = beatmap->notes[0].size()
-                                  + beatmap->notes[1].size()
-                                  + beatmap->notes[2].size()
-                                  + beatmap->notes[3].size()
-                                  + beatmap->notes[4].size()
-                                  + beatmap->notes[5].size();
+        const uint64_t note_count = beatmap->single_note_count + beatmap->hold_note_count;
         // header
         const auto thumbnail_img = new Image(beatmap->thumbnail_path);
         const auto title_text = new Text(beatmap->title, 24, BTN_TEXT_COLOR);
@@ -62,6 +57,8 @@ namespace anisette::screens
         logger->debug("Loaded beatmap info view: ID {} - Title: {}", beatmap->id, beatmap->title);
         return vbox;
     }
+
+    int LibraryScreen::selected_song_index = 0;
 
     LibraryScreen::LibraryScreen(SDL_Renderer *renderer) {
         using namespace components;
@@ -106,14 +103,19 @@ namespace anisette::screens
 
         // load view
         beatmap_view.clear();
-        beatmap_view.emplace_back();
-        beatmap_view.emplace_back();
-        for (int i = 0; i < 3; i++) {
-            if (i >= core::beatmap_loader->beatmaps.size()) {
+
+        if (selected_song_index < 0) selected_song_index = 0;
+        if (selected_song_index >= core::beatmap_loader->beatmaps.size()) selected_song_index = core::beatmap_loader->beatmaps.size() - 1;
+
+        for (int i = -2; i <= 2; i++) {
+            if (selected_song_index + i < 0) {
+                beatmap_view.emplace_back();
+            } else if (selected_song_index + i >= core::beatmap_loader->beatmaps.size()) {
                 beatmap_view.emplace_back();
                 continue;
+            } else {
+                beatmap_view.emplace_back(i + 2, &core::beatmap_loader->beatmaps[selected_song_index + i]);
             }
-            beatmap_view.emplace_back(i, &core::beatmap_loader->beatmaps[i]);
             view_wrapper[i + 2]->set_back_container(beatmap_view.at(i + 2).view);
         }
         // action hooks
@@ -122,7 +124,7 @@ namespace anisette::screens
 
     void LibraryScreen::on_focus(const uint64_t &now) {
         utils::discord::set_browsing_library();
-        if (action_hook.empty()) action_start_time = now;
+        core::toggle_background_parallax(true);
         // fade in
         if (action_hook.empty()) action_start_time = now;
         action_hook.emplace([this](const uint64_t &action_now) {
@@ -136,7 +138,6 @@ namespace anisette::screens
             screen_dim_alpha = 255 - alpha;
             return false;
         });
-        if (action_hook.empty()) action_start_time = now;
         action_hook.emplace([this](const uint64_t &action_now) {
             reload_selected_beatmap(action_now);
             return true;
@@ -192,7 +193,7 @@ namespace anisette::screens
                     return false;
                 });
             } else if (utils::check_point_in_rect(x, y, play_btn->last_area)) {
-                logger->warn("Play button is not implemented");
+                launch_stage(now);
             } else if (utils::check_point_in_rect(x, y, arr_left_btn->last_area)) {
                 prev_beatmap(now);
             } else if (utils::check_point_in_rect(x, y, arr_right_btn->last_area)) {
@@ -215,7 +216,7 @@ namespace anisette::screens
                     return false;
                 });
             } else if (key == SDLK_RETURN) {
-                logger->warn("Play button is not implemented");
+                launch_stage(now);
             } else if (key == SDLK_LEFT) {
                 prev_beatmap(now);
             } else if (key == SDLK_RIGHT) {
@@ -259,7 +260,7 @@ namespace anisette::screens
             return;
         }
         logger->debug("Selected beatmap ID: {}", current_beatmap->id);
-        if (beatmap_view[2].beatmap->music_path.empty()) {
+        if (current_beatmap->music_path.empty()) {
             logger->warn("Beatmap ID {} has no music path", current_beatmap->id);
         } else if (core::audio::music_path != current_beatmap->music_path) {
             core::audio::play_music(current_beatmap->music_path, current_beatmap->title + " - " + current_beatmap->artist);
@@ -270,6 +271,30 @@ namespace anisette::screens
         } else {
             core::load_background(current_beatmap->thumbnail_path, now);
         }
+    }
+
+    void LibraryScreen::launch_stage(const uint64_t &now) {
+        const auto current_beatmap = beatmap_view[2].beatmap;
+        if (!current_beatmap) {
+            logger->warn("No beatmap selected");
+            return;
+        }
+
+        if (action_hook.empty()) action_start_time = now;
+        // hook fade out then open stage
+        action_hook.emplace([this, current_beatmap](const uint64_t &action_now) {
+            const auto delta = action_now > action_start_time ? action_now - action_start_time : 0;
+            const auto alpha = 255 * delta / fade_duration;
+            if (alpha > 255) {
+                screen_dim_alpha = 255;
+                logger->debug("Fade out finished");
+                logger->info("Launch stage with beatmap ID: {}", current_beatmap->id);
+                core::open(new StageScreen(renderer, current_beatmap));
+                return true;
+            }
+            screen_dim_alpha = alpha;
+            return false;
+        });
     }
 
     LibraryScreen::~LibraryScreen() {}

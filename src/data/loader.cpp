@@ -27,7 +27,7 @@ namespace anisette::data
                 if (!entry.is_directory()) continue;
                 for (const auto& file : std::filesystem::directory_iterator(entry.path())) {
                     if (file.path().extension() != ".json") continue;
-                    Beatmap beatmap;
+                    Beatmap beatmap {};
                     if (!beatmap.load(file.path().filename().string(), entry.path().string())) continue;
                     beatmaps.push_back(beatmap);
                 }

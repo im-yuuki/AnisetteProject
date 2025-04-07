@@ -17,16 +17,37 @@ namespace anisette::screens {
     const uint64_t fade_duration = core::system_freq / 2; // 0.5 second
 
     class StageScreen final : public core::abstract::Screen {
-        explicit StageScreen(SDL_Renderer *renderer);
+    public:
+        explicit StageScreen(SDL_Renderer *renderer, data::Beatmap *beatmap);
         ~StageScreen() override;
 
         void on_event(const uint64_t &now, const SDL_Event &event) override;
         void update(const uint64_t &now) override;
         void on_focus(const uint64_t &now) override;
+    private:
+        components::HorizontalBox hbox{0, 0};
+        components::StageChannel *channel[6]{};
+        components::Text         *combo_text;
+        components::Text         *score_text;
+        components::Text         *accuracy_text;
+        components::ProgressBar  *health_bar;
+
+
+        int current_music_pos_ms = -5000;
+        int last_tick = 0;
+        bool paused = true;
+        data::Beatmap *beatmap;
+        utils::ScoreCalculator *score_calculator;
+
+        int screen_dim_alpha = 0;
+        uint64_t action_start_time = 0;
+        std::queue<std::function<bool(const uint64_t &now)>> action_hook;
     };
 
     class LibraryScreen final : public core::abstract::Screen {
     public:
+        static int selected_song_index;
+
         explicit LibraryScreen(SDL_Renderer *renderer);
         ~LibraryScreen() override;
 
@@ -45,6 +66,7 @@ namespace anisette::screens {
         };
 
     private:
+        void launch_stage(const uint64_t &now);
         void next_beatmap(const uint64_t &now);
         void prev_beatmap(const uint64_t &now);
         void reload_selected_beatmap(const uint64_t &now) const;
@@ -61,7 +83,6 @@ namespace anisette::screens {
         std::deque<BeatmapViewItem> beatmap_view{5};
         components::ContainerWrapper* view_wrapper[5];
 
-        int selected_song_index = 0;
         int screen_dim_alpha = 255;
         uint64_t action_start_time = 0;
         std::queue<std::function<bool(const uint64_t &now)>> action_hook;
@@ -120,7 +141,7 @@ namespace anisette::screens {
 
         void on_event(const uint64_t &now, const SDL_Event &event) override {}
         void update(const uint64_t &now) override;
-        void on_focus(const uint64_t &now) override {};
+        void on_focus(const uint64_t &now) override;
 
     private:
         uint64_t action_start_time = 0;
@@ -129,6 +150,7 @@ namespace anisette::screens {
         MenuScreen* menu_screen;
         SDL_Texture* logo;
         SDL_Rect logo_rect {};
+        bool hook_finished = false;
     };
 
     inline void load() {

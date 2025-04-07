@@ -68,17 +68,22 @@ namespace anisette::core
             return false;
         }
         // register event filter
-        // SDL_SetEventFilter([](void *userdata, SDL_Event *event) {
-        //     switch (event->type) {
-        //         case SDL_QUIT:
-        //         case SDL_MOUSEBUTTONDOWN:
-        //         case SDL_MOUSEBUTTONUP:
-        //             return 1;
-        //
-        //         default:
-        //             return 0;
-        //     }
-        // }, nullptr);
+        SDL_SetEventFilter([](void *userdata, SDL_Event *event) {
+            // defined events
+            if (event->type == audio::MUSIC_FINISHED_EVENT_ID) return 1;
+            // built-in events
+            switch (event->type) {
+                case SDL_QUIT:
+                case SDL_KEYDOWN:
+                case SDL_KEYUP:
+                case SDL_MOUSEBUTTONDOWN:
+                case SDL_MOUSEBUTTONUP:
+                case SDL_MOUSEWHEEL:
+                    return 1;
+
+                default: return 0;
+            }
+        }, nullptr);
         // init video and audio handlers
         if (!(audio::init() && video::init())) return false;
         // post-init task

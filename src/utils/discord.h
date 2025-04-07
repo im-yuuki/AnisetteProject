@@ -6,6 +6,7 @@
 // you can define your own application ID in the build system
 #ifndef DISCORD_APPLICATION_ID
 #define DISCORD_APPLICATION_ID 1350787768351068180
+#include <string>
 #endif
 
 /**
@@ -53,15 +54,15 @@ namespace anisette::utils::discord
      * @brief Set the Discord presence status to playing a song
      *
      * @param song Song name
-     * @param difficulty Difficulty level
+     * @param artist Artist name
      */
-    void set_playing_song(const char *song, const char* difficulty);
+    void set_playing_song(const std::string &song, const std::string &artist);
 
     /**
      * @brief Set the Discord presence status to spectating a song
      *
      * @param song Song name
-     * @param difficulty Difficulty level
+     * @param artist Artist name
      */
-    void set_spectate_song(const char *song, const char* difficulty);
+    void set_spectate_song(const std::string &song, const std::string &artist);
 }
