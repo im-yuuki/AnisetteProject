@@ -116,12 +116,12 @@ class NoteCollection:
                     self.channel_5.append(note)
 
         # sort the notes by start time
-        self.channel_0.sort(key=lambda x: x.start)
-        self.channel_1.sort(key=lambda x: x.start)
-        self.channel_2.sort(key=lambda x: x.start)
-        self.channel_3.sort(key=lambda x: x.start)
-        self.channel_4.sort(key=lambda x: x.start)
-        self.channel_5.sort(key=lambda x: x.start)
+        # self.channel_0.sort(key=lambda x: x.start)
+        # self.channel_1.sort(key=lambda x: x.start)
+        # self.channel_2.sort(key=lambda x: x.start)
+        # self.channel_3.sort(key=lambda x: x.start)
+        # self.channel_4.sort(key=lambda x: x.start)
+        # self.channel_5.sort(key=lambda x: x.start)
 
         return True
     
@@ -253,6 +253,9 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
                 logging.debug(f"Thumbnail: {data.thumbnail}")
 
         elif current_section == OsuFileSection.HIT_OBJECTS:
+            if data.notes.channels > 6 or data.notes.channels < 4:
+                logging.error("Invalid channel count.")
+                return None
             # x,y,time,type,hitSound,endTime:hitSample
             # we just need x, time, type, and endTime
             parts = line.split(",")
@@ -261,23 +264,19 @@ def handle_osu_file(file_path: str) -> Optional[MapData]:
             note = Note()
             _type: int = int(parts[3])
             
-            if _type & 0b00000001:
+            if _type & 0b10000000 == 0b10000000:
+                # hold note
+                note.start = int(parts[2])
+                note.channel = int(int(parts[0]) * data.notes.channels / 512)
+                note.end = int(parts[5].split(":")[0])
+                data.notes.append(note)
+                logging.debug(f"Hold note: start {note.start}, end {note.end}, channel {note.channel}")
+            elif _type & 0b00000001 == 0b00000001:
                 # single note
                 note.start = int(parts[2])
                 note.channel = int(int(parts[0]) * data.notes.channels / 512)
                 data.notes.append(note)
                 logging.debug(f"Single note: start {note.start}, channel {note.channel}")
-            elif _type & 0b10000000:
-                # hold note
-                note.start = int(parts[2])
-                note.channel = int(int(parts[0]) * data.notes.channels / 512)
-                end_str = parts[5]
-                if ":" in end_str:
-                    note.end = int(end_str.split(":")[0])
-                else:
-                    note.end = int(end_str)
-                    data.notes.append(note)
-                logging.debug(f"Hold note: start {note.start}, end {note.end}, channel {note.channel}")
 
     f.close()
     logging.info(f"File parsed successfully.")

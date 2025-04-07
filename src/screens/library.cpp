@@ -22,12 +22,7 @@ namespace anisette::screens
     components::Container* create_beatmap_info_view(const data::Beatmap* beatmap) {
         using namespace anisette::components;
         if (!beatmap) return nullptr;
-        const uint64_t note_count = beatmap->notes[0].size()
-                                  + beatmap->notes[1].size()
-                                  + beatmap->notes[2].size()
-                                  + beatmap->notes[3].size()
-                                  + beatmap->notes[4].size()
-                                  + beatmap->notes[5].size();
+        const uint64_t note_count = beatmap->single_note_count + beatmap->hold_note_count;
         // header
         const auto thumbnail_img = new Image(beatmap->thumbnail_path);
         const auto title_text = new Text(beatmap->title, 24, BTN_TEXT_COLOR);
