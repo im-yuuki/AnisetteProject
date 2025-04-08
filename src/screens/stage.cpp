@@ -5,7 +5,7 @@
 #include "discord.h"
 #include "logging.h"
 
-// Keymap: Q W E I O P
+// Keymap: S D F J K L
 #define STAGE_TEXT_PRIMARY_SIZE 40
 #define STAGE_TEXT_SECONDARY_SIZE 28
 
@@ -16,14 +16,14 @@ namespace anisette::screens
     StageScreen::StageScreen(SDL_Renderer *renderer, data::Beatmap *beatmap) : beatmap(beatmap) {
         using namespace components;
         this->renderer = renderer;
-        logger->debug("Set base offset to {}ms", (100 - beatmap->difficulty) * 2);
-        score_calculator = new utils::ScoreCalculator((100 - beatmap->difficulty) * 2, beatmap->hp_drain);
-        channel[0] = new StageChannel(score_calculator, &beatmap->notes[0], "Q");
-        channel[1] = new StageChannel(score_calculator, &beatmap->notes[1], "W");
-        channel[2] = new StageChannel(score_calculator, &beatmap->notes[2], "E");
-        channel[3] = new StageChannel(score_calculator, &beatmap->notes[3], "I");
-        channel[4] = new StageChannel(score_calculator, &beatmap->notes[4], "O");
-        channel[5] = new StageChannel(score_calculator, &beatmap->notes[5], "P");
+        logger->debug("Set base offset to {}ms", (100 - beatmap->difficulty) * 3 / 2);
+        score_calculator = new utils::ScoreCalculator((100 - beatmap->difficulty) * 3 / 2, beatmap->hp_drain);
+        channel[0] = new StageChannel(score_calculator, &beatmap->notes[0], "S");
+        channel[1] = new StageChannel(score_calculator, &beatmap->notes[1], "D");
+        channel[2] = new StageChannel(score_calculator, &beatmap->notes[2], "F");
+        channel[3] = new StageChannel(score_calculator, &beatmap->notes[3], "J");
+        channel[4] = new StageChannel(score_calculator, &beatmap->notes[4], "K");
+        channel[5] = new StageChannel(score_calculator, &beatmap->notes[5], "L");
         // temporary disable 2 channels for easier
         channel[0]->set_hidden(true);
         channel[5]->set_hidden(true);
@@ -33,7 +33,7 @@ namespace anisette::screens
         accuracy_text = new Text("100.00%", STAGE_TEXT_SECONDARY_SIZE, BTN_TEXT_COLOR);
         // health bar
         const auto heart_icon = new Image("assets/icons/heart.png");
-        health_bar = new ProgressBar(100, BTN_HOVER_COLOR, BTN_BG_COLOR);
+        health_bar = new ProgressBar(500, BTN_HOVER_COLOR, BTN_BG_COLOR);
         const auto health_hbox = new HorizontalBox(0, 2);
         health_hbox->add_item(new ItemWrapper(heart_icon), 15);
         health_hbox->add_item(new ItemWrapper(health_bar));
@@ -48,9 +48,9 @@ namespace anisette::screens
         right_vbox->add_item((new HorizontalBox())->add_item(new BlankContainer(), 70)->add_item(new ItemWrapper(accuracy_text)), 4);
         right_vbox->add_item(new BlankContainer());
 
-        hbox.add_item(left_vbox, 25);
-        for (const auto &i : channel) hbox.add_item(i);
-        hbox.add_item(right_vbox, 25);
+        main_box.add_item(left_vbox, 25);
+        for (const auto &i : channel) main_box.add_item(i);
+        main_box.add_item(right_vbox, 25);
         action_start_time = SDL_GetPerformanceCounter();
     }
 
@@ -115,12 +115,12 @@ namespace anisette::screens
             current_music_pos_ms += this_tick - last_tick;
             last_tick = this_tick;
         }
-        channel[0]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_Q]);
-        channel[1]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_W]);
-        channel[2]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_E]);
-        channel[3]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_I]);
-        channel[4]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_O]);
-        channel[5]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_P]);
+        channel[0]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_S]);
+        channel[1]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_D]);
+        channel[2]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_F]);
+        channel[3]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_J]);
+        channel[4]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_K]);
+        channel[5]->bind_value(current_music_pos_ms, scan_res[SDL_SCANCODE_L]);
         // update statistics
         combo_text->change_text(score_calculator->get_combo_string());
         score_text->change_text(score_calculator->get_score_string());
@@ -132,7 +132,7 @@ namespace anisette::screens
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         SDL_RenderFillRect(renderer, &core::video::render_rect);
         // draw hbox
-        if (screen_dim_alpha < 255) hbox.draw(renderer, core::video::render_rect);
+        if (screen_dim_alpha < 255) main_box.draw(renderer, core::video::render_rect);
         // dim screen
         if (screen_dim_alpha > 0) {
             SDL_SetRenderTarget(renderer, nullptr);
@@ -168,13 +168,23 @@ namespace anisette::screens
             return false;
         });
         // wait 3s then start music
+        last_tick = SDL_GetTicks();
         action_hook.emplace([this](const uint64_t &action_now) {
             if (current_music_pos_ms >= 0) {
+                current_music_pos_ms = 0;
                 core::audio::resume_music();
-                last_tick = SDL_GetTicks();
                 return true;
             }
             return false;
         });
+    }
+
+    void StageScreen::create_result_overlay() {
+        using namespace components;
+        Text* state = nullptr;
+        if (score_calculator->hp <= 0) {
+
+        }
+        const auto score = new Text("Score: " + std::to_string(score_calculator->score), 72, BTN_TEXT_COLOR);
     }
 } // namespace anisette::screens

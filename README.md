@@ -5,7 +5,10 @@ This is a rhythm game. Tap the notes in the right time!
 [![Build x64 Release](https://github.com/im-yuuki/AnisetteProject/actions/workflows/build-release.yml/badge.svg)](https://github.com/im-yuuki/AnisetteProject/actions/workflows/build-release.yml)
 
 ## Preview
-*sorry, but this game is not completed yet* 😭
+
+<img src=".github/previews/menu.png"  alt=""/>
+<img src=".github/previews/library.png"  alt=""/>
+<img src=".github/previews/game.png"  alt=""/>
 
 ## Installation
 

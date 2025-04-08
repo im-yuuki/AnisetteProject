@@ -36,7 +36,7 @@ namespace anisette::utils
         explicit ScoreCalculator(const int base_offset_ms = 50, const int hp_drain = 0) : hp_drain(hp_drain), base_offset_ms(base_offset_ms) {}
         unsigned score = 0, combo = 0, note_count = 0, success = 0;
 
-        int hp = 100;
+        int hp = 500;
         int hp_drain = 0;
         const int base_offset_ms;
 
@@ -44,6 +44,8 @@ namespace anisette::utils
             note_count++;
             success++;
             score += 10 * ++combo;
+            hp += hp_drain;
+            if (hp > 500) hp = 500;
         }
 
         void submit_fail() {

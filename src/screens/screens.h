@@ -25,17 +25,22 @@ namespace anisette::screens {
         void update(const uint64_t &now) override;
         void on_focus(const uint64_t &now) override;
     private:
-        components::HorizontalBox hbox{0, 0};
+        components::HorizontalBox main_box{0, 0};
         components::StageChannel *channel[6]{};
         components::Text         *combo_text;
         components::Text         *score_text;
         components::Text         *accuracy_text;
         components::ProgressBar  *health_bar;
 
+        components::Grid          result_overlay{2};
+        void create_result_overlay();
+
 
         int current_music_pos_ms = -5000;
         int last_tick = 0;
         bool paused = true;
+        bool show_result_overlay = false;
+
         data::Beatmap *beatmap;
         utils::ScoreCalculator *score_calculator;
 

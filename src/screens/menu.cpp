@@ -282,9 +282,6 @@ namespace anisette::screens
         logger->debug("Load background: {}", default_backgrounds[random_index]);
         core::load_background(default_backgrounds[random_index], now);
         core::toggle_background_parallax(true);
-        // reload music state
-        music_play_btn_wrapper->set_hidden(false);
-        music_pause_btn_wrapper->set_hidden(true);
         now_playing_text->change_text(core::audio::music_display_name);
         // push fade in action
         if (action_hook.empty()) action_start_time = now;
@@ -294,6 +291,10 @@ namespace anisette::screens
             if (alpha > 255) {
                 screen_dim_alpha = 0;
                 logger->debug("Fade in finished");
+                // reload music state
+                const auto is_paused = core::audio::is_paused();
+                music_play_btn_wrapper->set_hidden(!is_paused);
+                music_pause_btn_wrapper->set_hidden(is_paused);
                 return true;
             }
             screen_dim_alpha = 255 - alpha;

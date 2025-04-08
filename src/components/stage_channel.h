@@ -5,7 +5,6 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_render.h>
 #include <queue>
-#include <iostream>
 #include "core.h"
 #include "common.h"
 #include "container.h"
@@ -14,6 +13,7 @@
 
 #define NOTE_DISPLAY_RANGE 85
 #define NOTE_DISPLAY_FONT_SIZE 32
+#define NOTE_DISPLAY_SIZE 10 // screen = n * note size
 
 namespace anisette::components
 {
@@ -61,7 +61,7 @@ namespace anisette::components
         explicit StageChannel(utils::ScoreCalculator *score_calculator, std::vector<data::Note> *note_list, const std::string &init_text)
             : score_calculator(score_calculator), note_list(note_list) {
             key_text = new Text(init_text, NOTE_DISPLAY_FONT_SIZE, KEY_TEXT_COLOR);
-            preview_size_ms = score_calculator->base_offset_ms * 12;
+            preview_size_ms = score_calculator->base_offset_ms * NOTE_DISPLAY_SIZE;
         }
 
         void bind_value(const int current_music_pos_ms, const bool key_holding = false) {
@@ -86,6 +86,7 @@ namespace anisette::components
             if (ev_key_down) {
                 key_press_count++;
                 for (auto &[processed, failed, start, end] : loaded_note) {
+                    if (start > current_music_pos_ms + score_calculator->base_offset_ms) break;
                     if (processed) continue;
                     processed = true;
                     if (start <= current_music_pos_ms && current_music_pos_ms <= end) {
