@@ -54,7 +54,7 @@ jobs:
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
       - name: Install packages
-        run: sudo apt-get install -y cmake ninja-build
+        run: sudo apt-get install -y cmake ninja-build libltdl-dev
 
       - name: Configure CMake
         run: cmake -S . --preset x64-linux-rel
