@@ -26,7 +26,7 @@ namespace anisette::core
     uint64_t target_frame_time = 0;
     components::FrameTimeOverlay *frame_time_overlay = nullptr;
     components::Background *background_instance = nullptr;
-    auto beatmap_loader = new data::BeatmapLoader();
+    data::BeatmapLoader* beatmap_loader = new data::BeatmapLoader();
 
     static std::function<abstract::Screen*(SDL_Renderer*)> register_function;
 
